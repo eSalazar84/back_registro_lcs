@@ -8,7 +8,7 @@ export class PersonaController {
   constructor(private readonly personaService: PersonaService) {}
 
   @Post()
-  create(@Body() createPersonaDto: CreatePersonaDto) {
+  async create(@Body() createPersonaDto: CreatePersonaDto) {
     return this.personaService.create(createPersonaDto);
   }
 
