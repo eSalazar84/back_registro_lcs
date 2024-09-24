@@ -5,11 +5,11 @@ import { UpdateCasaDto } from './dto/update-casa.dto';
 
 @Controller('casa')
 export class CasaController {
-  constructor(private readonly casaService: CasaService) {}
+  constructor(private readonly casaService: CasaService) { }
 
   @Post()
-  create(@Body() createCasaDto: CreateCasaDto) {
-    return this.casaService.create(createCasaDto);
+  async create(@Body() createCasaDto: CreateCasaDto) {
+    return await this.casaService.create(createCasaDto);
   }
 
   @Get()

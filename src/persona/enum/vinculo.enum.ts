@@ -1,4 +1,5 @@
 export enum Vinculo {
+    CO_TITULAR = 'CO-TITULAR',
     CONCUBINO = 'CONCUBINO/A',
     CONYUGE = 'CONYUGE',
     HERMANO = 'HERMANO/A',

@@ -7,7 +7,7 @@ export class Ingreso {
     id: number
 
     @Column({ type: 'enum', enum: Relacion })
-    tipo_relacion: Relacion
+    situacion_laboral: Relacion
 
     @Column({ type: 'varchar', length: 120 })
     ocupacion: string

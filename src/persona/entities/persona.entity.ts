@@ -4,6 +4,7 @@ import { Genero } from "../enum/genero.enum";
 import { Estado_Civil } from "../enum/estado_civil.enum";
 import { Nacionalidad } from "../enum/nacionalidad.enum";
 import { Vinculo } from "../enum/vinculo.enum";
+import { Rol } from "../enum/rol.enum";
 
 @Entity()
 export class Persona {
@@ -49,13 +50,15 @@ export class Persona {
     @Column({ type: 'boolean' })
     certificado_discapacidad: boolean
 
+    @Column({ type: 'enum', enum: Rol })
+    rol: Rol
+
     @Column({ type: 'enum', enum: Vinculo })
     vinculo: Vinculo
 
     @Column({ type: 'int' })
     lote: number
 
-    @Column({type: 'boolean'})
-    is_participante: boolean 
-
+    @Column({ type: 'boolean', default: false })
+    is_TITULAR: boolean
 }
