@@ -8,8 +8,8 @@ export class LoteController {
   constructor(private readonly loteService: LoteService) {}
 
   @Post()
-  create(@Body() createLoteDto: CreateLoteDto) {
-    return this.loteService.create(createLoteDto);
+  async create(@Body() createLoteDto: CreateLoteDto) {
+    return await this.loteService.create(createLoteDto);
   }
 
   @Get()

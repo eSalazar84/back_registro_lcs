@@ -8,8 +8,8 @@ export class IngresoController {
   constructor(private readonly ingresoService: IngresoService) {}
 
   @Post()
-  create(@Body() createIngresoDto: CreateIngresoDto) {
-    return this.ingresoService.create(createIngresoDto);
+  async create(@Body() createIngresoDto: CreateIngresoDto) {
+    return await this.ingresoService.create(createIngresoDto);
   }
 
   @Get()

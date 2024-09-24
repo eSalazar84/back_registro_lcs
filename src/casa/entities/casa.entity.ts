@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Residencia } from "../enum/residencia.enum";
+import { Alquiler } from "../enum/alquiler.enum";
 
 @Entity()
 export class Casa {
@@ -10,7 +11,7 @@ export class Casa {
     direccion: string
 
     @Column({ type: 'int' })
-    numero: number
+    numero_direccion: number
 
     @Column({ type: 'boolean' })
     departamento: boolean
@@ -26,4 +27,13 @@ export class Casa {
 
     @Column({ type: 'enum', enum: Residencia })
     residencia: Residencia
+
+    @Column({ type: 'int' })
+    cantidad_dormitorios: number
+
+    @Column({ type: 'varchar' })
+    estado_vivienda: string
+
+    @Column({type: 'enum', enum: Alquiler})
+    tipo_alquiler: Alquiler
 }
