@@ -1,0 +1,64 @@
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Tipo_DNI } from "../enum/tipo_dni.enum";
+import { Genero } from "../enum/genero.enum";
+import { Estado_Civil } from "../enum/estado_civil.enum";
+import { Nacionalidad } from "../enum/nacionalidad.enum";
+import { Vinculo } from "../enum/vinculo.enum";
+import { Rol } from "../enum/rol.enum";
+
+@Entity()
+export class Persona {
+    @PrimaryGeneratedColumn()
+    id: number
+
+    @Column({ type: 'int' })
+    numero_registro: number
+
+    @Column({ type: 'varchar', length: 120 })
+    nombre: string
+
+    @Column({ type: 'varchar', length: 120 })
+    apellido: string
+
+    @Column({ type: 'enum', enum: Tipo_DNI })
+    tipo_dni: Tipo_DNI
+
+    @Column({ type: 'int' })
+    dni: number
+
+    @Column({ type: 'int' })
+    CUIL_CUIT: number
+
+    @Column({ type: 'enum', enum: Genero })
+    genero: Genero
+
+    @Column({ type: 'datetime' })
+    fecha_nacimiento: Date
+
+    @Column({ type: 'varchar' })
+    email: string
+
+    @Column({ type: 'varchar' })
+    telefono: string
+
+    @Column({ type: 'enum', enum: Estado_Civil })
+    estado_civil: Estado_Civil
+
+    @Column({ type: 'enum', enum: Nacionalidad })
+    nacionalidad: Nacionalidad
+
+    @Column({ type: 'boolean' })
+    certificado_discapacidad: boolean
+
+    @Column({ type: 'enum', enum: Rol })
+    rol: Rol
+
+    @Column({ type: 'enum', enum: Vinculo })
+    vinculo: Vinculo
+
+    @Column({ type: 'int' })
+    lote: number
+
+    @Column({ type: 'boolean', default: false })
+    is_TITULAR: boolean
+}
