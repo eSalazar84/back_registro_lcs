@@ -1,30 +1,41 @@
 import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
-import { Residencia } from "../enum/residencia.enum"
+import { Localidad } from "../enum/localidad.enum"
+import { Estado_vivienda } from "../enum/estado_vivienda.enum"
+import { Alquiler } from "../enum/alquiler.enum"
 
 export class CreateCasaDto {
-    id: number
+    idCasa: number
 
     @IsString()
     @IsNotEmpty()
     direccion: string
 
     @IsNumber()
-    numero: number
+    numero_direccion: number
 
     @IsBoolean()
     departamento: boolean
 
     @IsString()
     @IsNotEmpty()
-    num_departamento: string
+    numero_departamento: string
 
     @IsBoolean()
     alquiler: boolean
 
     @IsNumber()
-    monto_alquiler: number
+    valor_alquiler: number
 
-    @IsEnum(Residencia)
+    @IsEnum(Localidad)
     @IsNotEmpty()
-    residencia: Residencia
+    Localidad: Localidad
+    
+    @IsNumber()
+    cantidad_dormitorios: number
+
+    @IsEnum(Estado_vivienda)
+    estado_vivienda: Estado_vivienda
+
+    @IsEnum(Alquiler)
+    tipo_alquiler: Alquiler
 }
