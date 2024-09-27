@@ -1,15 +1,19 @@
+import { CreateCasaDto } from 'src/casa/dto/create-casa.dto';
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RegistroService } from './registro.service';
-import { CreateRegistroDto } from './dto/create-registro.dto';
+
 import { UpdateRegistroDto } from './dto/update-registro.dto';
+import { CreateLoteDto } from 'src/lote/dto/create-lote.dto';
+import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
+import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 
 @Controller('registro')
 export class RegistroController {
   constructor(private readonly registroService: RegistroService) {}
 
   @Post()
-  async create(@Body() createRegistroDto: CreateRegistroDto) {
-    return this.registroService.create(createRegistroDto);
+  async create(@Body() createLoteDto: CreateLoteDto,@Body() createCasaDto: CreateCasaDto,@Body()CreateIngresoDto: CreateIngresoDto, @Body()CreatePersonaDto: CreatePersonaDto) {
+    return this.registroService.create(createLoteDto,createCasaDto, CreateIngresoDto, CreatePersonaDto);
   }
 
   @Get()

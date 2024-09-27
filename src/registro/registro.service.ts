@@ -19,7 +19,7 @@ export class RegistroService {
     private readonly casaService: CasaService
   ) { }
 
-  async create(casa: CreateCasaDto, ingreso: CreateIngresoDto, persona: CreatePersonaDto, lote: CreateLoteDto):Promise<any> {
+  async create(lote: CreateLoteDto,casa: CreateCasaDto, ingreso: CreateIngresoDto, persona: CreatePersonaDto, ):Promise<any> {
     
     return 'This action adds a new registro';
   }
