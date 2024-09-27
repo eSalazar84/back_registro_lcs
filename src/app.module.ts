@@ -1,11 +1,32 @@
+import { CasaModule } from './casa/casa.module';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+
 import { RegistroModule } from './registro/registro.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
+import { PersonaModule } from './persona/persona.module';
+import { LoteModule } from './lote/lote.module';
+import { IngresoModule } from './ingreso/ingreso.module';
 
 @Module({
-  imports: [RegistroModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [RegistroModule,
+    TypeOrmModule.forRoot({
+      type: "mysql",
+      host: "LOCALHOST",
+      port: 3306,
+      username: "root",
+      password: "root",
+      database: "registro_lcs",
+      entities:[ join(__dirname, '/**/*.entity{.js,.ts}')],
+      synchronize: true
+    }),
+    CasaModule,
+    PersonaModule,
+    LoteModule,
+    IngresoModule
+  ],
+  
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
