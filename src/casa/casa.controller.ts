@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { CasaService } from './casa.service';
 import { CreateCasaDto } from './dto/create-casa.dto';
 import { UpdateCasaDto } from './dto/update-casa.dto';
@@ -8,27 +8,26 @@ export class CasaController {
   constructor(private readonly casaService: CasaService) { }
 
   @Post()
-  async create(@Body() createCasaDto: CreateCasaDto) {
-    return await this.casaService.create(createCasaDto);
+  async create(@Body() createCasaDto: CreateCasaDto): Promise<CreateCasaDto> {
+    try {
+      return await this.casaService.createCasa(createCasaDto);
+    }
+    catch (error) {
+      throw new HttpException({
+        status: HttpStatus.BAD_REQUEST,
+        error: `NOT VALID`
+      }, HttpStatus.BAD_REQUEST)
+    }
   }
 
   @Get()
-  findAll() {
-    return this.casaService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.casaService.findOne(+id);
+  async findAll(): Promise<CreateCasaDto[]> {
+    return this.casaService.findAllCasa();
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCasaDto: UpdateCasaDto) {
-    return this.casaService.update(+id, updateCasaDto);
+  async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdateCasaDto: UpdateCasaDto): Promise<UpdateCasaDto> {
+    return this.casaService.updateCasa(+id, UpdateCasaDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.casaService.remove(+id);
-  }
 }
