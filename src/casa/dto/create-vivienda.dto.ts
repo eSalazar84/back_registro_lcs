@@ -3,8 +3,8 @@ import { Localidad } from "../enum/localidad.enum"
 import { Estado_vivienda } from "../enum/estado_vivienda.enum"
 import { Alquiler } from "../enum/alquiler.enum"
 
-export class CreateCasaDto {
-    idCasa: number
+export class CreateViviendaDto {
+    idVivienda: number
 
     @IsString()
     @IsNotEmpty()
@@ -17,18 +17,17 @@ export class CreateCasaDto {
     departamento: boolean
 
     @IsString()
-    @IsNotEmpty()
-    numero_departamento: string
+    numero_departamento: string|null
 
     @IsBoolean()
     alquiler: boolean
 
     @IsNumber()
-    valor_alquiler: number
+    valor_alquiler: number | null
 
     @IsEnum(Localidad)
     @IsNotEmpty()
-    Localidad: Localidad
+    localidad: Localidad
     
     @IsNumber()
     cantidad_dormitorios: number
