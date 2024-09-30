@@ -1,4 +1,4 @@
-import { CasaModule } from './casa/casa.module';
+import { ViviendaModule } from './casa/vivienda.module';
 import { Module } from '@nestjs/common';
 
 import { RegistroModule } from './registro/registro.module';
@@ -20,7 +20,7 @@ import { IngresoModule } from './ingreso/ingreso.module';
       entities:[ join(__dirname, '/**/*.entity{.js,.ts}')],
       synchronize: true
     }),
-    CasaModule,
+    ViviendaModule,
     PersonaModule,
     LoteModule,
     IngresoModule
