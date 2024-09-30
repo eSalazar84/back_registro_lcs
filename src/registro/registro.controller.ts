@@ -1,4 +1,4 @@
-import { CreateCasaDto } from 'src/casa/dto/create-casa.dto';
+import { CreateViviendaDto } from 'src/casa/dto/create-vivienda.dto';
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RegistroService } from './registro.service';
 
@@ -9,11 +9,11 @@ import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 
 @Controller('registro')
 export class RegistroController {
-  constructor(private readonly registroService: RegistroService) {}
+  constructor(private readonly registroService: RegistroService) { }
 
   @Post()
-  async create(@Body() createLoteDto: CreateLoteDto,@Body() createCasaDto: CreateCasaDto,@Body()CreateIngresoDto: CreateIngresoDto, @Body()CreatePersonaDto: CreatePersonaDto) {
-    return this.registroService.create(createLoteDto,createCasaDto, CreateIngresoDto, CreatePersonaDto);
+  async create(@Body() createLoteDto: CreateLoteDto, @Body() createViviendaDto: CreateViviendaDto, @Body() CreateIngresoDto: CreateIngresoDto, @Body() CreatePersonaDto: CreatePersonaDto) {
+    return this.registroService.create(createLoteDto, createViviendaDto, CreateIngresoDto, CreatePersonaDto);
   }
 
   @Get()

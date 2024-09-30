@@ -4,8 +4,8 @@ import { UpdateRegistroDto } from './dto/update-registro.dto';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 import { LoteService } from 'src/lote/lote.service';
 import { PersonaService } from 'src/persona/persona.service';
-import { CasaService } from 'src/casa/casa.service';
-import { CreateCasaDto } from 'src/casa/dto/create-casa.dto';
+import { ViviendaService } from 'src/casa/vivienda.service';
+import { CreateViviendaDto } from 'src/casa/dto/create-vivienda.dto';
 import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateLoteDto } from 'src/lote/dto/create-lote.dto';
@@ -16,11 +16,11 @@ export class RegistroService {
     private readonly ingresoService: IngresoService,
     private readonly loteService: LoteService,
     private readonly personaService: PersonaService,
-    private readonly casaService: CasaService
+    private readonly viviendaService: ViviendaService
   ) { }
 
-  async create(lote: CreateLoteDto,casa: CreateCasaDto, ingreso: CreateIngresoDto, persona: CreatePersonaDto, ):Promise<any> {
-    
+  async create(lote: CreateLoteDto, vivienda: CreateViviendaDto, ingreso: CreateIngresoDto, persona: CreatePersonaDto,): Promise<any> {
+
     return 'This action adds a new registro';
   }
 
