@@ -1,6 +1,7 @@
 export enum Localidad {
-    Benito_Juarez = 'Benito Juarez',
+    Benito_Juarez = 'Benito Juárez',
     Barker = 'Barker',
     El_Luchador = 'El Luchador',
-    Tedin_Uriburu = 'Tedin Uriburu'
+    Tedin_Uriburu = 'Tedín Uriburu',
+    Estacion_Lopez = "Estación López"
 }
