@@ -4,7 +4,7 @@ import { Localidad } from "../enum/localidad.enum";
 @Entity()
 export class Lote {
     @PrimaryGeneratedColumn()
-    id: number
+    idLote: number
 
     @Column({ type: 'enum', enum: Localidad })
     localidad: Localidad

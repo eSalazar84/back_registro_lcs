@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateLoteDto } from './dto/create-lote.dto';
 import { UpdateLoteDto } from './dto/update-lote.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Lote } from './entities/lote.entity';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 
 @Injectable()
 export class LoteService {
@@ -12,8 +12,8 @@ export class LoteService {
   ) { }
 
   async create(createLote: CreateLoteDto): Promise<CreateLoteDto> {
-    const loteChosen = this.loteRepository.create(createLote)
-    return await this.loteRepository.save(loteChosen);
+    const loteSelect = this.loteRepository.create(createLote)
+    return await this.loteRepository.save(loteSelect);
   }
 
   findAll() {
@@ -24,8 +24,23 @@ export class LoteService {
     return `This action returns a #${id} lote`;
   }
 
-  update(id: number, updateLoteDto: UpdateLoteDto) {
-    return `This action updates a #${id} lote`;
+  async updateLote(id: number, updateLoteDto: UpdateLoteDto) : Promise<CreateLoteDto>{
+  try{
+    const queryFound: FindOneOptions= {where:{idLote: id}}
+    const loteFound= await this.loteRepository.findOne(queryFound)
+   
+    if(!loteFound){
+      throw new NotFoundException(`Lotecon id ${id} no encontrado`)
+    }
+    Object.assign(loteFound, updateLoteDto);
+
+    await this.loteRepository.save(loteFound);
+
+    return loteFound;
+  }catch(error){
+    throw new InternalServerErrorException('error al cambiar ubicaacion de lote')
+  }
+   
   }
 
   remove(id: number) {
