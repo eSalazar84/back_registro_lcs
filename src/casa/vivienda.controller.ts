@@ -5,12 +5,12 @@ import { UpdateViviendaDto } from './dto/update-vivienda.dto';
 
 @Controller('vivienda')
 export class ViviendaController {
-  constructor(private readonly ViviendaService: ViviendaService) { }
+  constructor(private readonly viviendaService: ViviendaService) { }
 
   @Post()
   async create(@Body() createViviendaDto: CreateViviendaDto): Promise<CreateViviendaDto> {
     try {
-      return await this.ViviendaService.createVivienda(createViviendaDto);
+      return await this.viviendaService.createVivienda(createViviendaDto);
     }
     catch (error) {
       throw new HttpException({
@@ -22,12 +22,12 @@ export class ViviendaController {
 
   @Get()
   async findAll(): Promise<CreateViviendaDto[]> {
-    return this.ViviendaService.findAllVivienda();
+    return this.viviendaService.findAllVivienda();
   }
 
   @Patch(':id')
   async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdateViviendaDto: UpdateViviendaDto): Promise<UpdateViviendaDto> {
-    return this.ViviendaService.updateVivienda(+id, UpdateViviendaDto);
+    return this.viviendaService.updateVivienda(+id, UpdateViviendaDto);
   }
 
 }
