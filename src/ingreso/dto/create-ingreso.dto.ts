@@ -6,7 +6,7 @@ export class CreateIngresoDto {
 
     @IsEnum(Relacion)
     @IsNotEmpty()
-    tipo_relacion: Relacion
+    situacion_laboral: Relacion
 
     @IsString()    
     ocupacion: string
