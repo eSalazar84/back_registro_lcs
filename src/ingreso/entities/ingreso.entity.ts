@@ -4,7 +4,7 @@ import { Relacion } from "../enum/relacion.enum";
 @Entity()
 export class Ingreso {
     @PrimaryGeneratedColumn()
-    id: number
+    idIngreso: number
 
     @Column({ type: 'enum', enum: Relacion })
     situacion_laboral: Relacion
@@ -12,7 +12,7 @@ export class Ingreso {
     @Column({ type: 'varchar', length: 120 })
     ocupacion: string
 
-    @Column({ type: 'int' })
+    @Column({ type: 'bigint' })
     CUIT_empleador: number
 
     @Column({ type: 'int' })
