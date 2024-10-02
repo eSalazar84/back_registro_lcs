@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { PersonaService } from './persona.service';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
@@ -8,9 +8,44 @@ export class PersonaController {
   constructor(private readonly personaService: PersonaService) {}
 
   @Post()
-  async create(@Body() createPersonaDto: CreatePersonaDto) {
-    return this.personaService.create(createPersonaDto);
+  async createPersona(@Body() createPersonaDto: CreatePersonaDto): Promise<CreatePersonaDto> {
+    try{
+      return await this.personaService.create(createPersonaDto);
+
+    }
+    catch (error){
+      if (error instanceof HttpException) {
+        throw error;  // Lanza el error tal cual si ya es una HttpException
+      }
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: `Ocurrio un error al crear la nueva dependencia`
+      }, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
+//   @Post()
+// async createPersona(@Body() createPersonaDto: CreatePersonaDto): Promise<CreatePersonaDto> {
+//     try {
+//         return await this.personaService.create(createPersonaDto);
+//     } catch (error) {
+//         // Log del error para depuración
+//         console.error('Error al crear la persona:', error);
+
+//         // Manejo de errores más detallado
+//         if (error.code === 'ER_DUP_ENTRY') {
+//             throw new HttpException({
+//                 status: HttpStatus.CONFLICT,
+//                 error: 'Ya existe una persona con ese DNI o CUIL.',
+//             }, HttpStatus.CONFLICT);
+//         } else {
+//             throw new HttpException({
+//                 status: HttpStatus.BAD_REQUEST,
+//                 error: 'Error al crear la persona. ' + (error.message || 'Detalles no disponibles.'),
+//             }, HttpStatus.BAD_REQUEST);
+//         }
+//     }
+// }
+
 
   @Get()
   findAll() {
@@ -23,8 +58,8 @@ export class PersonaController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePersonaDto: UpdatePersonaDto) {
-    return this.personaService.update(+id, updatePersonaDto);
+  async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
+    return this.personaService.updatePersona(+id, UpdatePersonaDto);
   }
 
   @Delete(':id')

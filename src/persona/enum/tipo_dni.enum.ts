@@ -1,6 +1,6 @@
 export enum Tipo_DNI {
-    DOCUMENTO_UNICO = 'DOCUMENTO UNICO',
-    LIBRETA_ENROLAMIENTO = 'LIBRETA ENROLAMIENTO',
-    LIBRETA_CIVICA = 'LIBRETA CIVICA',
-    OTRO = 'OTRO'
+    Documento_unico = 'Documento unico',
+    Libreta_enrolamiento = 'Libreta enrolamiento',
+    Libreta_civica = 'Libreta civica',
+    Otro = 'Otro'
 }
