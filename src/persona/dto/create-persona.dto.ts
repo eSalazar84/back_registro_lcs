@@ -4,13 +4,14 @@ import { Genero } from "../enum/genero.enum"
 import { Nacionalidad } from "../enum/nacionalidad.enum"
 import { Tipo_DNI } from "../enum/tipo_dni.enum"
 import { Vinculo } from "../enum/vinculo.enum"
+import { Titular_Cotitular } from "../enum/titular_cotitular.enum"
 
 export class CreatePersonaDto {
 
-    id: number
+    idPersona: number
 
     @IsNumber()
-    numero_registro: number
+    numero_registro: number | null
 
     @IsString()
     @IsNotEmpty()
@@ -29,13 +30,14 @@ export class CreatePersonaDto {
     dni: number
 
     @IsNumber()
+    @Length(12)
     CUIL_CUIT: number
 
     @IsEnum(Genero)
     genero: Genero
 
     @IsDate()
-    fecha_nacimiento: Date
+    fecha_nacimiento: Date | null
 
     @IsEmail()
     @IsNotEmpty()
@@ -55,6 +57,9 @@ export class CreatePersonaDto {
     certificado_discapacidad: boolean
 
     @IsEnum(Vinculo)
-    vinculo: Vinculo
+    vinculo: Vinculo | null
+
+    @IsEnum(Titular_Cotitular)
+    titular_cotitular: Titular_Cotitular
 
 }

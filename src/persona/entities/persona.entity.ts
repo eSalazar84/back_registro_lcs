@@ -5,14 +5,15 @@ import { Estado_Civil } from "../enum/estado_civil.enum";
 import { Nacionalidad } from "../enum/nacionalidad.enum";
 import { Vinculo } from "../enum/vinculo.enum";
 import { Rol } from "../enum/rol.enum";
+import { Titular_Cotitular } from "../enum/titular_cotitular.enum";
 
 @Entity()
 export class Persona {
     @PrimaryGeneratedColumn()
-    id: number
+    idPersona: number
 
-    @Column({ type: 'int' })
-    numero_registro: number
+    @Column({ type: 'int', nullable:true })
+    numero_registro: number | null
 
     @Column({ type: 'varchar', length: 120 })
     nombre: string
@@ -26,14 +27,14 @@ export class Persona {
     @Column({ type: 'int' })
     dni: number
 
-    @Column({ type: 'int' })
+    @Column({ type: 'bigint'})
     CUIL_CUIT: number
 
     @Column({ type: 'enum', enum: Genero })
     genero: Genero
 
-    @Column({ type: 'datetime' })
-    fecha_nacimiento: Date
+    @Column({ type: 'datetime', nullable: true })
+    fecha_nacimiento: Date | null
 
     @Column({ type: 'varchar' })
     email: string
@@ -53,12 +54,12 @@ export class Persona {
     @Column({ type: 'enum', enum: Rol })
     rol: Rol
 
-    @Column({ type: 'enum', enum: Vinculo })
-    vinculo: Vinculo
+    @Column({ type: 'enum', enum: Vinculo, nullable: true })
+    vinculo: Vinculo | null
 
-    @Column({ type: 'int' })
-    lote: number
+    // @Column({ type: 'int' })
+    // lote: number
 
-    @Column({ type: 'boolean', default: false })
-    is_TITULAR: boolean
+    @Column({type: 'enum', enum: Titular_Cotitular})
+    titular_cotitular: Titular_Cotitular
 }
