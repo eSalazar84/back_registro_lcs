@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from "class-validator"
+import { IsEnum, IsNotEmpty, IsNumber } from "class-validator"
 import { Localidad } from "../enum/localidad.enum"
 
 export class CreateLoteDto {
@@ -7,4 +7,8 @@ export class CreateLoteDto {
     @IsEnum(Localidad)
     @IsNotEmpty()
     localidad: Localidad
+
+    @IsNumber()
+    @IsNotEmpty()
+    idPersona: number
 }

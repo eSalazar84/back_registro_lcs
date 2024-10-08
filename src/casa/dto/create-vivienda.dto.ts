@@ -2,6 +2,7 @@ import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validat
 import { Localidad } from "../enum/localidad.enum"
 import { Estado_vivienda } from "../enum/estado_vivienda.enum"
 import { Alquiler } from "../enum/alquiler.enum"
+import { Expose } from "class-transformer"
 
 export class CreateViviendaDto {
     idVivienda: number
@@ -37,4 +38,6 @@ export class CreateViviendaDto {
 
     @IsEnum(Alquiler)
     tipo_alquiler: Alquiler
+
+  
 }
