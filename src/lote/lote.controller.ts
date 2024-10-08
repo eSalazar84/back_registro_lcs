@@ -11,7 +11,7 @@ export class LoteController {
   async create(@Body() createLoteDto: CreateLoteDto): Promise<CreateLoteDto> {
     
     try {
-      return await this.loteService.create(createLoteDto);
+      return await this.loteService.createLote(createLoteDto);
     }
     catch (error) {
       throw new HttpException({

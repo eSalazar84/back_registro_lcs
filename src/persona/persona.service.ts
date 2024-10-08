@@ -16,7 +16,7 @@ export class PersonaService {
   //   const addPersona = this.personaRepository.create(createPersona)
   //   return await this.personaRepository.save(addPersona)
   // }
-  async create(createPersona: CreatePersonaDto): Promise<CreatePersonaDto> {
+  async createPersona(createPersona: CreatePersonaDto): Promise<CreatePersonaDto> {
     const personaFound = await this.personaRepository.findOne({ where: { dni: createPersona.dni } })
     if (personaFound) {
       throw new HttpException({

@@ -10,7 +10,7 @@ export class PersonaController {
   @Post()
   async createPersona(@Body() createPersonaDto: CreatePersonaDto): Promise<CreatePersonaDto> {
     try{
-      return await this.personaService.create(createPersonaDto);
+      return await this.personaService.createPersona(createPersonaDto);
 
     }
     catch (error){
