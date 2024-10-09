@@ -7,8 +7,4 @@ export class CreateLoteDto {
     @IsEnum(Localidad)
     @IsNotEmpty()
     localidad: Localidad
-
-    @IsNumber()
-    @IsNotEmpty()
-    idPersona: number
 }
