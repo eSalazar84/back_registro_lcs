@@ -1,8 +1,9 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
 import { Relacion } from "../enum/relacion.enum"
 
-export class CreateIngresoDto {
-    id: number
+export class CreateIngresoDto{  
+
+    idIngreso: number
 
     @IsEnum(Relacion)
     @IsNotEmpty()
@@ -16,4 +17,9 @@ export class CreateIngresoDto {
 
     @IsNumber()
     salario: number
+
+    @IsNumber()
+    @IsNotEmpty()   
+    idPersona: number
+ 
 }

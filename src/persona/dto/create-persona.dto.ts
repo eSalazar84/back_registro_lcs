@@ -5,6 +5,7 @@ import { Nacionalidad } from "../enum/nacionalidad.enum"
 import { Tipo_DNI } from "../enum/tipo_dni.enum"
 import { Vinculo } from "../enum/vinculo.enum"
 import { Titular_Cotitular } from "../enum/titular_cotitular.enum"
+import { Expose } from "class-transformer"
 
 export class CreatePersonaDto {
 
@@ -61,5 +62,16 @@ export class CreatePersonaDto {
 
     @IsEnum(Titular_Cotitular)
     titular_cotitular: Titular_Cotitular
+
+    @IsNumber()
+    @IsNotEmpty()
+    @Expose()
+    idVivienda: number
+
+     @IsNumber()
+    @IsNotEmpty()
+    @Expose()
+    idLote: number
+ 
 
 }
