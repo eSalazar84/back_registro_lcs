@@ -11,7 +11,6 @@ export class Lote {
     localidad: Localidad
 
     @OneToOne(() => Persona, persona => persona.lote)
-    @JoinColumn({ name: 'idPersona' })
     persona: Persona;
 
 }

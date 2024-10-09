@@ -60,18 +60,20 @@ export class Persona {
   @Column({ type: 'enum', enum: Vinculo, nullable: true })
   vinculo: Vinculo | null
 
-  // @Column({ type: 'int' })
-  // lote: number
 
   @Column({ type: 'enum', enum: Titular_Cotitular })
   titular_cotitular: Titular_Cotitular
 
+  @Column({ type: 'int', nullable: true })
+  idVivienda: number;
+
+  @Column({ type: 'int', nullable: true })
+  idLote: number;
+
   @OneToOne(() => Vivienda, { cascade: true })
-  @JoinColumn()
   vivienda: Vivienda;
 
   @OneToOne(() => Lote, { cascade: true })
-  @JoinColumn()
   lote: Lote;
 
   @OneToMany(() => Ingreso, (ingreso) => ingreso.persona, { cascade: true })

@@ -1,10 +1,8 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
 import { Relacion } from "../enum/relacion.enum"
 
-export class CreateIngresoDto {
-  map(arg0: (ingreso: any) => Promise<import("../entities/ingreso.entity").Ingreso[]>): any {
-    throw new Error('Method not implemented.')
-  }
+export class CreateIngresoDto{  
+
     idIngreso: number
 
     @IsEnum(Relacion)

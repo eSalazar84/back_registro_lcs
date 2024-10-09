@@ -68,15 +68,10 @@ export class CreatePersonaDto {
     @Expose()
     idVivienda: number
 
-    @IsNumber()
-    @IsNotEmpty()
-    @Expose()
-    idIngreso:number
-
-    @IsNumber()
+     @IsNumber()
     @IsNotEmpty()
     @Expose()
     idLote: number
-  ingresos: any
+ 
 
 }
