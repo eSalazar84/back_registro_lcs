@@ -11,7 +11,7 @@ export class LoteService {
     @InjectRepository(Lote) private readonly loteRepository: Repository<CreateLoteDto>
   ) { }
 
-  async create(createLote: CreateLoteDto): Promise<CreateLoteDto> {
+  async createLote(createLote: CreateLoteDto): Promise<CreateLoteDto> {
     const loteSelect = this.loteRepository.create(createLote)
     return await this.loteRepository.save(loteSelect);
   }
