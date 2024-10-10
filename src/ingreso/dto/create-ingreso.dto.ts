@@ -18,8 +18,8 @@ export class CreateIngresoDto{
     @IsNumber()
     salario: number
 
-    @IsNumber()
-    @IsNotEmpty()   
-    idPersona: number
+     // Relación con Persona: se pasa el id de la persona
+     @IsNumber()
+     personaId: number;
  
 }

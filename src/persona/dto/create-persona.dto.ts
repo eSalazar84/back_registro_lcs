@@ -64,14 +64,11 @@ export class CreatePersonaDto {
     titular_cotitular: Titular_Cotitular
 
     @IsNumber()
-    @IsNotEmpty()
-    @Expose()
-    idVivienda: number
+    loteId: number;
 
-     @IsNumber()
-    @IsNotEmpty()
-    @Expose()
-    idLote: number
- 
+    // Relación con Vivienda: se pasa el id de la vivienda
+    @IsNumber()
+    viviendaId: number;
+
 
 }

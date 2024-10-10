@@ -18,10 +18,10 @@ export class Ingreso {
     @Column({ type: 'int' })
     salario: number;
 
-    @Column({ type: 'int', nullable: true })
-    idPersona: number; // Mantén esta columna
+    @Column({ type: 'int' })
+    personaId: number;
 
-    @ManyToOne(() => Persona, persona => persona.ingresos)
-    @JoinColumn({ name: 'idPersona' }) // Usa el mismo nombre
-    persona: Persona; // Relación con Persona
+    @ManyToOne(() => Persona, (persona) => persona.ingresos)
+    @JoinColumn({ name: "personaId" }) // Relación muchos a uno
+    persona: Persona;
 }

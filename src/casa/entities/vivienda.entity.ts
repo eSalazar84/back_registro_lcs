@@ -42,6 +42,6 @@ export class Vivienda {
     @Column({ type: 'enum', enum: Alquiler })
     tipo_alquiler: Alquiler
 
-    @OneToMany(() => Persona, persona => persona.vivienda)
+    @OneToMany(() => Persona, (persona) => persona.vivienda)
     personas: Persona[];
 }

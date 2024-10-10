@@ -60,21 +60,22 @@ export class Persona {
   @Column({ type: 'enum', enum: Vinculo, nullable: true })
   vinculo: Vinculo | null
 
-
   @Column({ type: 'enum', enum: Titular_Cotitular })
   titular_cotitular: Titular_Cotitular
 
-  @Column({ type: 'int', nullable: true })
-  idVivienda: number;
+  @Column({type: 'int'})
+  loteId: number;
 
-  @Column({ type: 'int', nullable: true })
-  idLote: number;
-
-  @OneToOne(() => Vivienda, { cascade: true })
-  vivienda: Vivienda;
-
-  @OneToOne(() => Lote, { cascade: true })
+  @OneToOne(() => Lote, (lote) => lote.persona, { cascade: true })
+  @JoinColumn({ name: "loteId" }) // Relación uno a uno
   lote: Lote;
+
+  @Column({type:'int'})
+  viviendaId: number
+
+  @ManyToOne(() => Vivienda, (vivienda) => vivienda.personas, { cascade: true })
+  @JoinColumn({ name: "viviendaId" }) // Relación muchos a uno
+  vivienda: Vivienda;
 
   @OneToMany(() => Ingreso, (ingreso) => ingreso.persona, { cascade: true })
   ingresos: Ingreso[];

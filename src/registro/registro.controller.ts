@@ -23,7 +23,7 @@ export class RegistroController {
   ): Promise<Persona> {
     const { persona, vivienda, ingresos, lote } = createAllDto;
     
-    return this.registroService.createAll(persona, vivienda, ingresos, lote);
+    return this.registroService.createRegistro(persona, vivienda, ingresos, lote);
   }
 
   // @Get()

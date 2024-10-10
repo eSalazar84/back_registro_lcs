@@ -10,7 +10,7 @@ export class Lote {
     @Column({ type: 'enum', enum: Localidad })
     localidad: Localidad
 
-    @OneToOne(() => Persona, persona => persona.lote)
+    @OneToOne(() => Persona, (persona) => persona.lote)
     persona: Persona;
 
 }
