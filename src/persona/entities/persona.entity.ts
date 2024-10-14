@@ -13,69 +13,72 @@ import { Lote } from "src/lote/entities/lote.entity";
 @Entity()
 export class Persona {
   @PrimaryGeneratedColumn()
-  idPersona: number
+  idPersona: number;
 
   @Column({ type: 'int', nullable: true })
-  numero_registro: number | null
+  numero_registro: number | null;
 
   @Column({ type: 'varchar', length: 120 })
-  nombre: string
+  nombre: string;
 
   @Column({ type: 'varchar', length: 120 })
-  apellido: string
+  apellido: string;
 
   @Column({ type: 'enum', enum: Tipo_DNI })
-  tipo_dni: Tipo_DNI
+  tipo_dni: Tipo_DNI;
 
   @Column({ type: 'int' })
-  dni: number
+  dni: number;
 
   @Column({ type: 'bigint' })
-  CUIL_CUIT: number
+  CUIL_CUIT: number;
 
   @Column({ type: 'enum', enum: Genero })
-  genero: Genero
+  genero: Genero;
 
   @Column({ type: 'datetime', nullable: true })
-  fecha_nacimiento: Date | null
+  fecha_nacimiento: Date | null;
 
   @Column({ type: 'varchar' })
-  email: string
+  email: string;
 
   @Column({ type: 'varchar' })
-  telefono: string
+  telefono: string;
 
   @Column({ type: 'enum', enum: Estado_Civil })
-  estado_civil: Estado_Civil
+  estado_civil: Estado_Civil;
 
   @Column({ type: 'enum', enum: Nacionalidad })
-  nacionalidad: Nacionalidad
+  nacionalidad: Nacionalidad;
 
   @Column({ type: 'boolean' })
-  certificado_discapacidad: boolean
+  certificado_discapacidad: boolean;
 
   @Column({ type: 'enum', enum: Rol })
-  rol: Rol
+  rol: Rol;
 
   @Column({ type: 'enum', enum: Vinculo, nullable: true })
-  vinculo: Vinculo | null
+  vinculo?: Vinculo | null;
 
+  @Column({ type: 'enum', enum: Titular_Cotitular, nullable: true })
+  titular_cotitular: Titular_Cotitular;
 
-  @Column({ type: 'enum', enum: Titular_Cotitular })
-  titular_cotitular: Titular_Cotitular
+  @Column({type: "int", nullable: true})
+  idVivienda: number
 
-  @Column({ type: 'int', nullable: true })
-  idVivienda: number;
+  @Column({type: "int", nullable: true})
+  idLote: number
 
-  @Column({ type: 'int', nullable: true })
-  idLote: number;
-
-  @OneToOne(() => Vivienda, { cascade: true })
+  // Guardar solo el ID de vivienda
+  @ManyToOne(() => Vivienda, (vivienda) => vivienda.personas, { cascade: true })
+  @JoinColumn({ name: "idVivienda" }) // Asegúrate de que el nombre de la columna sea correcto
   vivienda: Vivienda;
 
-  @OneToOne(() => Lote, { cascade: true })
+  // Guardar solo el ID de lote
+  @OneToOne(() => Lote, (lote) => lote.persona, { cascade: true })
+  @JoinColumn({ name: "idLote" }) // Asegúrate de que el nombre de la columna sea correcto
   lote: Lote;
 
-  @OneToMany(() => Ingreso, (ingreso) => ingreso.persona, { cascade: true })
+  @OneToMany(() => Ingreso, ingreso => ingreso.idPersona)  // Omitir la relación si no es necesaria
   ingresos: Ingreso[];
 }
