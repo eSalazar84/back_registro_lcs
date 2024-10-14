@@ -2,13 +2,15 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpS
 import { LoteService } from './lote.service';
 import { CreateLoteDto } from './dto/create-lote.dto';
 import { UpdateLoteDto } from './dto/update-lote.dto';
+import { Lote } from './entities/lote.entity';
+import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 
 @Controller('lote')
 export class LoteController {
   constructor(private readonly loteService: LoteService) {}
 
   @Post()
-  async create(@Body() createLoteDto: CreateLoteDto): Promise<CreateLoteDto> {
+  async create(@Body() createLoteDto: CreateLoteDto): Promise<Lote> {
     
     try {
       return await this.loteService.createLote(createLoteDto);
@@ -21,7 +23,7 @@ export class LoteController {
     }
   }
     
-        
+   //-------------------------------------------------------------------------------------------
 
 
   @Get()
@@ -30,9 +32,10 @@ export class LoteController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.loteService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Lote> {
+      return await this.loteService.findOne(id);
   }
+  
   @Patch(':id')
   async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdateLotDto: UpdateLoteDto): Promise<UpdateLoteDto> {
     return this.loteService.updateLote(+id, UpdateLotDto);

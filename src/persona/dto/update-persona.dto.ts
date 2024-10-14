@@ -10,56 +10,56 @@ import { Titular_Cotitular } from '../enum/titular_cotitular.enum';
 
 export class UpdatePersonaDto extends PartialType(CreatePersonaDto) {
 
-    idPersona: number
+    idPersona?: number
 
     @IsNumber()
-    numero_registro: number | null
+    numero_registro?: number | null
 
     @IsString()
     @IsNotEmpty()
     @Length(120)
-    nombre: string
+    nombre?: string
 
     @IsString()
     @IsNotEmpty()
     @Length(120)
-    apellido: string
+    apellido?: string
 
     @IsEnum(Tipo_DNI)
-    tipo_dni: Tipo_DNI
+    tipo_dni?: Tipo_DNI
 
     @IsNumber()
-    dni: number
+    dni?: number
 
     @IsNumber()
-    CUIL_CUIT: number
+    CUIL_CUIT?: number
 
     @IsEnum(Genero)
-    genero: Genero
+    genero?: Genero
 
     @IsDate()
-    fecha_nacimiento: Date | null
+    fecha_nacimiento?: Date | null
 
     @IsEmail()
     @IsNotEmpty()
-    email: string
+    email?: string
 
     @IsString()
     @Matches(/^[+\d\s-]+$/, { message: 'El número de teléfono contiene caracteres no permitidos.' })
-    telefono: string
+    telefono?: string
 
     @IsEnum(Estado_Civil)
-    estado_civil: Estado_Civil
+    estado_civil?: Estado_Civil
 
     @IsEnum(Nacionalidad)
-    nacionalidad: Nacionalidad
+    nacionalidad?: Nacionalidad
 
     @IsBoolean()
-    certificado_discapacidad: boolean
+    certificado_discapacidad?: boolean
 
     @IsEnum(Vinculo)
-    vinculo: Vinculo | null
+    vinculo?: Vinculo | null
 
     @IsEnum(Titular_Cotitular)
-    titular_cotitular: Titular_Cotitular
+    titular_cotitular?: Titular_Cotitular
 }
