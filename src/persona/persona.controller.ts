@@ -2,16 +2,16 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpS
 import { PersonaService } from './persona.service';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
+import { Persona } from './entities/persona.entity';
 
 @Controller('persona')
 export class PersonaController {
   constructor(private readonly personaService: PersonaService) {}
 
   @Post()
-  async createPersona(@Body() createPersonaDto: CreatePersonaDto): Promise<CreatePersonaDto> {
+  async createPersona(@Body() createPersonaDto: CreatePersonaDto,idVivienda: number,idLote: number): Promise<Persona> {
     try{
-      return await this.personaService.createPersona(createPersonaDto);
-
+      return await this.personaService.createPersona(createPersonaDto,  idVivienda,idLote);
     }
     catch (error){
       if (error instanceof HttpException) {
@@ -57,10 +57,10 @@ export class PersonaController {
     return this.personaService.findOne(+id);
   }
 
-  @Patch(':id')
-  async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
-    return this.personaService.updatePersona(+id, UpdatePersonaDto);
-  }
+  // @Patch(':id')
+  // async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
+  //   return this.personaService.updatePersona(+id, UpdatePersonaDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

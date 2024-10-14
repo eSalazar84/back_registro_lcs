@@ -1,72 +1,70 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Persona } from 'src/persona/entities/persona.entity';
-import { Vivienda } from 'src/casa/entities/vivienda.entity';
-import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
-import { Lote } from 'src/lote/entities/lote.entity';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateViviendaDto } from 'src/casa/dto/create-vivienda.dto';
 import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
 import { CreateLoteDto } from 'src/lote/dto/create-lote.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UpdateLoteDto } from 'src/lote/dto/update-lote.dto';
+import { PersonaService } from 'src/persona/persona.service';
+import { ViviendaService } from 'src/casa/vivienda.service';
+import { LoteService } from 'src/lote/lote.service';
+import { IngresoService } from 'src/ingreso/ingreso.service';
 
 @Injectable()
 export class RegistroService {
-    constructor(
-        @InjectRepository(Persona)
-        private personaRepository: Repository<Persona>,
-        @InjectRepository(Vivienda)
-        private viviendaRepository: Repository<Vivienda>,
-        @InjectRepository(Ingreso)
-        private ingresoRepository: Repository<Ingreso>, // Cambiado a entidad Ingreso
-        @InjectRepository(Lote)
-        private loteRepository: Repository<Lote>,
-    ) {}
+  constructor(
+    private personaService: PersonaService,
+    private viviendaService: ViviendaService,
+    private loteService: LoteService,
+    private ingresoService: IngresoService
+  ) {}
 
-    async createAll(
-        createPersonaDto: CreatePersonaDto,
-        viviendaDto: CreateViviendaDto,
-        ingresoDtos: CreateIngresoDto[] | CreateIngresoDto,
-        loteDto: CreateLoteDto | UpdateLoteDto,
-    ): Promise<Persona> {
-        console.log("Inicio de createAll:", "personaIn", createPersonaDto, "viviendaIn", viviendaDto, "ingresoIn", ingresoDtos, "loteIn", loteDto);
-    
-        // Crear y guardar la Vivienda
-        const vivienda = this.viviendaRepository.create(viviendaDto);
-        const savedVivienda = await this.viviendaRepository.save(vivienda);
-    
-        // Crear y guardar el Lote
-        const lote = this.loteRepository.create(loteDto);
-        const savedLote = await this.loteRepository.save(lote);
-    
-        // Crear la Persona
-        const personaDto: CreatePersonaDto = {
-            ...createPersonaDto,
-            idVivienda: savedVivienda.idVivienda,
-            idLote: savedLote.idLote,
-        };
-    
-        console.log("que tiene personaDto", personaDto);
-    
-        const persona = this.personaRepository.create(personaDto);
-        const savedPersona = await this.personaRepository.save(persona);
-    
-           // Crear los Ingresos
-  const ingresosArray = Array.isArray(ingresoDtos) ? ingresoDtos : [ingresoDtos];
+  async createAll(
+    createPersonaDto: CreatePersonaDto,
+    viviendaDto: CreateViviendaDto,
+    ingresoDtos: CreateIngresoDto[],
+    loteDto: CreateLoteDto,
+  ): Promise<Persona> {
+    try {
+      console.log(
+        'Inicio de createAll:',
+        'personaIn', createPersonaDto,
+        'viviendaIn', viviendaDto,
+        'ingresoIn', ingresoDtos,
+        'loteIn', loteDto
+      );
 
-  for (const ingresoDto of ingresosArray) {
-    const ingreso: CreateIngresoDto = {
-      ...ingresoDto,
-      idPersona: savedPersona.idPersona, // Asegúrate de asignar el ID
-     
-    };
+      // Crear la vivienda primero
+      const vivienda = await this.viviendaService.createVivienda(viviendaDto);
+      console.log('Vivienda creada:', vivienda);
 
-    const newIngreso = this.ingresoRepository.create(ingreso); // Crear ingreso
-    await this.ingresoRepository.save(newIngreso); // Guardar ingreso
-  }
-    
-        console.log("Fin de createAll. Persona retornada:", savedPersona);
-        return savedPersona;
+      // Crear el lote solo si la persona es titular
+      let idLote: number | null = null;
+      if (createPersonaDto.titular_cotitular === 'Titular') {
+        const lote = await this.loteService.createLote(loteDto);
+        console.log('Lote creado:', lote);
+        idLote = lote.idLote; // Asignar el ID del lote solo si es titular
+      } else {
+        console.log('Persona es cotitular, no se crea lote.');
+      }
+
+      // Crear la persona pasando el ID de lote (o null si es cotitular)
+      const persona = await this.personaService.createPersona(createPersonaDto, vivienda.idVivienda, idLote);
+      console.log('Persona creada:', persona);
+
+      // Crear y guardar los ingresos asociados a la persona
+      const ingresos = await this.ingresoService.createIngreso(ingresoDtos, persona.idPersona);
+      console.log('Ingresos creados.', ingresos);
+
+      console.log('Fin de createAll. Persona retornada:', persona);
+      return persona;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;  // Lanza el error tal cual si ya es una HttpException
+      }
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: `Ocurrio un error al crear la nueva dependencia`,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
 }

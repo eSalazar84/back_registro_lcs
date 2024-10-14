@@ -1,77 +1,86 @@
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, Length, Matches } from "class-validator"
-import { Estado_Civil } from "../enum/estado_civil.enum"
-import { Genero } from "../enum/genero.enum"
-import { Nacionalidad } from "../enum/nacionalidad.enum"
-import { Tipo_DNI } from "../enum/tipo_dni.enum"
-import { Vinculo } from "../enum/vinculo.enum"
-import { Titular_Cotitular } from "../enum/titular_cotitular.enum"
-import { Expose } from "class-transformer"
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Tipo_DNI } from '../enum/tipo_dni.enum';
+import { Genero } from '../enum/genero.enum';
+import { Estado_Civil } from '../enum/estado_civil.enum';
+import { Nacionalidad } from '../enum/nacionalidad.enum';
+import { Vinculo } from '../enum/vinculo.enum';
+import { Rol } from '../enum/rol.enum';
+import { Titular_Cotitular } from '../enum/titular_cotitular.enum';
 
 export class CreatePersonaDto {
 
     idPersona: number
 
-    @IsNumber()
-    numero_registro: number | null
+    @IsOptional()
+    @IsInt()
+    numero_registro?: number; // Puede ser nulo o no
 
-    @IsString()
     @IsNotEmpty()
-    @Length(120)
-    nombre: string
-
     @IsString()
-    @IsNotEmpty()
-    @Length(120)
-    apellido: string
+    nombre: string;
 
+    @IsNotEmpty()
+    @IsString()
+    apellido: string;
+
+    @IsNotEmpty()
     @IsEnum(Tipo_DNI)
-    tipo_dni: Tipo_DNI
+    tipo_dni: Tipo_DNI;
 
-    @IsNumber()
-    dni: number
+    @IsNotEmpty()
+    @IsInt()
+    dni: number;
 
-    @IsNumber()
-    @Length(12)
-    CUIL_CUIT: number
+    @IsNotEmpty()
+    @IsInt()
+    CUIL_CUIT: number;
 
+    @IsNotEmpty()
     @IsEnum(Genero)
-    genero: Genero
+    genero: Genero;
 
-    @IsDate()
-    fecha_nacimiento: Date | null
+    @IsOptional()
+    fecha_nacimiento?: Date; // Puede ser nulo o no
 
-    @IsEmail()
     @IsNotEmpty()
-    email: string
-
     @IsString()
-    @Matches(/^[+\d\s-]+$/, { message: 'El número de teléfono contiene caracteres no permitidos.' })
-    telefono: string
+    email: string;
 
+    @IsNotEmpty()
+    @IsString()
+    telefono: string;
+
+    @IsNotEmpty()
     @IsEnum(Estado_Civil)
-    estado_civil: Estado_Civil
+    estado_civil: Estado_Civil;
 
+    @IsNotEmpty()
     @IsEnum(Nacionalidad)
-    nacionalidad: Nacionalidad
+    nacionalidad: Nacionalidad;
 
+    @IsNotEmpty()
     @IsBoolean()
-    certificado_discapacidad: boolean
+    certificado_discapacidad: boolean;
 
+    @IsNotEmpty()
+    @IsEnum(Rol)
+    rol: Rol;
+
+    @IsOptional()
     @IsEnum(Vinculo)
-    vinculo: Vinculo | null
+    vinculo?: Vinculo | null; // Puede ser nulo o no
 
+    @IsOptional()
     @IsEnum(Titular_Cotitular)
-    titular_cotitular: Titular_Cotitular
+    titular_cotitular: Titular_Cotitular;
 
-    @IsNumber()
-    @IsNotEmpty()
-    @Expose()
-    idVivienda: number
-
-     @IsNumber()
-    @IsNotEmpty()
-    @Expose()
-    idLote: number
- 
-
+    @IsOptional()
+    @IsInt()
+    idVivienda?: number;
+  
+    @IsOptional()
+    @IsInt()
+    idLote?: number;
+  
+    
 }

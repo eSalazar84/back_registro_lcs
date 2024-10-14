@@ -4,31 +4,53 @@ import { UpdateViviendaDto } from './dto/update-vivienda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
 import { FindOneOptions, Repository } from 'typeorm';
-import { PersonaService } from 'src/persona/persona.service';
-import { IngresoService } from 'src/ingreso/ingreso.service';
-import { LoteService } from 'src/lote/lote.service';
+
 
 @Injectable()
 export class ViviendaService {
   constructor(
-    @InjectRepository(Vivienda) private readonly viviendaRepository: Repository<CreateViviendaDto>
+    @InjectRepository(Vivienda)
+    private readonly viviendaRepository: Repository<Vivienda>,
+
   ) { }
 
-  async createVivienda(createVivienda: CreateViviendaDto): Promise<CreateViviendaDto> {
-    const addVivienda = this.viviendaRepository.create(createVivienda)
-    return await this.viviendaRepository.save(addVivienda)
+  async createVivienda(createViviendaDto: CreateViviendaDto): Promise<Vivienda> {
+    const nuevaVivienda = new Vivienda();
+
+    // Asignar propiedades del DTO a la entidad
+    nuevaVivienda.direccion = createViviendaDto.direccion;
+    nuevaVivienda.numero_direccion = createViviendaDto.numero_direccion;
+    nuevaVivienda.departamento = createViviendaDto.departamento;
+    nuevaVivienda.piso_departamento = createViviendaDto.piso_departamento || null; // valor opcional
+    nuevaVivienda.numero_departamento = createViviendaDto.numero_departamento || null; // valor opcional
+    nuevaVivienda.alquiler = createViviendaDto.alquiler;
+    nuevaVivienda.valor_alquiler = createViviendaDto.valor_alquiler || null; // valor opcional
+    nuevaVivienda.localidad = createViviendaDto.localidad;
+    nuevaVivienda.cantidad_dormitorios = createViviendaDto.cantidad_dormitorios;
+    nuevaVivienda.estado_vivienda = createViviendaDto.estado_vivienda;
+    nuevaVivienda.tipo_alquiler = createViviendaDto.tipo_alquiler;
+
+    // Guardar la vivienda en la base de datos
+    const vivienda = await this.viviendaRepository.save(nuevaVivienda);
+    return vivienda;
   }
 
-  async findAllVivienda(): Promise<CreateViviendaDto[]> {
+  async findAllVivienda(): Promise<Vivienda[]> {
     const allVivienda = await this.viviendaRepository.find()
     return allVivienda;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vivienda`;
+  async findOne(id: number): Promise<Vivienda> {
+    const query: FindOneOptions<Vivienda> = { where: { idVivienda: id }, relations: ['persona'] };
+
+    const vivienda = await this.viviendaRepository.findOne(query);
+    if (!vivienda) {
+      throw new HttpException('Cicienda no encontrado', HttpStatus.NOT_FOUND);
+    }
+    return vivienda;
   }
 
-  async updateVivienda(id: number, updateViviendaDto: UpdateViviendaDto): Promise<UpdateViviendaDto> {
+  async updateVivienda(id: number, updateViviendaDto: UpdateViviendaDto): Promise<Vivienda> {
     try {
       const queryFound: FindOneOptions = { where: { idVivienda: id } };
       const viviendaFound = await this.viviendaRepository.findOne(queryFound);

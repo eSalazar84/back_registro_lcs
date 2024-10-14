@@ -1,4 +1,4 @@
 export enum Titular_Cotitular{
-    Titutlar = "Titular",
+    Titular = "Titular",
     Cotitular = "Cotitular"
 }
