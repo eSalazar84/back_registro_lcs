@@ -19,7 +19,7 @@ export class Vivienda {
     departamento: boolean
 
     @Column({type: 'int', nullable:true})
-    piso_departamento: number
+    piso_departamento: number | null
 
     @Column({ type: 'varchar', nullable:true })
     numero_departamento: string | null
@@ -39,8 +39,8 @@ export class Vivienda {
     @Column({ type: 'enum', enum: Estado_vivienda })
     estado_vivienda: Estado_vivienda
 
-    @Column({ type: 'enum', enum: Alquiler })
-    tipo_alquiler: Alquiler
+    @Column({ type: 'enum', enum: Alquiler, nullable: true })
+    tipo_alquiler: Alquiler | null
 
     @OneToMany(() => Persona, persona => persona.vivienda)
     personas: Persona[];
