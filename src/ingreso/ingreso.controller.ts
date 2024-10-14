@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpExce
 import { IngresoService } from './ingreso.service';
 import { CreateIngresoDto } from './dto/create-ingreso.dto';
 import { UpdateIngresoDto } from './dto/update-ingreso.dto';
+import { Ingreso } from './entities/ingreso.entity';
 
 @Controller('ingreso')
 export class IngresoController {
@@ -9,9 +10,9 @@ export class IngresoController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true })) 
-  async createIngreso(@Body() createIngresoDto: CreateIngresoDto):Promise<CreateIngresoDto> {
+  async createIngreso(@Body() ingresos: CreateIngresoDto[], idPersona: number):Promise<Ingreso[]> {
     try{
-      return await this.ingresoService.createIngreso(createIngresoDto);
+      return await this.ingresoService.createIngreso(ingresos, idPersona);
     }catch(error){
       throw new HttpException({
         status: HttpStatus.BAD_REQUEST,
@@ -33,7 +34,7 @@ export class IngresoController {
   }
 
   @Patch(':id')
-  updateIngreso(@Param('id') id: string, @Body() updateIngresoDto: UpdateIngresoDto):Promise<UpdateIngresoDto> {
+  updateIngreso(@Param('id') id: string, @Body() updateIngresoDto: UpdateIngresoDto):Promise<Ingreso[]> {
     return this.ingresoService.updateIngreso(+id, updateIngresoDto);
   }
 

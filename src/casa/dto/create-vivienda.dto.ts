@@ -5,6 +5,7 @@ import { Alquiler } from "../enum/alquiler.enum"
 import { Expose } from "class-transformer"
 
 export class CreateViviendaDto {
+    
     idVivienda: number
 
     @IsString()
@@ -15,16 +16,19 @@ export class CreateViviendaDto {
     numero_direccion: number
 
     @IsBoolean()
-    departamento: boolean
+    departamento?: boolean
+
+    @IsNumber()
+    piso_departamento: number | null
 
     @IsString()
-    numero_departamento: string|null
+    numero_departamento?: string|null
 
     @IsBoolean()
     alquiler: boolean
 
     @IsNumber()
-    valor_alquiler: number | null
+    valor_alquiler?: number | null
 
     @IsEnum(Localidad)
     @IsNotEmpty()
@@ -37,7 +41,6 @@ export class CreateViviendaDto {
     estado_vivienda: Estado_vivienda
 
     @IsEnum(Alquiler)
-    tipo_alquiler: Alquiler
-
+    tipo_alquiler: Alquiler | null
   
 }
