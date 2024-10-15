@@ -1,4 +1,4 @@
-import { CreateViviendaDto } from 'src/casa/dto/create-vivienda.dto';
+import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RegistroService } from './registro.service';
 
