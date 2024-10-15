@@ -9,11 +9,11 @@ export class Ingreso {
     @Column({ type: 'enum', enum: Relacion })
     situacion_laboral: Relacion;
 
-    @Column({ type: 'varchar', length: 120 })
-    ocupacion: string;
+    @Column({ type: 'varchar', length: 120, nullable: true })
+    ocupacion: string | null;
 
-    @Column({ type: 'bigint' })
-    CUIT_empleador: number;
+    @Column({ type: 'bigint', nullable: true })
+    CUIT_empleador: number | null;
 
     @Column({ type: 'int' })
     salario: number;

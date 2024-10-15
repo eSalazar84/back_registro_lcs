@@ -1,4 +1,4 @@
-import { ViviendaModule } from './casa/vivienda.module';
+import { ViviendaModule } from './vivienda/vivienda.module';
 import { Module } from '@nestjs/common';
 
 import { RegistroModule } from './registro/registro.module';

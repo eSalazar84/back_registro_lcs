@@ -4,10 +4,10 @@ import { RegistroService } from './registro.service';
 import { RegistroController } from './registro.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Lote } from 'src/lote/entities/lote.entity';
-import { Vivienda } from 'src/casa/entities/vivienda.entity';
+import { Vivienda } from 'src/vivienda/entities/vivienda.entity';
 import { Persona } from 'src/persona/entities/persona.entity';
 import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
-import { ViviendaService } from 'src/casa/vivienda.service';
+import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { PersonaService } from 'src/persona/persona.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 
