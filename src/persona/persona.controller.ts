@@ -54,7 +54,7 @@ export class PersonaController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.personaService.findOne(+id);
+    return this.personaService.findOneById(+id);
   }
 
   // @Patch(':id')

@@ -1,4 +1,4 @@
-import { CreateViviendaDto } from "src/casa/dto/create-vivienda.dto";
+import { CreateViviendaDto } from "src/vivienda/dto/create-vivienda.dto";
 import { CreateIngresoDto } from "src/ingreso/dto/create-ingreso.dto";
 import { CreateLoteDto } from "src/lote/dto/create-lote.dto";
 import { CreatePersonaDto } from "src/persona/dto/create-persona.dto";
