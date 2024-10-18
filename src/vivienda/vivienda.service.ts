@@ -4,6 +4,7 @@ import { UpdateViviendaDto } from './dto/update-vivienda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
 import { FindOneOptions, Repository } from 'typeorm';
+import { Localidad } from './enum/localidad.enum';
 
 
 @Injectable()
@@ -70,5 +71,11 @@ export class ViviendaService {
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
+
+  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad): Promise<Vivienda | null> {
+    return await this.viviendaRepository.findOne({
+        where: { direccion, numero_direccion, localidad }
+    });
+}
 
 }

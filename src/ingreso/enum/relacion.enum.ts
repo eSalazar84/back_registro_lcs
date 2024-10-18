@@ -1,5 +1,5 @@
 export enum Relacion {
-    Relacion_de_dependencia = 'Relacion de depencia',
+    Relacion_de_dependencia = 'Relacion de dependencia',
     Autonomo = 'Autonomo',
     Relacion_de_dependencia_y_Autonomo = 'Relacion de depencia y Autonomo',
     Jubilado = 'Jubilado',

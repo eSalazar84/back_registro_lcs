@@ -72,7 +72,7 @@ export class CreatePersonaDto {
 
     @IsOptional()
     @IsEnum(Titular_Cotitular)
-    titular_cotitular: Titular_Cotitular;
+    titular_cotitular: Titular_Cotitular |null; 
 
     @IsOptional()
     @IsInt()

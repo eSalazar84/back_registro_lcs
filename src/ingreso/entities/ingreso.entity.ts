@@ -15,8 +15,8 @@ export class Ingreso {
     @Column({ type: 'bigint', nullable: true })
     CUIT_empleador: number | null;
 
-    @Column({ type: 'int' })
-    salario: number;
+    @Column({ type: 'int' , nullable: true})
+    salario: number | null;
 
     @Column({type:"int"})
     idPersona: number
