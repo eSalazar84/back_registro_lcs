@@ -61,7 +61,7 @@ export class Persona {
   vinculo?: Vinculo | null;
 
   @Column({ type: 'enum', enum: Titular_Cotitular, nullable: true })
-  titular_cotitular: Titular_Cotitular;
+  titular_cotitular: Titular_Cotitular | null;
 
   @Column({type: "int", nullable: true})
   idVivienda: number

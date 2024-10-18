@@ -57,6 +57,12 @@ export class PersonaController {
     return this.personaService.findOneById(+id);
   }
 
+  @Get('dni')
+    FindOne(@Param('dni') dni: string){
+      return this.personaService.findOneByDni(+dni)
+    }
+  
+
   // @Patch(':id')
   // async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
   //   return this.personaService.updatePersona(+id, UpdatePersonaDto);
@@ -66,4 +72,6 @@ export class PersonaController {
   remove(@Param('id') id: string) {
     return this.personaService.remove(+id);
   }
+
+  
 }
