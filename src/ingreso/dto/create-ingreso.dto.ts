@@ -10,13 +10,13 @@ export class CreateIngresoDto{
     situacion_laboral: Relacion
 
     @IsString()    
-    ocupacion: string | null
+    ocupacion?: string | null
 
     @IsNumber()
-    CUIT_empleador: number | null
+    CUIT_empleador?: number | null
 
     @IsNumber()
-    salario: number
+    salario?: number | null
 
     @IsNumber()
     @IsNotEmpty()   

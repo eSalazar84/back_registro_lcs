@@ -14,18 +14,15 @@ export class RegistroController {
   constructor(private readonly registroService: RegistroService) { }
   @Post()
   async createAll(
-    @Body() createAllDto: { 
-      persona: CreatePersonaDto; 
-      vivienda: CreateViviendaDto; 
-      ingresos: CreateIngresoDto[]; 
-      lote: CreateLoteDto; 
-    }
-  ): Promise<Persona> {
-    const { persona, vivienda, ingresos, lote } = createAllDto;
-    
-    return this.registroService.createAll(persona, vivienda, ingresos, lote);
+    @Body() createAllDto: {
+      persona: CreatePersonaDto;
+      vivienda: CreateViviendaDto;
+      ingresos: CreateIngresoDto[];
+      lote: CreateLoteDto;
+    }[]
+  ): Promise<Persona[]> {
+    return this.registroService.createAll(createAllDto);
   }
-
   // @Get()
   // findAll() {
   //   return this.registroService.findAll();
