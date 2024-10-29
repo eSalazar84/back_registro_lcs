@@ -1,4 +1,5 @@
 export enum Vinculo {
+    Esposo = "Esposo/a",
     Concuvino = 'Concuvino/a',
     Conyuge = 'Conyuge',
     Hermano = 'Hermano/a',
