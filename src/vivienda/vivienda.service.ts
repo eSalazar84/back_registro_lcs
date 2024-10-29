@@ -72,9 +72,9 @@ export class ViviendaService {
     }
   }
 
-  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad): Promise<Vivienda | null> {
+  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean |  null, piso_departamento:number, numero_departamento:string): Promise<Vivienda | null> {
     return await this.viviendaRepository.findOne({
-        where: { direccion, numero_direccion, localidad }
+        where: { direccion, numero_direccion, localidad, departamento, piso_departamento, numero_departamento }
     });
 }
 
