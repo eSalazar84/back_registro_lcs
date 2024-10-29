@@ -58,8 +58,8 @@ export class PersonaController {
   }
 
   @Get('dni')
-    FindOne(@Param('dni') dni: string){
-      return this.personaService.findOneByDni(+dni)
+    FindOne(@Param('dni') dni: number){
+      return this.personaService.findOneByDni(dni)
     }
   
 
