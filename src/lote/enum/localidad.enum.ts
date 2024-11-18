@@ -1,4 +1,4 @@
-export enum Localidad {
+export enum Localidad { //elección para el terreno
     Benito_Juarez = 'Benito Juárez',
     Barker = 'Barker',
     El_Luchador = 'El Luchador',
