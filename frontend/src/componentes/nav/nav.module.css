@@ -1,0 +1,43 @@
+.container_general_nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100vw; /* Ocupa el ancho completo de la pantalla */
+    height: 92px; /* Ocupa el alto completo de la pantalla */
+    padding: 0 20px; /* Espaciado interno opcional */
+    box-sizing: border-box; /* Incluye el padding en el ancho y alto */
+    background-color: #002b5a;   
+    color: #ffffff;
+}
+
+.logo img {
+    height: 60px; /* Ajusta el tamaño del logo */
+    padding-left: 40px;
+}
+
+.container_h2_nav {
+    flex: 1; /* Ocupa el espacio restante */
+    text-align: center;
+}
+
+.container_h2_nav h2 {
+    font-size: 24px; /* Tamaño del texto */
+    font-weight: bold;
+}
+
+.container_redes {
+    display: flex;
+    gap: 15px; /* Espaciado entre íconos */
+    font-size: 20px; /* Tamaño de los íconos */
+    padding-right: 40px;
+    padding-left: 40px;
+    border-left: #ffffff solid 1px;
+    border-right: #ffffff solid 1px;
+}
+
+.container_fecha {
+    font-size: 16px; /* Tamaño del texto */
+    padding-left: 100px;
+    padding-right: 40px;
+  
+}
