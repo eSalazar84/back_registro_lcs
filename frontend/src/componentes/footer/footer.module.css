@@ -1,0 +1,125 @@
+.container_general_footer {
+    display: block;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    width: 100%;
+}
+
+.container_numeros_emergencias_footer {
+    background-color: #162230;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    height: 200px;
+}
+
+.container_numero {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    max-width: 25%;
+
+}
+
+.numero {
+    margin: 1px 0;
+    font-size: 55px;
+    font-weight: 600;
+    line-height: 1.1em;
+}
+
+.texto {
+    margin: 1px 0;
+    color: #E3E3E3;
+    font-weight: 600;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+.icon_emergencias {
+    fill: #009AAE;
+    color: #009AAE;
+    border-color: #009AAE;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 50px;
+    padding-right: 10px;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+.numero_texto {
+    text-align: start;
+}
+
+.icon_redes_footer {
+    width: 50px;
+    height: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    font-size: 20px;
+    margin-left: 20px;
+}
+
+
+.container_contacto_footer {
+    background-color: #153456;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: row;
+    height: 200px;
+}
+
+.logo_footer {
+    height: 130px;
+
+}
+
+.container_direccion,
+.container_numero_telefono {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.icon_contacto {
+    color: #009AAE;
+    font-size: 50px;
+    font-weight: 900;
+
+}
+
+.texto_contacto {
+    font-size: 30px;
+    font-weight: 500;
+    padding-left: 10px;
+    padding-bottom: 10px;
+
+}
+
+.container_redes {
+    display: flex;
+    flex-direction: row;
+    font-size: 50px;
+}
+
+.top_footer{
+    background-color: #009AAE;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    font-size: 25px;
+}
