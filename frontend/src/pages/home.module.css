@@ -1,0 +1,58 @@
+h2{
+    text-align: center;
+    font-size: 60px;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+.container_descripcion_img_home{
+    display: flex;
+    flex-direction: row;
+}
+
+.container_descripcion_img_home img{
+    width: 40%;
+    padding-right: 50px;
+    padding-left: 50px;
+    padding-bottom: 50px;
+}
+
+.texto_descripcion{
+    padding-bottom: 50px;
+    padding-left: 50px;
+    font-size: 16px;
+    line-height: 1.8; 
+}
+
+.container_requisitos{
+    padding-left: 50px;
+    line-height: 1.8;
+}
+
+.container_requisitos h3{
+    font-size: 30px;
+}
+
+.container_pasos_botone{
+    padding-top: 50px;
+    display: flex;
+    line-height: 1.8;
+}
+
+.container_pasos{
+    padding-left: 50px;
+    width: 60%;
+}
+
+.container_pasos h3{
+    font-size: 30px;
+}
+
+.container_buttons_home{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 40%;
+}
+
