@@ -78,20 +78,20 @@ function Footer() {
                     </div>
 
                     <div className={styles.container_redes}>
-                        <a href="http://" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}> <FaFacebookF /></a>
+                        <a href="https://www.facebook.com/profile.php?id=100064402131639" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}> <FaFacebookF /></a>
 
-                        <a href="http://" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}><FaPlay /></a>
+                        <a href="https://www.youtube.com/channel/UCbOe3yOFRtd9rZ7gcTgLhOQ" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}><FaPlay /></a>
 
 
-                        <a href="http://" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}><FaLinkedinIn /></a>
+                        <a href="https://www.linkedin.com/company/municipalidad-de-benito-ju%C3%A1rez/" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}><FaLinkedinIn /></a>
 
-                        <a href="http://" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}> <FaInstagram /></a>
+                        <a href="https://www.instagram.com/municipiobenitojuarez/" target="_blank" rel="noopener noreferrer" className={styles.icon_redes_footer}> <FaInstagram /></a>
                     </div>
 
                 </div>
 
                 <div className={styles.top_footer}>
-                    <p>Municipio de Benito Juárez © 2024 - Todos los derechos reservados | EFA</p>
+                    <p>Municipio de Benito Juárez © 2024 - Todos los derechos reservados | EFA.CODE</p>
                 </div>
 
             </div>
