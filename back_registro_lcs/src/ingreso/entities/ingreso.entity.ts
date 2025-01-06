@@ -21,7 +21,8 @@ export class Ingreso {
     @Column({type:"int"})
     idPersona: number
 
-    @ManyToOne(() => Persona, (persona) => persona.ingresos) // Relación inversa
-    @JoinColumn({ name: "idPersona" }) // Define el nombre de la columna en la tabla
-    persona: Persona; // Aquí se mantiene la referencia a la entidad Persona
+    @ManyToOne(() => Persona, (persona) => persona.ingresos, {onDelete: 'CASCADE'})
+    @JoinColumn({ name: "idPersona" })
+    persona: Persona;
+    
 }
