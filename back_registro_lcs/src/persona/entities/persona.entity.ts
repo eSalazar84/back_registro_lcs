@@ -78,7 +78,8 @@ export class Persona {
   @OneToOne(() => Lote, (lote) => lote.persona, { cascade: true })
   @JoinColumn({ name: "idLote" }) // Asegúrate de que el nombre de la columna sea correcto
   lote: Lote;
-
-  @OneToMany(() => Ingreso, ingreso => ingreso.idPersona)  // Omitir la relación si no es necesaria
+  
+  @OneToMany(() => Ingreso, ingreso => ingreso.persona)  // Relación inversa
   ingresos: Ingreso[];
+  
 }
