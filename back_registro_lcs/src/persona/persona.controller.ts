@@ -23,28 +23,6 @@ export class PersonaController {
       }, HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
-//   @Post()
-// async createPersona(@Body() createPersonaDto: CreatePersonaDto): Promise<CreatePersonaDto> {
-//     try {
-//         return await this.personaService.create(createPersonaDto);
-//     } catch (error) {
-//         // Log del error para depuración
-//         console.error('Error al crear la persona:', error);
-
-//         // Manejo de errores más detallado
-//         if (error.code === 'ER_DUP_ENTRY') {
-//             throw new HttpException({
-//                 status: HttpStatus.CONFLICT,
-//                 error: 'Ya existe una persona con ese DNI o CUIL.',
-//             }, HttpStatus.CONFLICT);
-//         } else {
-//             throw new HttpException({
-//                 status: HttpStatus.BAD_REQUEST,
-//                 error: 'Error al crear la persona. ' + (error.message || 'Detalles no disponibles.'),
-//             }, HttpStatus.BAD_REQUEST);
-//         }
-//     }
-// }
 
 
   @Get()
@@ -57,20 +35,20 @@ export class PersonaController {
     return this.personaService.findOneById(+id);
   }
 
-  @Get('dni')
+  @Get('dni/:dni')
     FindOne(@Param('dni') dni: number){
       return this.personaService.findOneByDni(dni)
     }
   
 
-  // @Patch(':id')
-  // async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
-  //   return this.personaService.updatePersona(+id, UpdatePersonaDto);
-  // }
+  @Patch('dni/:dni')
+  async update(@Param('dni', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) dni: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
+    return this.personaService.updatePersona(+dni, UpdatePersonaDto);
+  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.personaService.remove(+id);
+  @Delete('dni/:dni')
+  remove(@Param('dni') dni: string) {
+    return this.personaService.remove(+dni);
   }
 
   

@@ -42,7 +42,8 @@ export class PersonaService {
         });
         // Si existe una persona, incrementa el número, sino empieza desde 0
         personaData.numero_registro = (lastPersona?.numero_registro ?? -1) + 1;
-        personaData.vinculo = null;
+        personaData.vinculo = createPersonaDto.vinculo ?? null;
+
       } else {
         // Si es cotitular, asignar null al número de registro
         personaData.numero_registro = null;
@@ -55,50 +56,119 @@ export class PersonaService {
     }
   }
 
-  findAll() {
-    return `This action returns all persona`;
-  }
-
-  async findOneById(id: number): Promise<Persona> {
-    const query: FindOneOptions<Persona> = { where: { idPersona: id } };
-
-    const persona = await this.personaRepository.findOne(query);
-    if (!persona) {
-      throw new HttpException('Persona no encontrada', HttpStatus.NOT_FOUND);
-      console.log("person ser", persona);
-
+  async findAll(): Promise<Persona[]> {
+    try {
+      // Encuentra todas las personas con las relaciones necesarias
+      const personas = await this.personaRepository.find({
+        relations: ['vivienda', 'lote', 'ingresos'], // Incluye las relaciones con 'vivienda', 'lote' e 'ingresos'
+        order: { idPersona: 'ASC' }, // Ordena por ID de persona
+      });
+  
+      if (!personas || personas.length === 0) {
+        throw new NotFoundException('No se encontraron personas registradas.');
+      }
+  
+      // Mapear los resultados para incluir el total de salario de los ingresos
+      return personas.map(persona => ({
+        ...persona,
+        totalSalario: persona.ingresos
+          ? persona.ingresos.reduce((acc, ingreso) => acc + (ingreso.salario || 0), 0) // Calcula el total salario (si existe)
+          : 0, // Si no tiene ingresos, el total es 0
+      }));
+    } catch (error) {
+      throw new InternalServerErrorException(`Error al obtener personas: ${error.message}`);
     }
-    return persona;
   }
+  
+  
+  async findOneById(id: number): Promise<Persona & { totalSalario: number }> {
+    try {
+      // Buscar la persona por id con las relaciones necesarias
+      const persona = await this.personaRepository.findOne({
+        where: { idPersona: id },
+        relations: ['vivienda', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
+      });
+  
+      if (!persona) {
+        throw new HttpException('Persona no encontrada', HttpStatus.NOT_FOUND);
+      }
+  
+      // Calcular el total de salario
+      const totalSalario = persona.ingresos
+        ? persona.ingresos.reduce((acc, ingreso) => acc + (ingreso.salario || 0), 0)
+        : 0;
+  
+      // Retornar el objeto persona con el totalSalario agregado
+      return {
+        ...persona,
+        totalSalario, // Agregar el totalSalario al objeto persona
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error al obtener la persona: ${error.message}`);
+    }
+  }
+  
+  
 
-  // persona.service.ts
-  async findOneByDni(dni: number): Promise<Persona | null> {
+  async findOneByDni(dni: number): Promise<Persona & { totalSalario: number }> {
+    try {
+      // Buscar la persona por id con las relaciones necesarias
+      const persona = await this.personaRepository.findOne({
+        where: { dni: dni },
+        relations: ['vivienda', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
+      });
+  
+      if (!persona) {
+        throw new HttpException('Persona no encontrada', HttpStatus.NOT_FOUND);
+      }
+  
+      // Calcular el total de salario
+      const totalSalario = persona.ingresos
+        ? persona.ingresos.reduce((acc, ingreso) => acc + (ingreso.salario || 0), 0)
+        : 0;
+  
+      // Retornar el objeto persona con el totalSalario agregado
+      return {
+        ...persona,
+        totalSalario, // Agregar el totalSalario al objeto persona
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error al obtener la persona: ${error.message}`);
+    }
+  }
+  
+
+  async updatePersona(dni: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
+    // Buscar la persona por su DNI
     const persona = await this.personaRepository.findOne({ where: { dni } });
-
-    // Retornar null si no se encuentra la persona en vez de lanzar excepción
-    if (!persona) {
-      return null;
-    }
-    return persona;
-  }
-
-
-  async updatePersona(id: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
-    const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
-
+  
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
-
-    // Asegúrate de que hay valores a actualizar
+  
+    // Asegúrate de que hay valores a actualizar (no esté vacío)
     if (Object.keys(updatePersonaDto).length === 0) {
       throw new Error('No hay valores para actualizar');
     }
-    // Guarda la persona actualizada
+  
+    // Actualizar los campos de la persona con los valores del DTO
+    Object.assign(persona, updatePersonaDto);  // Actualiza la persona con el DTO
+  
+    // Guardar la persona actualizada
     return await this.personaRepository.save(persona);
   }
+  
 
-  remove(id: number) {
-    return `This action removes a #${id} persona`;
+  async remove(dni: number): Promise<void> {
+    // Buscar la persona por su DNI
+    const persona = await this.personaRepository.findOne({ where: { dni } });
+  
+    if (!persona) {
+      throw new Error('Persona no encontrada');
+    }
+  
+    // Eliminar la persona de la base de datos
+    await this.personaRepository.remove(persona);
   }
+  
 }
