@@ -108,7 +108,15 @@ export class PersonaService {
     }
   }
   
-  
+  async findOneByDniRegistro(dni: number): Promise<Persona | null> {
+    const persona = await this.personaRepository.findOne({ where: { dni } });
+
+    // Retornar null si no se encuentra la persona en vez de lanzar excepción
+    if (!persona) {
+      return null;
+    }
+    return persona;
+  }
 
   async findOneByDni(dni: number): Promise<Persona & { totalSalario: number }> {
     try {
@@ -138,9 +146,9 @@ export class PersonaService {
   }
   
 
-  async updatePersona(dni: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
+  async updatePersona(id: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
     // Buscar la persona por su DNI
-    const persona = await this.personaRepository.findOne({ where: { dni } });
+    const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
   
     if (!persona) {
       throw new Error('Persona no encontrada');
@@ -159,9 +167,9 @@ export class PersonaService {
   }
   
 
-  async remove(dni: number): Promise<void> {
+  async remove(id: number): Promise<void> {
     // Buscar la persona por su DNI
-    const persona = await this.personaRepository.findOne({ where: { dni } });
+    const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
   
     if (!persona) {
       throw new Error('Persona no encontrada');
