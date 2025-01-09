@@ -41,12 +41,13 @@ export class ViviendaService {
     return allVivienda;
   }
 
-  async findOne(id: number): Promise<Vivienda> {
-    const query: FindOneOptions<Vivienda> = { where: { idVivienda: id }, relations: ['persona'] };
+  //Trae la vivienda con las personas
+  async findOneById(id: number): Promise<Vivienda> {
+    const query: FindOneOptions<Vivienda> = { where: { idVivienda: id }, relations: ['personas'] };
 
     const vivienda = await this.viviendaRepository.findOne(query);
     if (!vivienda) {
-      throw new HttpException('Cicienda no encontrado', HttpStatus.NOT_FOUND);
+      throw new HttpException('Vivienda no encontrado', HttpStatus.NOT_FOUND);
     }
     return vivienda;
   }
@@ -71,11 +72,24 @@ export class ViviendaService {
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
-
+// Se utiliza en el registro para ver si la vivienda ya existe
   async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean |  null, piso_departamento:number, numero_departamento:string): Promise<Vivienda | null> {
     return await this.viviendaRepository.findOne({
         where: { direccion, numero_direccion, localidad, departamento, piso_departamento, numero_departamento }
     });
 }
+
+async remove(id: number): Promise<void> {
+  
+  const persona = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
+
+  if (!persona) {
+    throw new Error('Persona no encontrada');
+  }
+
+  // Eliminar la vivienda de la base de datos
+  await this.viviendaRepository.remove(persona);
+}
+
 
 }

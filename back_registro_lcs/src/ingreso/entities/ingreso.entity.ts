@@ -21,7 +21,7 @@ export class Ingreso {
     @Column({type:"int"})
     idPersona: number
 
-    @ManyToOne(() => Persona, (persona) => persona.ingresos, {onDelete: 'CASCADE'})
+    @ManyToOne(() => Persona, (persona) => persona.ingresos, {onDelete: 'CASCADE'})//REVISAR CASCADE
     @JoinColumn({ name: "idPersona" })
     persona: Persona;
     
