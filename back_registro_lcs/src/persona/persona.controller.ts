@@ -41,14 +41,14 @@ export class PersonaController {
     }
   
 
-  @Patch('dni/:dni')
-  async update(@Param('dni', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) dni: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
-    return this.personaService.updatePersona(+dni, UpdatePersonaDto);
+  @Patch(':id')
+  async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdatePersonaDto: UpdatePersonaDto): Promise<UpdatePersonaDto> {
+    return this.personaService.updatePersona(+id, UpdatePersonaDto);
   }
 
-  @Delete('dni/:dni')
-  remove(@Param('dni') dni: string) {
-    return this.personaService.remove(+dni);
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.personaService.remove(+id);
   }
 
   

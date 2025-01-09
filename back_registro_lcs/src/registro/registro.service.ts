@@ -100,7 +100,7 @@ export class RegistroService {
             for (const personaData of personas) {
                 const { persona } = personaData;
 
-                const personaFound = await this.personaService.findOneByDni(persona.dni);
+                const personaFound = await this.personaService.findOneByDniRegistro(persona.dni);
                 if (personaFound) {
                     console.log(`La persona con DNI ${persona.dni} ya está registrada.`);
                     throw new HttpException({
