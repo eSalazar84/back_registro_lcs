@@ -25,10 +25,20 @@ export class ViviendaController {
   async findAll(): Promise<Vivienda[]> {
     return this.viviendaService.findAllVivienda();
   }
-
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.viviendaService.findOneById(+id);
+  }
   @Patch(':id')
   async update(@Param('id', new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: number, @Body() UpdateViviendaDto: UpdateViviendaDto): Promise<Vivienda> {
     return this.viviendaService.updateVivienda(+id, UpdateViviendaDto);
   }
+
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.viviendaService.remove(+id);
+  }
+
 
 }
