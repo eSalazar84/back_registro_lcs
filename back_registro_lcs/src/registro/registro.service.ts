@@ -114,6 +114,17 @@ export class RegistroService {
             try {
                 for (const personaData of personas) {
                     const { persona, vivienda, ingresos, lote } = personaData;
+                    if (persona.titular_cotitular === 'Titular') {
+                        const edad = this.calcularEdad(persona.fecha_nacimiento);
+                        if (edad < 18) {
+                            throw new HttpException({
+                                status: 400,
+                                error: `La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`,
+                            }, 
+                            HttpStatus.BAD_REQUEST);
+                        }
+                    }
+
 
                                  // Crear una clave única para la vivienda
                     const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
