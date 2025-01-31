@@ -1,5 +1,7 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
+import { IsEnum, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator"
 import { Relacion } from "../enum/relacion.enum"
+import { Type } from "class-transformer"
+import { Persona } from "src/persona/entities/persona.entity"
 
 export class CreateIngresoDto{  
 
@@ -21,5 +23,9 @@ export class CreateIngresoDto{
     @IsNumber()
     @IsNotEmpty()   
     idPersona: number
+
+    @ValidateNested()
+    @Type(() => Persona)
+    persona: Persona;
  
 }

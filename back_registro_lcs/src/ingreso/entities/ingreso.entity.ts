@@ -10,13 +10,13 @@ export class Ingreso {
     situacion_laboral: Relacion;
 
     @Column({ type: 'varchar', length: 120, nullable: true })
-    ocupacion: string | null;
+    ocupacion?: string | null;
 
     @Column({ type: 'bigint', nullable: true })
-    CUIT_empleador: number | null;
+    CUIT_empleador?: number | null;
 
     @Column({ type: 'int' , nullable: true})
-    salario: number | null;
+    salario?: number | null;
 
     @Column({type:"int"})
     idPersona: number

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import styles from "./Formulario.module.css";
 
+import { transformarDatos } from '../../services/transformDataDto';
+
 const Formulario = ({ onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [personas, setPersonas] = useState([{
@@ -16,7 +18,7 @@ const Formulario = ({ onSubmit }) => {
       telefono: '',
       estado_civil: '',
       nacionalidad: '',
-      certificado_discapacidad: false,
+      certificado_discapacidad: null,
       rol: 'User',
       vinculo: '',
       titular_cotitular: ''
@@ -33,10 +35,10 @@ const Formulario = ({ onSubmit }) => {
     vivienda: {
       direccion: '',
       numero_direccion: '',
-      departamento: false,
+      departamento: null,
       piso_departamento: '',
       numero_departamento: '',
-      alquiler: false,
+      alquiler: null,
       valor_alquiler: '',
       localidad: '',
       cantidad_dormitorios: '',
@@ -44,6 +46,7 @@ const Formulario = ({ onSubmit }) => {
       tipo_alquiler: ''
     }
   }]);
+
 
   const handleInputChange = (index, path, value) => {
     const updatedPersonas = [...personas];
@@ -86,7 +89,7 @@ const Formulario = ({ onSubmit }) => {
         telefono: '',
         estado_civil: '',
         nacionalidad: '',
-        certificado_discapacidad: false,
+        certificado_discapacidad: null,
         rol: 'User',
         vinculo: '',
         titular_cotitular: ''
@@ -102,11 +105,11 @@ const Formulario = ({ onSubmit }) => {
       },
       vivienda: {
         direccion: '',
-        numero_direccion: '',
-        departamento: false,
+        numero_direccion: "",
+        departamento: null,
         piso_departamento: '',
         numero_departamento: '',
-        alquiler: false,
+        alquiler: null,
         valor_alquiler: '',
         localidad: '',
         cantidad_dormitorios: '',
@@ -121,13 +124,18 @@ const Formulario = ({ onSubmit }) => {
     console.log("Datos a enviar:", personas);
     setLoading(true); // Activa el indicador de carga
 
+    const datosTransformados = personas.map(persona => transformarDatos(persona));
+console.log(datosTransformados);  // Aquí tendrás todos los datos transformados correctamente
+
+
+
     try {
       const response = await fetch("http://localhost:3000/registro", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(personas),
+        body: JSON.stringify(datosTransformados),
       });
 
       if (!response.ok) {
@@ -159,7 +167,7 @@ const Formulario = ({ onSubmit }) => {
               placeholder="Nombres"
               value={personaData.persona.nombre}
               onChange={(e) => handleInputChange(index, 'persona.nombre', e.target.value)}
-            className={styles.input}/>
+              className={styles.input} />
           </label>
 
           <label htmlFor="" className={styles.label}>
@@ -168,7 +176,7 @@ const Formulario = ({ onSubmit }) => {
               placeholder="Apellido"
               value={personaData.persona.apellido}
               onChange={(e) => handleInputChange(index, 'persona.apellido', e.target.value)}
-           className={styles.input} />
+              className={styles.input} />
           </label>
 
 
@@ -187,17 +195,17 @@ const Formulario = ({ onSubmit }) => {
 
 
           <label htmlFor="" className={styles.label}>
-            <input type="text"
+            <input type="number"
               placeholder='Numero de documento'
               value={personaData.persona.dni}
-              onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)}className={styles.input} />
+              onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)} className={styles.input} />
           </label>
 
           <label htmlFor="">
             <input type="text"
               placeholder='Cuit/Cuil'
               value={personaData.persona.CUIL_CUIT}
-              onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)}className={styles.input} />
+              onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)} className={styles.input} />
           </label>
 
           <select
@@ -216,21 +224,21 @@ const Formulario = ({ onSubmit }) => {
             <input type="text"
               placeholder='Fecha de nacimiento(aa/mm/dd)'
               value={personaData.persona.fecha_nacimiento}
-              onChange={(e) => handleInputChange(index, 'persona.fecha_nacimiento', e.target.value)} className={styles.input}/>
+              onChange={(e) => handleInputChange(index, 'persona.fecha_nacimiento', e.target.value)} className={styles.input} />
           </label>
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
               placeholder='email'
               value={personaData.persona.email}
-              onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)}className={styles.input} />
+              onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)} className={styles.input} />
           </label>
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
               placeholder='Telefono'
               value={personaData.persona.telefono}
-              onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)} className={styles.input}/>
+              onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)} className={styles.input} />
           </label>
 
           <select name="estado_civil" id="estado_civil" onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)} value={personaData.persona.estado_civil} className={styles.select}>
@@ -268,16 +276,19 @@ const Formulario = ({ onSubmit }) => {
             <option value="Libanesa">Libanesa</option>
             <option value="Otro">Otro</option>
           </select>
+
           <select
             name="certificado_discapacidad"
             id="certificado_discapacidad"
-            value={personaData.persona.certificado_discapacidad === null ? "" : personaData.persona.certificado_discapacidad ? "Si" : "No"}
+            value={personaData.persona.certificado_discapacidad === true ? "Si" : personaData.persona.certificado_discapacidad === false ? "No" : ""}
             onChange={(e) => handleInputChange(index, 'persona.certificado_discapacidad', e.target.value === 'Si')}
-            className={styles.select}>
+            className={styles.select}
+          >
             <option value="" disabled>¿Posee certificado de discapacidad?</option>
             <option value="Si">Sí</option>
             <option value="No">No</option>
           </select>
+
 
 
 
@@ -318,16 +329,16 @@ const Formulario = ({ onSubmit }) => {
               type="text"
               placeholder="Dirección"
               value={personaData.vivienda.direccion}
-              onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}className={styles.input}
+              onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)} className={styles.input}
             />
           </label>
 
           <label htmlFor="" className={styles.label}>
-            <input type="text"
+            <input type="number"
               placeholder='Numero de direccion'
               value={personaData.vivienda.numero_direccion}
-              onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
-            className={styles.input}/>
+              onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', +e.target.value)}
+              className={styles.input} />
           </label>
 
 
@@ -350,7 +361,7 @@ const Formulario = ({ onSubmit }) => {
               placeholder='Numero de piso departamento'
               value={personaData.vivienda.piso_departamento}
               onChange={(e) => handleInputChange(index, 'vivienda.piso_departamento', e.target.value)}
-           className={styles.input} />
+              className={styles.input} />
           </label>
 
           <label htmlFor="" className={styles.label}>
@@ -358,7 +369,7 @@ const Formulario = ({ onSubmit }) => {
               placeholder='Numero de departamento'
               value={personaData.vivienda.numero_departamento}
               onChange={(e) => handleInputChange(index, 'vivienda.numero_departamento', e.target.value)}
-           className={styles.input} />
+              className={styles.input} />
           </label>
 
           <select
@@ -378,7 +389,7 @@ const Formulario = ({ onSubmit }) => {
               placeholder='Valor alquile'
               value={personaData.vivienda.valor_alquiler}
               onChange={(e) => handleInputChange(index, 'vivienda.valor_alquiler', e.target.value)}
-          className={styles.input}  />
+              className={styles.input} />
           </label>
 
           <select
@@ -404,7 +415,7 @@ const Formulario = ({ onSubmit }) => {
               placeholder='Cantidad de dormitorios'
               value={personaData.vivienda.cantidad_dormitorios}
               onChange={(e) => handleInputChange(index, 'vivienda.cantidad_dormitorios', e.target.value)}
-          className={styles.input}  />
+              className={styles.input} />
           </label>
 
           <select
@@ -459,15 +470,15 @@ const Formulario = ({ onSubmit }) => {
                 <option value="Desempleado">Desempleado</option>
               </select>
 
-              <label htmlFor=""className={styles.label}>
+              <label htmlFor="" className={styles.label}>
                 <input type="text"
                   placeholder='Ocupación'
                   value={personaData.ingresos.ocupacion}
                   onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
-              className={styles.input}  />
+                  className={styles.input} />
               </label>
 
-              <label htmlFor=""className={styles.label}>
+              <label htmlFor="" className={styles.label}>
                 <input type="text"
                   placeholder='Cuit del Empleador'
                   value={personaData.ingresos.CUIT_empleador}
@@ -475,12 +486,12 @@ const Formulario = ({ onSubmit }) => {
                   className={styles.input} />
               </label>
 
-              <label htmlFor=""className={styles.label}>
+              <label htmlFor="" className={styles.label}>
                 <input type="text"
                   placeholder='Ingreso Mensual'
                   value={personaData.ingresos.salario}
                   onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
-              className={styles.input}  />
+                  className={styles.input} />
               </label>
 
               <h4>Ubicación del Lote Sortear</h4>
