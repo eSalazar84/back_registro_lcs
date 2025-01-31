@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator"
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from "class-validator"
 import { Localidad } from "../enum/localidad.enum"
 import { Estado_vivienda } from "../enum/estado_vivienda.enum"
 import { Alquiler } from "../enum/alquiler.enum"
@@ -10,37 +10,45 @@ export class CreateViviendaDto {
 
     @IsString()
     @IsNotEmpty()
-    direccion: string
+    direccion: string;
 
     @IsNumber()
-    numero_direccion: number
+    @Min(1, { message: "El número de dirección debe ser mayor que 0" })
+    numero_direccion: number;
 
     @IsBoolean()
-    departamento?: boolean
+    @IsOptional()
+    departamento?: boolean;
 
     @IsNumber()
-    piso_departamento: number | null
+    @IsOptional()
+    piso_departamento?: number | null;
 
     @IsString()
-    numero_departamento?: string|null
+    @IsOptional()
+    numero_departamento?: string | null;
 
     @IsBoolean()
-    alquiler: boolean
+    alquiler: boolean;
 
     @IsNumber()
-    valor_alquiler?: number | null
+    @IsOptional()
+    @Min(0, { message: "El valor del alquiler no puede ser negativo" })
+    valor_alquiler?: number | null;
 
     @IsEnum(Localidad)
     @IsNotEmpty()
-    localidad: Localidad
-    
+    localidad: Localidad;
+
     @IsNumber()
-    cantidad_dormitorios: number
+    @Min(0, { message: "La cantidad de dormitorios debe ser al menos 0" })
+    cantidad_dormitorios: number;
 
     @IsEnum(Estado_vivienda)
-    estado_vivienda: Estado_vivienda
+    estado_vivienda: Estado_vivienda;
 
     @IsEnum(Alquiler)
-    tipo_alquiler: Alquiler | null
+    @IsOptional()
+    tipo_alquiler?: Alquiler | null;
   
 }

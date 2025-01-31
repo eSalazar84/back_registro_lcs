@@ -25,21 +25,21 @@ export class IngresoController {
 
   @Get()
   findAll() {
-    return this.ingresoService.findAll();
+    return this.ingresoService.findAllIngreso();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ingresoService.findOne(+id);
+  findOneById(@Param('id') id: string) {
+    return this.ingresoService.findOneById(+id);
   }
 
   @Patch(':id')
-  updateIngreso(@Param('id') id: string, @Body() updateIngresoDto: UpdateIngresoDto):Promise<Ingreso[]> {
+  updateIngreso(@Param('id') id: string, @Body() updateIngresoDto: UpdateIngresoDto):Promise<Ingreso> {
     return this.ingresoService.updateIngreso(+id, updateIngresoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.ingresoService.remove(+id);
+    return this.ingresoService.removeIngreso(+id);
   }
 }

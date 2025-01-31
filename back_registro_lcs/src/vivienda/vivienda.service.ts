@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
 import { FindOneOptions, Repository } from 'typeorm';
 import { Localidad } from './enum/localidad.enum';
+import { log } from 'console';
 
 
 @Injectable()
@@ -29,8 +30,9 @@ export class ViviendaService {
     nuevaVivienda.localidad = createViviendaDto.localidad;
     nuevaVivienda.cantidad_dormitorios = createViviendaDto.cantidad_dormitorios;
     nuevaVivienda.estado_vivienda = createViviendaDto.estado_vivienda;
-    nuevaVivienda.tipo_alquiler = createViviendaDto.tipo_alquiler;
-
+    nuevaVivienda.tipo_alquiler = createViviendaDto.tipo_alquiler || null;
+ 
+    console.log("vivienda enviada", nuevaVivienda)
     // Guardar la vivienda en la base de datos
     const vivienda = await this.viviendaRepository.save(nuevaVivienda);
     return vivienda;
@@ -79,16 +81,16 @@ export class ViviendaService {
     });
 }
 
-async remove(id: number): Promise<void> {
+async removeVivienda(id: number): Promise<void> {
   
-  const persona = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
+  const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
 
-  if (!persona) {
-    throw new Error('Persona no encontrada');
+  if (!vivienda) {
+    throw new Error('vivienda no encontrada');
   }
 
   // Eliminar la vivienda de la base de datos
-  await this.viviendaRepository.remove(persona);
+  await this.viviendaRepository.remove(vivienda);
 }
 
 
