@@ -37,7 +37,7 @@ export class ViviendaController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.viviendaService.remove(+id);
+    return this.viviendaService.removeVivienda(+id);
   }
 
 
