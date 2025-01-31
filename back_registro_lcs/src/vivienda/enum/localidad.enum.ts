@@ -4,5 +4,6 @@ export enum Localidad { //partido de Benito Juárez
     Benito_Juarez = 'Benito Juarez',
     Estacion_Lopez = 'Estacion Lopez',
     El_Luchador = 'El Luchador',
-    Tedin_Uriburu = 'Tedin Uriburu'
+    Tedin_Uriburu = 'Tedin Uriburu',
+    Coronel_Rodolfo_Bunge ='Coronel Rodolfo Bunge'
 }
