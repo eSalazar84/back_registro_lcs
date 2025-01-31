@@ -1,4 +1,5 @@
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Validate } from 'class-validator';
+import { MinAgeValidator } from "src/src/validators/min-age.validators";
 import { Tipo_DNI } from '../enum/tipo_dni.enum';
 import { Genero } from '../enum/genero.enum';
 import { Estado_Civil } from '../enum/estado_civil.enum';
@@ -39,8 +40,9 @@ export class CreatePersonaDto {
     @IsEnum(Genero)
     genero: Genero;
 
-    @IsOptional()
-    fecha_nacimiento?: Date; // Puede ser nulo o no
+    @IsNotEmpty()
+    @Validate(MinAgeValidator, [18])
+    fecha_nacimiento:Date;
 
     @IsNotEmpty()
     @IsString()

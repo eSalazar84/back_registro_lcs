@@ -8,8 +8,7 @@ async function bootstrap() {
   // Habilitar CORS
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,//permite realizar una limpieza de todas las propiedades que no están definidas en el DTO, 
-    //para que el objeto enviado al controlador como body solo tenga las propiedades que se han definido en el DTO.
+  whitelist: true,
     forbidNonWhitelisted: true,
   }))
    

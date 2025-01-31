@@ -44,7 +44,7 @@ export class PersonaService {
           where: { titular_cotitular: Titular_Cotitular.Titular },
         });
         // Si existe una persona, incrementa el número, sino empieza desde 0
-        personaData.numero_registro = (lastPersona?.numero_registro ?? -1) + 1;
+        personaData.numero_registro = (lastPersona?.numero_registro ?? 0 ) + 1;
         personaData.vinculo = createPersonaDto.vinculo ?? null;
 
       } else {
