@@ -72,7 +72,7 @@ export class CreatePersonaDto {
     @IsEnum(Vinculo)
     vinculo?: Vinculo | null; // Puede ser nulo o no
 
-    @IsOptional()
+    @IsNotEmpty()  
     @IsEnum(Titular_Cotitular)
     titular_cotitular: Titular_Cotitular |null; 
 
