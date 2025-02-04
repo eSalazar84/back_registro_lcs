@@ -121,7 +121,7 @@ export class RegistroService {
                                 status: 400,
                                 error: `La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`,
                             }, 
-                            HttpStatus.BAD_REQUEST);
+                            400);
                         }
                     }
 
@@ -167,13 +167,17 @@ export class RegistroService {
                 console.log('Fin de createAll. Personas retornadas:', createdPersonas);
                 return createdPersonas;
 
-            } catch (error) {
-                console.error("Error detectado en el flujo de createAll:", error);
-                throw new HttpException({
-                    status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: `Ocurrió un error al crear las nuevas dependencias`,
-                }, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            }catch (error) {
+                console.error('🔥 Error en createAll:', error);
+              
+                throw new HttpException(
+                  {
+                    status: error.status || 400,
+                    error: error.response?.error ||error.message|| 'Ocurrió un error en el servidor',
+                  },
+                  error.status || HttpStatus.BAD_REQUEST
+                );
+              }
         }
     }
 
