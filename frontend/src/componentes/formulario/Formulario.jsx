@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from "./Formulario.module.css";
-
 import { transformarDatos } from '../../services/transformDataDto';
+import Swal from 'sweetalert2';
 
 const Formulario = ({ onSubmit }) => {
   const [loading, setLoading] = useState(false);
@@ -128,29 +128,72 @@ const Formulario = ({ onSubmit }) => {
 console.log(datosTransformados);  // Aquí tendrás todos los datos transformados correctamente
 
 
+try {
+  const response = await fetch("http://localhost:3000/registro", {
+    method: "POST",
+    body: JSON.stringify(datosTransformados),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-    try {
-      const response = await fetch("http://localhost:3000/registro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(datosTransformados),
+  const responseData = await response.json(); // Convertir la respuesta en JSON
+
+  if (!response.ok) {
+    console.log('❌ Error en la respuesta del backend:', responseData);
+
+    // Si el error es por DNI ya registrado
+    if (responseData.error && responseData.error.includes("DNI")) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'DNI ya registrado',
+        text: 'El DNI que intentas registrar ya está en la base de datos.',
       });
-
-      if (!response.ok) {
-        throw new Error("Error en la solicitud al servidor");
-      }
-
-      const data = await response.json();
-      console.log("Datos enviados correctamente:", data);
-    } catch (error) {
-      console.error("Error al enviar los datos:", error);
-    } finally {
-      setLoading(false); // Desactiva el indicador de carga
     }
-  };
+    // Si el error es por vivienda ya registrada
+    else if (responseData.error && responseData.error.includes("La vivienda en")) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Vivienda ya registrada',
+        text: 'La vivienda que intentas registrar ya está en la base de datos.',
+      });
+    }
+    // Si el error es por departamento ya registrado
+    else if (responseData.error && responseData.error.includes("El departamento en")) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Departamento ya registrado',
+        text: 'El departamento que intentas registrar ya está en la base de datos.',
+      });
+    }
+    else {
+      throw new Error(responseData.error || 'Error desconocido');
+    }
+    return;
+  }
 
+  // Si la respuesta es exitosa
+  Swal.fire({
+    icon: 'success',
+    title: 'Registro Exitoso',
+    text: 'Los datos se han registrado correctamente.',
+  });
+
+} catch (error) {
+  console.error('Error en el frontend:', error);
+
+  // Mostrar mensaje de error con SweetAlert
+  Swal.fire({
+    icon: 'error',
+    title: 'Error en el registro',
+    text: error.message,
+  });
+
+} finally {
+  setLoading(false); // Desactiva el indicador de carga
+}
+};
+   
 
 
 
@@ -196,7 +239,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
 
           <label htmlFor="" className={styles.label}>
             <input type="number"
-              placeholder='Numero de documento'
+              placeholder='Número de documento'
               value={personaData.persona.dni}
               onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)} className={styles.input} />
           </label>
@@ -217,6 +260,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
             <option value="" disabled>Seleccione género</option>
             <option value="Masculino">Masculino</option>
             <option value="Femenino">Femenino</option>
+            <option value="Femenino">Otro</option>
           </select>
 
 
@@ -229,14 +273,14 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
-              placeholder='email'
+              placeholder='Email'
               value={personaData.persona.email}
               onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)} className={styles.input} />
           </label>
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
-              placeholder='Telefono'
+              placeholder='Teléfono'
               value={personaData.persona.telefono}
               onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)} className={styles.input} />
           </label>
@@ -335,7 +379,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
 
           <label htmlFor="" className={styles.label}>
             <input type="number"
-              placeholder='Numero de direccion'
+              placeholder='Numero de dirección'
               value={personaData.vivienda.numero_direccion}
               onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', +e.target.value)}
               className={styles.input} />
@@ -358,7 +402,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
-              placeholder='Numero de piso departamento'
+              placeholder='Número de piso departamento'
               value={personaData.vivienda.piso_departamento}
               onChange={(e) => handleInputChange(index, 'vivienda.piso_departamento', e.target.value)}
               className={styles.input} />
@@ -366,7 +410,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
-              placeholder='Numero de departamento'
+              placeholder='Número de departamento'
               value={personaData.vivienda.numero_departamento}
               onChange={(e) => handleInputChange(index, 'vivienda.numero_departamento', e.target.value)}
               className={styles.input} />
@@ -386,7 +430,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
-              placeholder='Valor alquile'
+              placeholder='Valor alquiler'
               value={personaData.vivienda.valor_alquiler}
               onChange={(e) => handleInputChange(index, 'vivienda.valor_alquiler', e.target.value)}
               className={styles.input} />
@@ -458,7 +502,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
                 onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
                 className={styles.select}>
                 <option value="" disabled>
-                  ¿Situacion laboral?
+                  ¿Situación laboral?
                 </option>
                 <option value="Relación de dependencia">Relación de dependencia</option>
                 <option value="Autónomo">Autónomo</option>
