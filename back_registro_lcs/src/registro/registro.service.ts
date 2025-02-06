@@ -8,16 +8,18 @@ import { PersonaService } from 'src/persona/persona.service';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
+import { MailserviceService } from 'src/mailservice/mailservice.service';
 
 @Injectable()
 export class RegistroService {
     constructor(
-      
+
         private readonly personaService: PersonaService,
         private readonly viviendaService: ViviendaService,
         private readonly loteService: LoteService,
-        private readonly ingresoService: IngresoService,       
-    ) {}
+        private readonly ingresoService: IngresoService,
+        private readonly mailserviceService: MailserviceService
+    ) { }
 
     // Función para calcular la edad a partir de la fecha de nacimiento
     private calcularEdad(fechaNacimiento: Date): number {
@@ -59,8 +61,8 @@ export class RegistroService {
                 console.log("que tiene viviendaKey", viviendaKey);
 
                 console.log("que tiene viviendasVerificadas", viviendasVerificadas);
-                
-                
+
+
 
                 // Buscar la vivienda en la base de datos
                 const viviendaFound = await this.viviendaService.findByAddress(
@@ -70,10 +72,10 @@ export class RegistroService {
                     vivienda.departamento,
                     vivienda.piso_departamento,
                     vivienda.numero_departamento
-                  
+
                 );
                 console.log("que tiene viviendaFounf", viviendaFound);
-                
+
 
                 if (viviendaFound && viviendaFound.departamento === false) {
                     // Si se encuentra una vivienda registrada, lanzamos una excepción
@@ -83,13 +85,13 @@ export class RegistroService {
                         error: `La vivienda en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.localidad} ya está registrada.`,
                     }, HttpStatus.BAD_REQUEST);
                 }
-                if (viviendaFound && viviendaFound.piso_departamento === vivienda.piso_departamento && viviendaFound.numero_departamento === vivienda.numero_departamento ){
-                      // Si se encuentra una vivienda registrada, lanzamos una excepción
-                      console.error(`El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.piso_departamento}, ${vivienda.numero_departamento} ${vivienda.localidad} ya está registrada.`);
-                      throw new HttpException({
-                          status: HttpStatus.BAD_REQUEST,
-                          error: `El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.piso_departamento}, ${vivienda.numero_departamento} ${vivienda.localidad} ya está registrada.`,
-                      }, HttpStatus.BAD_REQUEST);
+                if (viviendaFound && viviendaFound.piso_departamento === vivienda.piso_departamento && viviendaFound.numero_departamento === vivienda.numero_departamento) {
+                    // Si se encuentra una vivienda registrada, lanzamos una excepción
+                    console.error(`El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.piso_departamento}, ${vivienda.numero_departamento} ${vivienda.localidad} ya está registrada.`);
+                    throw new HttpException({
+                        status: HttpStatus.BAD_REQUEST,
+                        error: `El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.piso_departamento}, ${vivienda.numero_departamento} ${vivienda.localidad} ya está registrada.`,
+                    }, HttpStatus.BAD_REQUEST);
                 }
 
                 // Marcar esta vivienda como verificada (no está registrada en la base de datos)
@@ -120,13 +122,13 @@ export class RegistroService {
                             throw new HttpException({
                                 status: 400,
                                 error: `La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`,
-                            }, 
-                            400);
+                            },
+                                400);
                         }
                     }
 
 
-                                 // Crear una clave única para la vivienda
+                    // Crear una clave única para la vivienda
                     const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
 
                     // Verificar si la vivienda ya fue creada previamente en este proceso
@@ -145,41 +147,54 @@ export class RegistroService {
                     let idLote: number | null = null;
                     if (persona.titular_cotitular === 'Titular') {
                         const loteFound = await this.loteService.createLote(lote);
-                    
+
                         idLote = loteFound.idLote; // Asignar el ID del lote solo si es titular
-                        
-                    } 
+
+                    }
 
                     // Crear la persona y asignar la vivienda existente
                     const personaCreada = await this.personaService.createPersona(persona, viviendaReutilizada.idVivienda, idLote);
-                   
+
                     // Crear los ingresos solo si la persona es mayor de edad (18 años o más) y se han proporcionado ingresos
                     const edad = this.calcularEdad(persona.fecha_nacimiento);
                     if (edad >= 18 && ingresos && ingresos.length > 0) {
                         const ingresosCreados = await this.ingresoService.createIngreso(ingresos, personaCreada.idPersona);
-                       
-                    } 
+
+                    }
 
                     // Añadir la persona creada al array de resultados
                     createdPersonas.push(personaCreada);
                 }
 
+                const titularEmail = personas[0].persona.email;
+
+                // Obtener el número de registro de la persona creada
+                const numeroRegistro = createdPersonas[0].numero_registro;
+
+                // Enviar correo con PDF adjunto y número de registro
+                await this.mailserviceService.sendRegisterEmail(
+                    titularEmail,
+                    'Registro exitoso',
+                    numeroRegistro, // Pasar el número de registro al servicio de correo
+                    personas.map(personaData => personaData.persona) // Pasar los datos de las personas al servicio de correo
+                );
+
                 console.log('Fin de createAll. Personas retornadas:', createdPersonas);
                 return createdPersonas;
 
-            }catch (error) {
+            } catch (error) {
                 console.error('🔥 Error en createAll:', error);
-              
+
                 throw new HttpException(
-                  {
-                    status: error.status || 400,
-                    error: error.response?.error ||error.message|| 'Ocurrió un error en el servidor',
-                  },
-                  error.status || HttpStatus.BAD_REQUEST
+                    {
+                        status: error.status || 400,
+                        error: error.response?.error || error.message || 'Ocurrió un error en el servidor',
+                    },
+                    error.status || HttpStatus.BAD_REQUEST
                 );
-              }
+            }
         }
     }
 
- 
+
 }
