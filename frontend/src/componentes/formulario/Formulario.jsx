@@ -125,7 +125,7 @@ const Formulario = ({ onSubmit }) => {
     setLoading(true); // Activa el indicador de carga
 
     const datosTransformados = personas.map(persona => transformarDatos(persona));
-console.log(datosTransformados);  // Aquí tendrás todos los datos transformados correctamente
+    console.log(datosTransformados);  // Aquí tendrás todos los datos transformados correctamente
 
 
 
@@ -219,13 +219,39 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
             <option value="Femenino">Femenino</option>
           </select>
 
-
           <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Fecha de nacimiento(aa/mm/dd)'
+            <input
+              type="text"
+              placeholder="Fecha de nacimiento (aa/mm/dd)"
               value={personaData.persona.fecha_nacimiento}
-              onChange={(e) => handleInputChange(index, 'persona.fecha_nacimiento', e.target.value)} className={styles.input} />
+              onChange={(e) => {
+                let valor = e.target.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
+
+                // Añadir separadores automáticamente
+                if (valor.length >= 5) valor = valor.slice(0, 4) + '/' + valor.slice(4);
+                if (valor.length >= 8) valor = valor.slice(0, 7) + '/' + valor.slice(7);
+
+                // Limitar la longitud del valor a 10 caracteres (año/mes/día)
+                if (valor.length > 10) valor = valor.slice(0, 10);
+
+                handleInputChange(index, 'persona.fecha_nacimiento', valor);
+              }}
+              onBlur={(e) => {
+                // Validar que el formato sea correcto
+                const regex = /^\d{2}\/\d{2}\/\d{2}$/; // aa/mm/dd
+                if (!regex.test(e.target.value)) {
+                  alert("Formato incorrecto. Use aa/mm/dd");
+                  handleInputChange(index, "persona.fecha_nacimiento", "");
+                }
+              }}
+              className={styles.input}
+            />
           </label>
+
+
+
+
+
 
           <label htmlFor="" className={styles.label}>
             <input type="text"
@@ -315,7 +341,7 @@ console.log(datosTransformados);  // Aquí tendrás todos los datos transformado
             <option value="" disabled>Titular - Cotitular - Conviviente</option>
             <option value="Titular">Titular</option>
             <option value="Cotitular">Cotitular</option>
-            <option value={null}>Conviviente</option>
+            <option value="Conviviente">Conviviente</option>
           </select>
 
 
