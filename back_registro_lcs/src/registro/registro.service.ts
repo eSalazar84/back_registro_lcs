@@ -168,6 +168,7 @@ export class RegistroService {
                 await queryRunner.commitTransaction();
                 console.log("🎉 Transacción confirmada. Personas creadas:", createdPersonas.length);
                 return createdPersonas;
+
             }
         } catch (error) {
             console.error("❌ ERROR DETECTADO:", error.message);
@@ -177,6 +178,7 @@ export class RegistroService {
         } finally {
             await queryRunner.release();
             console.log("🔚 queryRunner liberado.");
+
         }
     }
     
