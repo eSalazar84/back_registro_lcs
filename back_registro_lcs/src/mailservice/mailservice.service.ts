@@ -1,9 +1,12 @@
 // mailservice.service.ts
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import fs from 'fs';
+import * as fs from 'fs';
 import { PdfService } from './pdf_document/pdf.service';
-import { path } from 'pdfkit';
+import { template } from 'handlebars';
+import * as path from 'path';
+import * as handlebars from 'handlebars';
+
 
 @Injectable()
 export class MailserviceService {
@@ -12,26 +15,27 @@ export class MailserviceService {
         auth: {
             user: 'somos.agrotech@gmail.com',
             pass: 'qeez xykd olcr gscn'
-        }
+        },
+        secure: false,
     });
 
     constructor(private readonly pdfService: PdfService) { }
 
-    async sendRegisterEmail(to: string, subject: string, numero: number, data: any[]) {
+    async sendRegisterEmail(to: string, nombreTitular: string, numero_registro: number, data: any[]) {
         try {
+
+            // 1. Cargar y compilar el template
+            const templatePath = path.join(process.cwd(), 'src/mailservice/template/confirmacionRegistro.hbs');
+            const templateSource = fs.readFileSync(templatePath, 'utf8');
+            const template = handlebars.compile(templateSource);
             // Generar PDF dinámico
             const pdfPath = await this.pdfService.generateRegistrationPDF(data);
 
             const mailOptions = {
                 from: '"no-responder" <somos.agrotech@gmail.com>',
                 to,
-                subject: `Registro al Programa 'Mi Hábitat, Mi Hogar'`,
-                html: `
-          <h1 style="color: #2c3e50;">¡Te informamos que tuviste un registro exitoso al programa!</h1>
-          <p>Adjunto encontrarás el comprobante detallado de tu registro.</p>
-          <p style="color: #7f8c8d;">Municipalidad de Benito Juarez </p>
-          <p style="color: #7f8c8d; font-weight: bold; font-size: 18px;">Número de registro al Programa: ${numero}</p>
-        `,
+                subject: `🏠 Registro al Programa 'Mi Hábitat, Mi Hogar'`,
+                html: template({ nombreTitular, numero_registro }),
                 attachments: [
                     {
                         filename: 'registro.pdf',

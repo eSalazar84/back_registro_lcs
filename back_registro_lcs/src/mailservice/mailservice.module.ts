@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MailserviceService } from './mailservice.service';
-import { PdfModule } from './pdf_document/pfd.module';
+import { PdfModule } from './pdf_document/pdf.module';
 
 @Module({
   imports: [PdfModule],
