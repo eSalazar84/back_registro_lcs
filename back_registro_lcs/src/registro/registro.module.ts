@@ -11,8 +11,6 @@ import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { PersonaService } from 'src/persona/persona.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 import { MailserviceModule } from 'src/mailservice/mailservice.module';
-import { PdfModule } from 'src/mailservice/pdf_document/pfd.module';
-
 
 @Module({
   imports:[

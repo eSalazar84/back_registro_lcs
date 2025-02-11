@@ -9,6 +9,7 @@ import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 import { MailserviceService } from 'src/mailservice/mailservice.service';
+import { log } from 'console';
 
 @Injectable()
 export class RegistroService {
@@ -168,15 +169,28 @@ export class RegistroService {
 
                 const titularEmail = personas[0].persona.email;
 
+                const nombreTitular = `${createdPersonas[0].nombre} ${createdPersonas[0].apellido}`;
+                console.log('Nombre del titular:', nombreTitular);
+
                 // Obtener el número de registro de la persona creada
                 const numeroRegistro = createdPersonas[0].numero_registro;
 
                 // Enviar correo con PDF adjunto y número de registro
                 await this.mailserviceService.sendRegisterEmail(
                     titularEmail,
-                    'Registro exitoso',
+                    nombreTitular,
                     numeroRegistro, // Pasar el número de registro al servicio de correo
-                    personas.map(personaData => personaData.persona) // Pasar los datos de las personas al servicio de correo
+                    createdPersonas.map(personaData => {
+                        return {
+                            nombre: personaData.nombre,
+                            apellido: personaData.apellido,
+                            dni: personaData.dni,
+                            fecha_nacimiento: personaData.fecha_nacimiento,
+                            vinculo: personaData.vinculo,
+                            numero_registro: personaData.numero_registro,
+                            CUIL_CUIT: personaData.CUIL_CUIT
+                        };
+                    })
                 );
 
                 console.log('Fin de createAll. Personas retornadas:', createdPersonas);

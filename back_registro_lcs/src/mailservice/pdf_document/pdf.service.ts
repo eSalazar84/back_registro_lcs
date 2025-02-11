@@ -2,14 +2,13 @@
 import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
-import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 
 @Injectable()
 export class PdfService {
-    async generateRegistrationPDF(data: CreatePersonaDto[]): Promise<string> {
+    async generateRegistrationPDF(data: any[]): Promise<string> {
         return new Promise((resolve, reject) => {
             const doc = new PDFDocument();
-            const filePath = `./src/PDFtemp/registro_${Date.now()}.pdf`;
+            const filePath = `./src/temp/registro_${Date.now()}.pdf`;
             const stream = fs.createWriteStream(filePath);
 
             doc.pipe(stream);
@@ -72,10 +71,10 @@ export class PdfService {
                             this.addField(doc, 'Salario:', `$${ingreso.salario.toLocaleString()}`);
                             doc.moveDown(0.3);
                         });
-                    }
-                } */
+                    } 
+                }
 
-                doc.moveDown(1.5);
+                doc.moveDown(1.5);*/
             });
 
             // Pie de página
