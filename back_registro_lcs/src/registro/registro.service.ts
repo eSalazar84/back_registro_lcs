@@ -167,30 +167,28 @@ export class RegistroService {
                     createdPersonas.push(personaCreada);
                 }
 
+                // Obtener los datos completos de las personas creadas (con relaciones)
+                const personasCompletas = await Promise.all(
+                    createdPersonas.map(async (persona) => {
+                        return await this.personaService.findOneById(persona.idPersona);
+                    })
+                );
+
                 const titularEmail = personas[0].persona.email;
 
                 const nombreTitular = `${createdPersonas[0].nombre} ${createdPersonas[0].apellido}`;
-                console.log('Nombre del titular:', nombreTitular);
 
                 // Obtener el número de registro de la persona creada
                 const numeroRegistro = createdPersonas[0].numero_registro;
+
+                console.log('listado de personas creadas:', createdPersonas);
 
                 // Enviar correo con PDF adjunto y número de registro
                 await this.mailserviceService.sendRegisterEmail(
                     titularEmail,
                     nombreTitular,
-                    numeroRegistro, // Pasar el número de registro al servicio de correo
-                    createdPersonas.map(personaData => {
-                        return {
-                            nombre: personaData.nombre,
-                            apellido: personaData.apellido,
-                            dni: personaData.dni,
-                            fecha_nacimiento: personaData.fecha_nacimiento,
-                            vinculo: personaData.vinculo,
-                            numero_registro: personaData.numero_registro,
-                            CUIL_CUIT: personaData.CUIL_CUIT
-                        };
-                    })
+                    numeroRegistro,
+                    personasCompletas
                 );
 
                 console.log('Fin de createAll. Personas retornadas:', createdPersonas);
