@@ -5,6 +5,17 @@ import * as fs from 'fs';
 
 @Injectable()
 export class PdfService {
+    private calcularEdad(fechaNacimiento: Date): number {
+        const hoy = new Date();
+        const fechaNac = new Date(fechaNacimiento);
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const mes = hoy.getMonth() - fechaNac.getMonth();
+        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+        }
+        return edad;
+    }
+
     async generateRegistrationPDF(data: any[]): Promise<string> {
         return new Promise((resolve, reject) => {
             const doc = new PDFDocument();
@@ -16,7 +27,8 @@ export class PdfService {
             // Estilos reutilizables
             const titleStyle = { fontSize: 18, bold: true, color: '#2c3e50' };
             const sectionStyle = { fontSize: 14, bold: true, color: '#34495e' };
-            const subSectionStyle = { fontSize: 12, bold: true, color: '#7f8c8d' };
+
+            doc.image('https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png', 50, 50, { width: 100 });
 
             // Encabezado
             doc.fillColor(titleStyle.color)
@@ -24,63 +36,115 @@ export class PdfService {
                 .text('Comprobante de registro al programa "Mi hábitat, mi hogar"', { align: 'center' })
                 .moveDown(1.5);
 
-            // Iterar sobre todas las personas registradas
+            // Iterar sobre todas las personas
             data.forEach((personaData, index) => {
-                const { nombre, apellido, dni, CUIL_CUIT, fecha_nacimiento, vinculo, numero_registro } = personaData;
+                const { 
+                    nombre,
+                    apellido,
+                    dni,
+                    CUIL_CUIT,
+                    fecha_nacimiento,
+                    vinculo,
+                    numero_registro,
+                    vivienda,
+                    ingresos,
+                    estado_civil,
+                    genero,
+                    email,
+                    telefono,
+                    nacionalidad
+                } = personaData;
+
+                const edad = this.calcularEdad(new Date(fecha_nacimiento));
+                const esMenor = edad < 18;
 
                 // Sección de Persona
                 doc.fillColor(sectionStyle.color)
                     .fontSize(sectionStyle.fontSize)
-                    .text(`${index === 0 ? 'Titular' : 'Persona a cargo'} ${index + 1}:`, { underline: true })
+                    .text(`${index === 0 ? 'Interesado Titular' : 'Persona a cargo'} ${index + 1}:`, { 
+                        underline: true 
+                    })
                     .moveDown(0.5);
 
-                // Datos básicos
-                this.addField(doc, 'Nombre completo: ', `${nombre} ${apellido}`);
-                this.addField(doc, 'DNI/CUIT: ', `${dni} / ${CUIL_CUIT}`);
-                this.addField(doc, 'Fecha Nacimiento: ', fecha_nacimiento);
-                this.addField(doc, 'Vinculo: ', vinculo);
-                this.addField(doc, 'Numero de Registro para el sorteo: ', numero_registro);
+                // Datos básicos comunes
+                this.addField(doc, 'Nombre completo: ', `${nombre || 'N/D'} ${apellido || ''}`);
+                this.addField(doc, 'DNI: ', dni || 'N/D');
+                this.addField(doc, 'CUIL/CUIT: ', CUIL_CUIT || 'N/D');
+                this.addField(doc, 'Fecha nacimiento: ', new Date(fecha_nacimiento).toLocaleDateString('es-AR'));
+                this.addField(doc, 'Edad: ', `${edad} años`);
+                this.addField(doc, 'Género: ', genero || 'N/D');
+                this.addField(doc, 'Email: ', email || 'N/D');
+                this.addField(doc, 'Teléfono: ', telefono || 'N/D');
+                this.addField(doc, 'Nacionalidad: ', nacionalidad || 'N/D');
+                this.addField(doc, 'Vínculo: ', vinculo || 'N/D');
+                this.addField(doc, 'Estado civil: ', estado_civil || 'N/D');
 
-                // Solo para el titular
-                /* if (index === 0) {
-                    doc.moveDown(0.5);
-                    this.addField(doc, 'Rol:', persona.rol);
-                    this.addField(doc, 'Estado Civil:', persona.estado_civil);
-
-                    // Sección de Vivienda
-                    doc.fillColor(sectionStyle.color)
-                        .fontSize(sectionStyle.fontSize)
-                        .text('Datos de la Vivienda:', { underline: true })
-                        .moveDown(0.5);
-
-                    this.addField(doc, 'Dirección:', `${vivienda.direccion} ${vivienda.numero_direccion}`);
-                    this.addField(doc, 'Localidad:', vivienda.localidad);
-                    this.addField(doc, 'Características:',
-                        `${vivienda.cantidad_dormitorios} dormitorios, estado ${vivienda.estado_vivienda}`);
-
-                    // Sección de Ingresos (solo titular)
-                    if (ingresos?.length > 0) {
-                        doc.fillColor(sectionStyle.color)
-                            .fontSize(sectionStyle.fontSize)
-                            .text('Situación Laboral:', { underline: true })
-                            .moveDown(0.5);
-
-                        ingresos.forEach(ingreso => {
-                            this.addField(doc, 'Empleador:', ingreso.ocupacion);
-                            this.addField(doc, 'CUIT Empleador:', ingreso.CUIT_empleador);
-                            this.addField(doc, 'Salario:', `$${ingreso.salario.toLocaleString()}`);
-                            doc.moveDown(0.3);
-                        });
-                    } 
+                // Datos específicos del titular
+                if (index === 0) {
+                    this.addField(doc, 'Número de registro: ', numero_registro || 'N/D');
                 }
 
-                doc.moveDown(1.5);*/
+                // Sección de Vivienda para todos
+                if (vivienda) {
+                    doc.fillColor(sectionStyle.color)
+                        .fontSize(sectionStyle.fontSize)
+                        .text('\nDatos de la vivienda:', { underline: true })
+                        .moveDown(0.5);
+
+                    this.addField(doc, 'Dirección: ', `${vivienda.direccion || 'N/D'} ${vivienda.numero_direccion || ''}`);
+                    this.addField(doc, 'Localidad: ', vivienda.localidad || 'N/D');
+                    this.addField(doc, 'Cantidad dormitorios: ', vivienda.cantidad_dormitorios?.toString() || 'N/D');
+                    this.addField(doc, 'Estado vivienda: ', vivienda.estado_vivienda || 'N/D');
+                    
+                    if (vivienda.departamento) {
+                        this.addField(doc, 'Piso: ', vivienda.piso_departamento?.toString() || 'N/D');
+                        this.addField(doc, 'N° departamento: ', vivienda.numero_departamento || 'N/D');
+                    }
+                }
+
+                // Sección de Ingresos solo para mayores de edad
+                if (!esMenor) {
+                    doc.fillColor(sectionStyle.color)
+                        .fontSize(sectionStyle.fontSize)
+                        .text('\nSituación laboral:', { underline: true })
+                        .moveDown(0.5);
+
+                    if (ingresos?.length > 0) {
+                        ingresos.forEach((ingreso, i) => {
+                            this.addField(doc, `Empleador ${i + 1}: `, ingreso.ocupacion || 'N/D');
+                            this.addField(doc, 'CUIT empleador: ', ingreso.CUIT_empleador?.toString() || 'N/D');
+                            this.addField(doc, 'Salario: ', ingreso.salario ? 
+                                `$${ingreso.salario.toLocaleString('es-AR')}` : 'N/D');
+                            doc.moveDown(0.3);
+                        });
+                    } else {
+                        this.addField(doc, 'Información laboral: ', 'No registrada');
+                    }
+                } else {
+                    doc.fillColor(sectionStyle.color)
+                        .fontSize(sectionStyle.fontSize)
+                        .text('\nSituación laboral:', { underline: true })
+                        .moveDown(0.5);
+                    this.addField(doc, 'Información laboral: ', 'No aplica (menor de edad)');
+                }
+
+                doc.moveDown(1.5);
             });
 
-            // Pie de página
+            // Pie de documento
+            doc.fillColor('#2c3e50')
+                .fontSize(12)
+                .text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, { align: 'center' })
+                .moveDown(0.5);
+
             doc.fillColor('#95a5a6')
                 .fontSize(10)
-                .text('Este documento es válido como comprobante de registro oficial', { align: 'center' });
+                .text('N/D = Dato no proporcionado', { align: 'left' })
+                .moveDown(0.5);
+
+            doc.fillColor('#7f8c8d')
+                .fontSize(10)
+                .text('Este documento es válido como comprobante de registro oficial.', { align: 'center' });
 
             doc.end();
 
@@ -91,8 +155,12 @@ export class PdfService {
     }
 
     private addField(doc: typeof PDFDocument, label: string, value: any) {
-        doc.fillColor('#2c3e50').fontSize(12).text(label, { continued: true })
-            .fillColor('#7f8c8d').text(value.toString())
+        const displayValue = value !== undefined && value !== null ? value.toString() : 'N/D';
+        doc.fillColor('#2c3e50')
+            .fontSize(12)
+            .text(label, { continued: true })
+            .fillColor('#7f8c8d')
+            .text(displayValue)
             .moveDown(0.3);
     }
 }
