@@ -10,9 +10,9 @@ import { PersonaService } from 'src/persona/persona.service';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
-import { Vivienda } from 'src/vivienda/entities/vivienda.entity';
-import { Lote } from 'src/lote/entities/lote.entity';
-import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
+import { MailserviceService } from 'src/mailservice/mailservice.service';
+
+
 
 @Injectable()
 export class RegistroService {
@@ -22,7 +22,7 @@ export class RegistroService {
         private readonly viviendaService: ViviendaService,
         private readonly loteService: LoteService,
         private readonly ingresoService: IngresoService,
-        private readonly dataSource: DataSource,
+        private readonly mailserviceService: MailserviceService
 
     ) { }
 
@@ -47,6 +47,7 @@ export class RegistroService {
         }[]
     ): Promise<Persona[]> {
         const createdPersonas: Persona[] = [];
+
         const viviendasCreadas: { [key: string]: Vivienda } = {};
         const viviendasVerificadas: { [key: string]: boolean } = {};
     
@@ -74,6 +75,8 @@ export class RegistroService {
                         }
                     });
                     if (viviendaFound) {
+
+       
                         throw new HttpException(
                             `El departamento en la dirección ${vivienda.direccion} ${vivienda.numero_direccion}, piso ${vivienda.piso_departamento}, número ${vivienda.numero_departamento} ya está registrado.`,
                             HttpStatus.BAD_REQUEST
@@ -82,12 +85,14 @@ export class RegistroService {
                     viviendasVerificadas[viviendaKey] = true;
                 }
     
+
                 const personaFound = await queryRunner.manager.findOne(Persona, {
                     where: { dni: persona.dni }
                 });
                 if (personaFound) {
                     throw new HttpException(`La persona con DNI ${persona.dni} ya está registrada.`, HttpStatus.BAD_REQUEST);
                 }
+
     
                 const edad = this.calcularEdad(persona.fecha_nacimiento);
                 if (persona.titular_cotitular === 'Titular' && edad < 18) {
@@ -102,6 +107,7 @@ export class RegistroService {
                 const { persona, vivienda, ingresos, lote } = personaData;
                 const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
     
+
                 let viviendaReutilizada = viviendasCreadas[viviendaKey];
                 if (!viviendaReutilizada) {
                     viviendaReutilizada = await this.viviendaService.createVivienda(vivienda);
@@ -131,6 +137,4 @@ export class RegistroService {
             await queryRunner.release();
         }
     }
-    
-    
-}
+  }
