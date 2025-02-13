@@ -1,6 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Repository, DataSource, FindOneOptions } from 'typeorm';
-
 import { Persona } from 'src/persona/entities/persona.entity';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
@@ -11,19 +9,20 @@ import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 import { MailserviceService } from 'src/mailservice/mailservice.service';
+import { Vivienda } from 'src/vivienda/entities/vivienda.entity';
+import { DataSource } from 'typeorm';
 
 
 
 @Injectable()
 export class RegistroService {
     constructor(
-
         private readonly personaService: PersonaService,
         private readonly viviendaService: ViviendaService,
         private readonly loteService: LoteService,
         private readonly ingresoService: IngresoService,
-        private readonly mailserviceService: MailserviceService
-
+        private readonly mailserviceService: MailserviceService,
+        private readonly dataSource: DataSource
     ) { }
 
     // Función para calcular la edad a partir de la fecha de nacimiento
@@ -129,6 +128,30 @@ export class RegistroService {
             }
     
             await queryRunner.commitTransaction();
+
+            // Obtener los datos completos de las personas creadas (con relaciones)
+            const personasCompletas = await Promise.all(
+                createdPersonas.map(async (persona) => {
+                    return await this.personaService.findOneById(persona.idPersona);
+                })
+            );
+
+            const titularEmail = personas[0].persona.email;
+
+            const nombreTitular = `${createdPersonas[0].nombre} ${createdPersonas[0].apellido}`;
+
+            // Obtener el número de registro de la persona creada
+            const numeroRegistro = createdPersonas[0].numero_registro;
+
+            console.log('listado de personas creadas:', createdPersonas);
+
+            // Enviar correo con PDF adjunto y número de registro
+            await this.mailserviceService.sendRegisterEmail(
+                titularEmail,
+                nombreTitular,
+                numeroRegistro,
+                personasCompletas
+            );
             return createdPersonas;
         } catch (error) {
             await queryRunner.rollbackTransaction();
