@@ -21,7 +21,7 @@ const Formulario = ({ onSubmit }) => {
       certificado_discapacidad: null,
       rol: 'User',
       vinculo: '',
-      titular_cotitular: ''
+      titular_cotitular: 'Titular'
     },
     ingresos: [{
       situacion_laboral: '',
@@ -47,22 +47,20 @@ const Formulario = ({ onSubmit }) => {
     }
   }]);
 
-
   const handleInputChange = (index, path, value) => {
     const updatedPersonas = [...personas];
     let current = updatedPersonas[index];
 
     path.split('.').reduce((acc, key, i, arr) => {
       if (i === arr.length - 1) {
-        acc[key] = value; // Actualiza el valor
+        acc[key] = value;
       } else {
-        return acc[key]; // Navega al siguiente nivel del objeto
+        return acc[key];
       }
     }, current);
 
     setPersonas(updatedPersonas);
   };
-
 
   const addIngreso = (personaIndex) => {
     const updatedPersonas = [...personas];
@@ -105,7 +103,7 @@ const Formulario = ({ onSubmit }) => {
       },
       vivienda: {
         direccion: '',
-        numero_direccion: "",
+        numero_direccion: '',
         departamento: null,
         piso_departamento: '',
         numero_departamento: '',
@@ -121,481 +119,705 @@ const Formulario = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Datos a enviar:", personas);
-    setLoading(true); // Activa el indicador de carga
+    
+    // Validación de campos requeridos
+    for (const persona of personas) {
+      // Validar datos personales
+      if (!persona.persona.nombre || !persona.persona.apellido || !persona.persona.tipo_dni || 
+          !persona.persona.dni || !persona.persona.CUIL_CUIT || !persona.persona.genero || 
+          !persona.persona.fecha_nacimiento || !persona.persona.email || !persona.persona.telefono || 
+          !persona.persona.estado_civil || !persona.persona.nacionalidad || 
+          persona.persona.certificado_discapacidad === null || !persona.persona.vinculo || 
+          !persona.persona.titular_cotitular) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Campos incompletos',
+          text: 'Por favor complete todos los datos personales',
+        });
+        return;
+      }
 
-    const datosTransformados = personas.map(persona => transformarDatos(persona));
-    console.log(datosTransformados);  // Aquí tendrás todos los datos transformados correctamente
+      // Validar email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(persona.persona.email)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Email inválido',
+          text: 'Por favor ingrese un email válido',
+        });
+        return;
+      }
 
+      // Validar DNI (8 dígitos)
+      if (!/^\d{8}$/.test(persona.persona.dni)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'DNI inválido',
+          text: 'El DNI debe tener 8 dígitos',
+        });
+        return;
+      }
 
-try {
-  const response = await fetch("http://localhost:3000/registro", {
-    method: "POST",
-    body: JSON.stringify(datosTransformados),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+      // Validar CUIL/CUIT (11 dígitos)
+      if (!/^\d{11}$/.test(persona.persona.CUIL_CUIT)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'CUIL/CUIT inválido',
+          text: 'El CUIL/CUIT debe tener 11 dígitos',
+        });
+        return;
+      }
 
-  const responseData = await response.json(); // Convertir la respuesta en JSON
+      // Validar teléfono (mínimo 10 dígitos)
+      if (!/^\d{10,}$/.test(persona.persona.telefono)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Teléfono inválido',
+          text: 'El teléfono debe tener al menos 10 dígitos',
+        });
+        return;
+      }
 
-  if (!response.ok) {
-    console.log('❌ Error en la respuesta del backend:', responseData);
+           // Validar datos de vivienda
+           if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion || 
+            persona.vivienda.departamento === null || !persona.vivienda.localidad || 
+            !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
+            persona.vivienda.alquila === null || 
+            (persona.vivienda.alquila && (!persona.vivienda.monto_alquiler || !persona.vivienda.tipo_alquiler))) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Campos incompletos',
+            text: 'Por favor complete todos los datos de la vivienda',
+          });
+          return;
+        }
+           
 
-    // Si el error es por DNI ya registrado
-    if (responseData.error && responseData.error.includes("DNI")) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'DNI ya registrado',
-        text: 'El DNI que intentas registrar ya está en la base de datos.',
+      // Validar datos de ingresos
+            // Dentro de handleSubmit, modificar la validación de ingresos:
+            for (const ingreso of persona.ingresos) {
+              if (!ingreso.situacion_laboral || !ingreso.ocupacion || !ingreso.salario) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Campos incompletos',
+                  text: 'Por favor complete los campos obligatorios de ingresos',
+                });
+                return;
+              }
+              
+              // Solo validar CUIT del empleador si es trabajo en relación de dependencia
+              if ((ingreso.situacion_laboral === "Relación de dependencia" || 
+                   ingreso.situacion_laboral === "Relación de dependencia y Autonomo") && 
+                  !ingreso.CUIT_empleador) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Campos incompletos',
+                  text: 'El CUIT del empleador es requerido para trabajos en relación de dependencia',
+                });
+                return;
+              }
+            }
+
+      // Validar datos del lote
+      if (!persona.lote.localidad) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Campos incompletos',
+          text: 'Por favor seleccione la localidad del lote',
+        });
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      const datosTransformados = personas.map(persona => transformarDatos(persona));
+      const response = await fetch("http://localhost:3000/registro", {
+        method: "POST",
+        body: JSON.stringify(datosTransformados),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-    }
-    // Si el error es por vivienda ya registrada
-    else if (responseData.error && responseData.error.includes("La vivienda en")) {
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        if (responseData.error && responseData.error.includes("DNI")) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'DNI ya registrado',
+            text: 'El DNI que intentas registrar ya está en la base de datos.',
+          });
+        } else if (responseData.error && responseData.error.includes("La vivienda en")) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Vivienda ya registrada',
+            text: 'La vivienda que intentas registrar ya está en la base de datos.',
+          });
+        } else if (responseData.error && responseData.error.includes("El departamento en")) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Departamento ya registrado',
+            text: 'El departamento que intentas registrar ya está en la base de datos.',
+          });
+        } else {
+          throw new Error(responseData.error || 'Error desconocido');
+        }
+        return;
+      }
+
       Swal.fire({
-        icon: 'warning',
-        title: 'Vivienda ya registrada',
-        text: 'La vivienda que intentas registrar ya está en la base de datos.',
+        icon: 'success',
+        title: 'Registro Exitoso',
+        text: 'Los datos se han registrado correctamente.',
       });
-    }
-    // Si el error es por departamento ya registrado
-    else if (responseData.error && responseData.error.includes("El departamento en")) {
+
+    } catch (error) {
+      console.error('Error en el frontend:', error);
       Swal.fire({
-        icon: 'warning',
-        title: 'Departamento ya registrado',
-        text: 'El departamento que intentas registrar ya está en la base de datos.',
+        icon: 'error',
+        title: 'Error en el registro',
+        text: error.message,
       });
+    } finally {
+      setLoading(false);
     }
-    else {
-      throw new Error(responseData.error || 'Error desconocido');
-    }
-    return;
-  }
-
-  // Si la respuesta es exitosa
-  Swal.fire({
-    icon: 'success',
-    title: 'Registro Exitoso',
-    text: 'Los datos se han registrado correctamente.',
-  });
-
-} catch (error) {
-  console.error('Error en el frontend:', error);
-
-  // Mostrar mensaje de error con SweetAlert
-  Swal.fire({
-    icon: 'error',
-    title: 'Error en el registro',
-    text: error.message,
-  });
-
-} finally {
-  setLoading(false); // Desactiva el indicador de carga
-}
-};
-   
-
-
-
+  };
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={styles.container}>
       {personas.map((personaData, index) => (
-        <div key={index} className={styles.container}>
-          <h3>Datos de la persona</h3>
+        <div key={index}>
+          {/* Sección de Datos Personales */}
+          <div className={`${styles.section} ${styles.personalData}`}>
+            <h3 className={styles.sectionTitle}>Datos del Titular</h3>
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>
+                <span className={styles.labelText}>Nombres *</span>
+                <input
+                  required
+                  type="text"
+                  placeholder="Nombres"
+                  value={personaData.persona.nombre}
+                  onChange={(e) => handleInputChange(index, 'persona.nombre', e.target.value)}
+                  className={styles.input}
+                />
+              </label>
+  
+              <label className={styles.label}>
+                <span className={styles.labelText}>Apellido *</span>
+                <input
+                  required
+                  type="text"
+                  placeholder="Apellido"
+                  value={personaData.persona.apellido}
+                  onChange={(e) => handleInputChange(index, 'persona.apellido', e.target.value)}
+                  className={styles.input}
+                />
+              </label>
+  
+              <label className={styles.label}>
+                <span className={styles.labelText}>Tipo de Documento *</span>
+                <select
+                  required
+                  name="tipo_dni"
+                  value={personaData.persona.tipo_dni || ""}
+                  onChange={(e) => handleInputChange(index, 'persona.tipo_dni', e.target.value)}
+                  className={styles.select}
+                >
+                  <option value="" disabled>Seleccione Tipo de Documento</option>
+                  <option value="Documento unico">DNI</option>
+                  <option value="Libreta enrolamiento">Libreta de enrolamiento</option>
+                  <option value="Libreta civica">Libreta cívica</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </label>
+              <label className={styles.label}>
+              <span className={styles.labelText}>DNI *</span>
+              <input
+                required
+                type="text"
+                placeholder="DNI"
+                value={personaData.persona.dni}
+                onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)}
+                className={styles.input}
+                maxLength="8"
+              />
+            </label>
 
-          <label htmlFor="" className={styles.label}>
-            <input
-              required
-              type="text"
-              placeholder="Nombres"
-              value={personaData.persona.nombre}
-              onChange={(e) => handleInputChange(index, 'persona.nombre', e.target.value)}
-              className={styles.input} />
-          </label>
+            <label className={styles.label}>
+              <span className={styles.labelText}>CUIL/CUIT *</span>
+              <input
+                required
+                type="text"
+                placeholder="CUIL/CUIT"
+                value={personaData.persona.CUIL_CUIT}
+                onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)}
+                className={styles.input}
+                maxLength="11"
+              />
+            </label>
 
-          <label htmlFor="" className={styles.label}>
-            <input
-              type="text"
-              placeholder="Apellido"
-              value={personaData.persona.apellido}
-              onChange={(e) => handleInputChange(index, 'persona.apellido', e.target.value)}
-              className={styles.input} />
-          </label>
-
-
-          <select
-            name="tipo_dni"
-            id="tipo_dni"
-            value={personaData.persona.tipo_dni || ""}  // Sincroniza con el estado
-            onChange={(e) => handleInputChange(index, 'persona.tipo_dni', e.target.value)}  // Actualiza el estado
-            className={styles.select}>
-            <option value="" disabled>Seleccione Tipo de Documento</option>
-            <option value="Documento unico">DNI</option>
-            <option value="Libreta enrolamiento">Libreta de enrolamiento</option>
-            <option value="Libreta civica">Libreta cívica</option>
-            <option value="Otro">Otro</option>
-          </select>
-
-
-          <label htmlFor="" className={styles.label}>
-            <input type="number"
-              placeholder='Número de documento'
-              value={personaData.persona.dni}
-              onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)} className={styles.input} />
-          </label>
-
-          <label htmlFor="">
-            <input type="text"
-              placeholder='Cuit/Cuil'
-              value={personaData.persona.CUIL_CUIT}
-              onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)} className={styles.input} />
-          </label>
-
-          <select
-            name="genero"
-            id="genero"
-            value={personaData.persona.genero || ""}  // Aquí, si no hay valor, se asigna un valor vacío
-            onChange={(e) => handleInputChange(index, 'persona.genero', e.target.value)}
-            className={styles.select}>
-            <option value="" disabled>Seleccione género</option>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
-            <option value="Femenino">Otro</option>
-          </select>
-
-          <label htmlFor="" className={styles.label}>
-            <input
-              type="text"
-              placeholder="Fecha de nacimiento (aa/mm/dd)"
-              value={personaData.persona.fecha_nacimiento}
-              onChange={(e) => {
-                let valor = e.target.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
-
-                // Añadir separadores automáticamente
-                if (valor.length >= 5) valor = valor.slice(0, 4) + '/' + valor.slice(4);
-                if (valor.length >= 8) valor = valor.slice(0, 7) + '/' + valor.slice(7);
-
-                // Limitar la longitud del valor a 10 caracteres (año/mes/día)
-                if (valor.length > 10) valor = valor.slice(0, 10);
-
-                handleInputChange(index, 'persona.fecha_nacimiento', valor);
-              }}
-              onBlur={(e) => {
-                // Validar que el formato sea correcto
-                const regex = /^\d{2}\/\d{2}\/\d{2}$/; // aa/mm/dd
-                if (!regex.test(e.target.value)) {
-                  alert("Formato incorrecto. Use aa/mm/dd");
-                  handleInputChange(index, "persona.fecha_nacimiento", "");
-                }
-              }}
-              className={styles.input}
-            />
-          </label>
-
-
-
-
-
-
-          <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Email'
-              value={personaData.persona.email}
-              onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)} className={styles.input} />
-          </label>
-
-          <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Teléfono'
-              value={personaData.persona.telefono}
-              onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)} className={styles.input} />
-          </label>
-
-          <select name="estado_civil" id="estado_civil" onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)} value={personaData.persona.estado_civil} className={styles.select}>
-            <option value="" disabled>Seleccione estado civil</option>
-            <option value="Soltero/a">Soltero/a</option>
-            <option value="Casado/a">Casado/a</option>
-            <option value="Concubinato/a">Concubinato/a</option>
-            <option value="Divorciado/a">Divorsiado/a</option>
-            <option value="Viudo/a">Viudo/a</option>
-            <option value="Otro">Otro</option>
-          </select>
-
-          <select
-            name="nacionalidad"
-            id="nacionalidad"
-            value={personaData.persona.nacionalidad || ""}  // Solo usa el valor controlado
-            onChange={(e) => handleInputChange(index, 'persona.nacionalidad', e.target.value)}
-            className={styles.select}>
-            <option value="" disabled>Seleccione nacionalidad</option>
-            <option value="Argentina">Argentina</option>
-            <option value="Bolivia">Bolivia</option>
-            <option value="Chilena">Chilena</option>
-            <option value="Paraguaya">Paraguaya</option>
-            <option value="Uruguaya">Uruguaya</option>
-            <option value="Peruana">Peruana</option>
-            <option value="Brasileña">Brasileña</option>
-            <option value="Venezolana">Venezolana</option>
-            <option value="Colombiana">Colombiana</option>
-            <option value="Española">Española</option>
-            <option value="Italiana">Italiana</option>
-            <option value="China">China</option>
-            <option value="Japonesa">Japonesa</option>
-            <option value="Coreana">Coreana</option>
-            <option value="Siria">Siria</option>
-            <option value="Libanesa">Libanesa</option>
-            <option value="Otro">Otro</option>
-          </select>
-
-          <select
-            name="certificado_discapacidad"
-            id="certificado_discapacidad"
-            value={personaData.persona.certificado_discapacidad === true ? "Si" : personaData.persona.certificado_discapacidad === false ? "No" : ""}
-            onChange={(e) => handleInputChange(index, 'persona.certificado_discapacidad', e.target.value === 'Si')}
-            className={styles.select}
-          >
-            <option value="" disabled>¿Posee certificado de discapacidad?</option>
-            <option value="Si">Sí</option>
-            <option value="No">No</option>
-          </select>
-
-
-
-
-          <select name="vinculo" id="vinculo" value={personaData.persona.vinculo || ""}
-            onChange={(e) => handleInputChange(index, 'persona.vinculo', e.target.value)} className={styles.select}>
-            <option value="" disabled>Seleccione Vinculo</option>
-            <option value="Esposo/a">Esposo/a</option>
-            <option value="Concuvino/a">Concuvino/a</option>
-            <option value="Conyuge">Conyuge</option>
-            <option value="Hermano/a">Hermano/a</option>
-            <option value="Hijo/a">Hijo/a</option>
-            <option value="Madre">Madre</option>
-            <option value="Padre">Padre</option>
-            <option value="Primo/a">Primo/a</option>
-            <option value="Nieto/a">Nieto/a</option>
-            <option value="Tio/a">Tío/a</option>
-            <option value="Sobrino/a">Sobrino/a</option>
-            <option value="Suegro/a">Suegro/a</option>
-            <option value="Abuelo/a">Abuelo/a</option>
-            <option value="Otro">Otro</option>
-          </select>
-
-          <select name="titular_cotitular" id="titular_cotitular" value={personaData.persona.titular_cotitular || ""} onChange={(e) => handleInputChange(index, 'persona.titular_cotitular', e.target.value)} className={styles.select}>
-            <option value="" disabled>Titular - Cotitular - Conviviente</option>
-            <option value="Titular">Titular</option>
-            <option value="Cotitular">Cotitular</option>
-            <option value="Conviviente">Conviviente</option>
-          </select>
-
-
-
-
-          {/* Add more inputs for "persona" fields here */}
-
-          <h4>Datos de la Vivienda</h4>
-          <label htmlFor="" className={styles.label}>
-            <input
-              type="text"
-              placeholder="Dirección"
-              value={personaData.vivienda.direccion}
-              onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)} className={styles.input}
-            />
-          </label>
-
-          <label htmlFor="" className={styles.label}>
-            <input type="number"
-              placeholder='Numero de dirección'
-              value={personaData.vivienda.numero_direccion}
-              onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', +e.target.value)}
-              className={styles.input} />
-          </label>
-
-
-          <select
-            name="departamento"
-            id="departamento"
-            value={personaData.vivienda.departamento === null ? "" : personaData.vivienda.departamento ? "Si" : "No"}
-            onChange={(e) => handleInputChange(index, 'vivienda.departamento', e.target.value === 'Si')}
-            className={styles.select}>
-            <option value="" disabled>
-              ¿Es departamento?
-            </option>
-            <option value="Si">Sí</option>
-            <option value="No">No</option>
-          </select>
-
-
-          <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Número de piso departamento'
-              value={personaData.vivienda.piso_departamento}
-              onChange={(e) => handleInputChange(index, 'vivienda.piso_departamento', e.target.value)}
-              className={styles.input} />
-          </label>
-
-          <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Número de departamento'
-              value={personaData.vivienda.numero_departamento}
-              onChange={(e) => handleInputChange(index, 'vivienda.numero_departamento', e.target.value)}
-              className={styles.input} />
-          </label>
-
-          <select
-            name="alquiler"
-            id="alquiler"
-            value={personaData.vivienda.alquiler === null ? "" : personaData.vivienda.alquiler ? "Si" : "No"}
-            onChange={(e) => handleInputChange(index, 'vivienda.alquiler', e.target.value === 'Si')}
-            className={styles.select}>
-            <option value="" disabled>¿Alquila?</option>
-            <option value="Si">Sí</option>
-            <option value="No">No</option>
-          </select>
-
-
-          <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Valor alquiler'
-              value={personaData.vivienda.valor_alquiler}
-              onChange={(e) => handleInputChange(index, 'vivienda.valor_alquiler', e.target.value)}
-              className={styles.input} />
-          </label>
-
-          <select
-            name="localidad"
-            id="localidad"
-            value={personaData.vivienda.localidad}
-            onChange={(e) => handleInputChange(index, 'vivienda.localidad', e.target.value)}
-            className={styles.select}>
-            <option value="" disabled>
-              Localidad
-            </option>
-            <option value="Benito Juarez">Benito Juárez</option>
-            <option value="Barker">Barker</option>
-            <option value="Villa Cacique">Villa Cacique</option>
-            <option value="Estacion Lopez">Estación López</option>
-            <option value="El Luchador">El Luchador</option>
-            <option value="Tedin Uriburu">Tedín Uriburu</option>
-            <option value="Coronel Rodolfo Bunge">Coronel Rodolfo Bunge</option>
-          </select>
-
-          <label htmlFor="" className={styles.label}>
-            <input type="text"
-              placeholder='Cantidad de dormitorios'
-              value={personaData.vivienda.cantidad_dormitorios}
-              onChange={(e) => handleInputChange(index, 'vivienda.cantidad_dormitorios', e.target.value)}
-              className={styles.input} />
-          </label>
-
-          <select
-            name="estado_vivienda"
-            id="estado_vivienda"
-            value={personaData.vivienda.estado_vivienda}
-            onChange={(e) => handleInputChange(index, 'vivienda.estado_vivienda', e.target.value)}
-            className={styles.select}>
-            <option value="" disabled>
-              ¿Estado de la Vivienda?
-            </option>
-            <option value="Muy bueno">Muy bueno</option>
-            <option value="Bueno">Bueno</option>
-            <option value="Regular">Regular</option>
-            <option value="Malo">Malo</option>
-            <option value="Muy malo">Muy malo</option>
-          </select>
-
-          <select
-            name="tipo_alquiler"
-            id="tipo_alquiler"
-            value={personaData.vivienda.tipo_alquiler}
-            onChange={(e) => handleInputChange(index, 'vivienda.tipo_alquiler', e.target.value)}
-            className={styles.select}>
-            <option value="" disabled>
-              ¿Alquila por Inmobiliaria o particular?
-            </option>
-            <option value="Inmobiliaria">Inmobiliaria</option>
-            <option value="Particular">Particular</option>
-          </select>
-          {/* Add more inputs for "vivienda" fields here */}
-
-          <h4>Ingresos por persona</h4>
-          {personaData.ingresos.map((ingreso, ingresoIndex) => (
-            <div key={ingresoIndex}>
+            <label className={styles.label}>
+              <span className={styles.labelText}>Género *</span>
               <select
-                name="situacion_laboral"
-                id="situacion_laboral"
-                value={ingreso.situacion_laboral}
-                onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
-                className={styles.select}>
-                <option value="" disabled>
-                  ¿Situación laboral?
-                </option>
-                <option value="Relación de dependencia">Relación de dependencia</option>
-                <option value="Autónomo">Autónomo</option>
-                <option value="Relación de dependencia y Autonomo">Relación de dependencia y Autónomo</option>
-                <option value="Jubilado">Jubilado</option>
-                <option value="Pensionado">Pensionado</option>
-                <option value="Jubilado y Pensionado">Jubilado y Pensionado</option>
-                <option value="Informal">Informal</option>
-                <option value="Desempleado">Desempleado</option>
+                required
+                name="genero"
+                value={personaData.persona.genero || ""}
+                onChange={(e) => handleInputChange(index, 'persona.genero', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione género</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
               </select>
+            </label>
 
-              <label htmlFor="" className={styles.label}>
-                <input type="text"
-                  placeholder='Ocupación'
-                  value={personaData.ingresos.ocupacion}
-                  onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
-                  className={styles.input} />
-              </label>
+            <label className={styles.label}>
+              <span className={styles.labelText}>Fecha de nacimiento *</span>
+              <input
+                required
+                type="date"
+                value={personaData.persona.fecha_nacimiento}
+                onChange={(e) => handleInputChange(index, 'persona.fecha_nacimiento', e.target.value)}
+                className={styles.input}
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </label>
 
-              <label htmlFor="" className={styles.label}>
-                <input type="text"
-                  placeholder='Cuit del Empleador'
-                  value={personaData.ingresos.CUIT_empleador}
-                  onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
-                  className={styles.input} />
-              </label>
+            <label className={styles.label}>
+              <span className={styles.labelText}>Email *</span>
+              <input
+                required
+                type="email"
+                placeholder="Email"
+                value={personaData.persona.email}
+                onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)}
+                className={styles.input}
+              />
+            </label>
 
-              <label htmlFor="" className={styles.label}>
-                <input type="text"
-                  placeholder='Ingreso Mensual'
-                  value={personaData.ingresos.salario}
-                  onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
-                  className={styles.input} />
-              </label>
+            <label className={styles.label}>
+              <span className={styles.labelText}>Teléfono *</span>
+              <input
+                required
+                type="text"
+                placeholder="Teléfono"
+                value={personaData.persona.telefono}
+                onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)}
+                className={styles.input}
+              />
+            </label>
 
-              <h4>Ubicación del Lote Sortear</h4>
-
-
+            <label className={styles.label}>
+              <span className={styles.labelText}>Estado Civil *</span>
               <select
+                required
+                name="estado_civil"
+                value={personaData.persona.estado_civil || ""}
+                onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione estado civil</option>
+                <option value="Soltero/a">Soltero/a</option>
+                <option value="Casado/a">Casado/a</option>
+                <option value="Divorciado/a">Divorciado/a</option>
+                <option value="Viudo/a">Viudo/a</option>
+                <option value="Concubinato">Concubinato</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Nacionalidad *</span>
+              <select
+                required
+                name="nacionalidad"
+                value={personaData.persona.nacionalidad || ""}
+                onChange={(e) => handleInputChange(index, 'persona.nacionalidad', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione nacionalidad</option>
+                <option value="Argentina">Argentina</option>
+                <option value="Bolivia">Bolivia</option>
+                <option value="Chilena">Chilena</option>
+                <option value="Paraguaya">Paraguaya</option>
+                <option value="Uruguaya">Uruguaya</option>
+                <option value="Peruana">Peruana</option>
+                <option value="Brasileña">Brasileña</option>
+                <option value="Venezolana">Venezolana</option>
+                <option value="Colombiana">Colombiana</option>
+                <option value="Española">Española</option>
+                <option value="Italiana">Italiana</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Certificado de discapacidad *</span>
+              <select
+                required
+                name="certificado_discapacidad"
+                value={personaData.persona.certificado_discapacidad === true ? "Si" : 
+                       personaData.persona.certificado_discapacidad === false ? "No" : ""}
+                onChange={(e) => handleInputChange(index, 'persona.certificado_discapacidad', e.target.value === 'Si')}
+                className={styles.select}
+              >
+                <option value="" disabled>¿Posee certificado de discapacidad?</option>
+                <option value="Si">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Vínculo *</span>
+              <select
+                required
+                name="vinculo"
+                value={personaData.persona.vinculo || ""}
+                onChange={(e) => handleInputChange(index, 'persona.vinculo', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione Vínculo</option>
+                <option value="Esposo/a">Esposo/a</option>
+                <option value="Concubino/a">Concubino/a</option>
+                <option value="Conyuge">Cónyuge</option>
+                <option value="Hermano/a">Hermano/a</option>
+                <option value="Hijo/a">Hijo/a</option>
+                <option value="Madre">Madre</option>
+                <option value="Padre">Padre</option>
+                <option value="Primo/a">Primo/a</option>
+                <option value="Nieto/a">Nieto/a</option>
+                <option value="Tio/a">Tío/a</option>
+                <option value="Sobrino/a">Sobrino/a</option>
+                <option value="Suegro/a">Suegro/a</option>
+                <option value="Abuelo/a">Abuelo/a</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
+              <select
+                required
+                name="titular_cotitular"
+                value={personaData.persona.titular_cotitular || ""}
+                onChange={(e) => handleInputChange(index, 'persona.titular_cotitular', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Titular - Cotitular - Conviviente</option>
+                <option value="Titular">Titular</option>
+                <option value="Cotitular">Cotitular</option>
+                <option value="Conviviente">Conviviente</option>
+              </select>
+            </label>
+          </div>
+        </div>
+          {/* Sección de Vivienda */}
+          <div className={`${styles.section} ${styles.housingData}`}>
+          <h3 className={styles.sectionTitle}>Datos de la Vivienda</h3>
+          <div className={styles.inputGroup}>
+            <label className={styles.label}>
+              <span className={styles.labelText}>Dirección *</span>
+              <input
+                required
+                type="text"
+                placeholder="Dirección"
+                value={personaData.vivienda.direccion}
+                onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
+                className={styles.input}
+              />
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Número *</span>
+              <input
+                required
+                type="text"
+                placeholder="Número"
+                value={personaData.vivienda.numero_direccion}
+                onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
+                className={styles.input}
+              />
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>¿Es departamento? *</span>
+              <select
+                required
+                name="departamento"
+                value={personaData.vivienda.departamento === null ? "" : 
+                       personaData.vivienda.departamento ? "Si" : "No"}
+                onChange={(e) => handleInputChange(index, 'vivienda.departamento', e.target.value === 'Si')}
+                className={styles.select}
+              >
+                <option value="" disabled>¿Es departamento?</option>
+                <option value="Si">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+
+            {personaData.vivienda.departamento && (
+              <>
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Piso *</span>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Piso"
+                    value={personaData.vivienda.piso_departamento}
+                    onChange={(e) => handleInputChange(index, 'vivienda.piso_departamento', e.target.value)}
+                    className={styles.input}
+                  />
+                </label>
+
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Departamento *</span>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Departamento"
+                    value={personaData.vivienda.numero_departamento}
+                    onChange={(e) => handleInputChange(index, 'vivienda.numero_departamento', e.target.value)}
+                    className={styles.input}
+                  />
+                </label>
+              </>
+            )}
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Localidad *</span>
+              <select
+                required
                 name="localidad"
-                id="localidad"
-                value={personaData.lote.localidad || ""} // Maneja valores vacíos
-                onChange={(e) => handleInputChange(index, 'lote.localidad', e.target.value)} // Actualiza el estado
-                className={styles.select} >
-                <option value="" disabled>Localidad</option>
+                value={personaData.vivienda.localidad || ""}
+                onChange={(e) => handleInputChange(index, 'vivienda.localidad', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione localidad</option>
                 <option value="Benito Juarez">Benito Juárez</option>
                 <option value="Barker">Barker</option>
                 <option value="Estacion Lopez">Estación López</option>
                 <option value="El Luchador">El Luchador</option>
                 <option value="Tedin Uriburu">Tedín Uriburu</option>
               </select>
+            </label>
 
+            <label className={styles.label}>
+              <span className={styles.labelText}>Cantidad de dormitorios *</span>
+              <input
+                required
+                type="number"
+                placeholder="Cantidad de dormitorios"
+                value={personaData.vivienda.cantidad_dormitorios}
+                onChange={(e) => handleInputChange(index, 'vivienda.cantidad_dormitorios', e.target.value)}
+                className={styles.input}
+              />
+            </label>
 
-              {/* Add more inputs for "ingresos" fields here */}
+            <label className={styles.label}>
+              <span className={styles.labelText}>Estado de la vivienda *</span>
+              <select
+                required
+                name="estado_vivienda"
+                value={personaData.vivienda.estado_vivienda || ""}
+                onChange={(e) => handleInputChange(index, 'vivienda.estado_vivienda', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>¿Estado de la Vivienda?</option>
+                <option value="Muy bueno">Muy bueno</option>
+                <option value="Bueno">Bueno</option>
+                <option value="Regular">Regular</option>
+                <option value="Malo">Malo</option>
+                <option value="Muy malo">Muy malo</option>
+              </select>
+            </label>
+          </div>
+          <label className={`${styles.label} ${styles.alquilerLabel}`}>
+              <span className={styles.labelText}>¿Alquila? *</span>
+              <select
+                required
+                name="alquila"
+                value={personaData.vivienda.alquila === true ? "Si" : 
+                       personaData.vivienda.alquila === false ? "No" : ""}
+                onChange={(e) => handleInputChange(index, 'vivienda.alquila', e.target.value === 'Si')}
+                className={styles.select}
+              >
+                <option value="" disabled>¿Alquila la vivienda?</option>
+                <option value="Si">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+
+            {personaData.vivienda.alquila && (
+              <div className={styles.alquilerGroup}>
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Monto del alquiler *</span>
+                  <input
+                    required
+                    type="number"
+                    placeholder="Monto del alquiler"
+                    value={personaData.vivienda.monto_alquiler}
+                    onChange={(e) => handleInputChange(index, 'vivienda.monto_alquiler', e.target.value)}
+                    className={styles.input}
+                  />
+                </label>
+
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Tipo de alquiler *</span>
+                  <select
+                    required
+                    name="tipo_alquiler"
+                    value={personaData.vivienda.tipo_alquiler || ""}
+                    onChange={(e) => handleInputChange(index, 'vivienda.tipo_alquiler', e.target.value)}
+                    className={styles.select}
+                  >
+                    <option value="" disabled>Seleccione tipo de alquiler</option>
+                    <option value="Particular">Particular</option>
+                    <option value="Inmobiliaria">Inmobiliaria</option>
+                  </select>
+                </label>
+              </div>
+            )}
+
+          
+        </div>
+
+        <div className={styles.sectionDivider} />
+            
+                   {/* Sección de Ingresos */}
+        <div className={`${styles.section} ${styles.incomeData}`}>
+          <h3 className={styles.sectionTitle}>Ingresos</h3>
+          {personaData.ingresos.map((ingreso, ingresoIndex) => (
+            <div key={ingresoIndex} className={styles.inputGroup}>
+              <label className={styles.label}>
+                <span className={styles.labelText}>Situación laboral *</span>
+                <select
+                  required
+                  name="situacion_laboral"
+                  value={ingreso.situacion_laboral || ""}
+                  onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
+                  className={styles.select}
+                >
+                  <option value="" disabled>Situación laboral</option>
+                  <option value="Relación de dependencia">Relación de dependencia</option>
+                  <option value="Autónomo">Autónomo</option>
+                  <option value="Relación de dependencia y Autonomo">Relación de dependencia y Autónomo</option>
+                  <option value="Jubilado">Jubilado</option>
+                  <option value="Pensionado">Pensionado</option>
+                  <option value="Jubilado y Pensionado">Jubilado y Pensionado</option>
+                  <option value="Informal">Informal</option>
+                  <option value="Desempleado">Desempleado</option>
+                </select>
+              </label>
+
+              <label className={styles.label}>
+                <span className={styles.labelText}>Ocupación</span>
+                <input
+                  
+                  type="text"
+                  placeholder="Ocupación"
+                  value={ingreso.ocupacion}
+                  onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
+                  className={styles.input}
+                />
+              </label>
+
+              {/* CUIT del empleador condicionado */}
+              {ingreso.situacion_laboral && (
+                <label className={styles.label}>
+                  <span className={styles.labelText}>
+                    {(ingreso.situacion_laboral === "Relación de dependencia" || 
+                      ingreso.situacion_laboral === "Relación de dependencia y Autonomo") 
+                      ? "CUIT del empleador *" 
+                      : "CUIT del empleador (opcional)"}
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="CUIT del empleador"
+                    value={ingreso.CUIT_empleador || ""}
+                    onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
+                    className={styles.input}
+                    required={ingreso.situacion_laboral === "Relación de dependencia" || 
+                            ingreso.situacion_laboral === "Relación de dependencia y Autonomo"}
+                  />
+                </label>
+              )}
+
+              <label className={styles.label}>
+                <span className={styles.labelText}>Ingreso mensual</span>
+                <input
+                
+                  type="number"
+                  placeholder="Ingreso mensual"
+                  value={ingreso.salario}
+                  onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
+                  className={styles.input}
+                />
+              </label>
             </div>
           ))}
-          <button type="button" onClick={() => addIngreso(index)}>Añadir Ingreso</button>
+          <button 
+            type="button" 
+            onClick={() => addIngreso(index)}
+            className={styles.button}
+          >
+            Añadir Ingreso
+          </button>
+        </div>
+
+        <div className={styles.sectionDivider} />
+  
+                      {/* Sección de Lote */}
+                      {personaData.persona.titular_cotitular !== "Cotitular" &&
+ personaData.persona.titular_cotitular !== "Conviviente" && (
+  <div className={`${styles.section} ${styles.locationData}`}>
+    <h3 className={styles.sectionTitle}>Ubicación del Lote a Sortear</h3>
+    <div className={styles.inputGroup}>
+      <label className={styles.label}>
+        <span className={styles.labelText}>Localidad *</span>
+        <select
+          required
+          name="localidad"
+          value={personaData.lote.localidad || ""}
+          onChange={(e) => handleInputChange(index, 'lote.localidad', e.target.value)}
+          className={styles.select}
+        >
+          <option value="" disabled>Seleccione localidad</option>
+          <option value="Benito Juarez">Benito Juárez</option>
+          <option value="Barker">Barker</option>
+          <option value="Estacion Lopez">Estación López</option>
+          <option value="El Luchador">El Luchador</option>
+          <option value="Tedin Uriburu">Tedín Uriburu</option>
+        </select>
+      </label>
+    </div>
+  </div>
+)}
+
         </div>
       ))}
-      <button type="button" onClick={addPersona} disabled={loading}>
-        Añadir Persona
-      </button>
-      <button type="submit" disabled={loading}>
-        {loading ? "Enviando..." : "Enviar"}
-      </button>
+
+      {/* Botones finales del formulario */}
+      <div className={styles.buttonGroup}>
+        <button 
+          type="button" 
+          onClick={addPersona}
+          disabled={loading}
+          className={styles.button}
+        >
+          Añadir Persona
+        </button>
+        <button 
+          type="submit"
+          disabled={loading}
+          className={styles.button}
+        >
+          {loading ? "Enviando..." : "Enviar"}
+        </button>
+      </div>
     </form>
   );
-};
-
+}
 export default Formulario;
