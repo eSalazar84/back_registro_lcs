@@ -7,6 +7,8 @@ import { join } from 'path';
 import { PersonaModule } from './persona/persona.module';
 import { LoteModule } from './lote/lote.module';
 import { IngresoModule } from './ingreso/ingreso.module';
+import { MailserviceModule } from './mailservice/mailservice.module';
+import { PdfService } from './mailservice/pdf_document/pdf.service';
 
 @Module({
   imports: [RegistroModule,
@@ -23,7 +25,8 @@ import { IngresoModule } from './ingreso/ingreso.module';
     ViviendaModule,
     PersonaModule,
     LoteModule,
-    IngresoModule
+    IngresoModule,
+    MailserviceModule
   ],
   
   controllers: [],
