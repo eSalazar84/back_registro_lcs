@@ -5,56 +5,63 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Ingreso } from './entities/ingreso.entity';
 import { FindOneOptions, Repository } from 'typeorm';
 import { Persona } from 'src/persona/entities/persona.entity';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class IngresoService {
   constructor(
-    @InjectRepository(Ingreso) 
-    private readonly ingresoRepository: Repository<CreateIngresoDto>,
+    @InjectRepository(Ingreso)
+    private readonly ingresoRepository: Repository<Ingreso>, // Corregido a Repository<Ingreso>
     
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
-  ) { }
+  ) {}
 
   async createIngreso(ingresos: CreateIngresoDto[], idPersona: number): Promise<Ingreso[]> {
-    const createdIngresos: Ingreso[] = []; // Array para almacenar los ingresos creados
+    const createdIngresos: Ingreso[] = [];
 
-    for (const ingresoDto of ingresos) {
-        const persona = await this.personaRepository.findOne({ where: { idPersona: idPersona } });
-        console.log("persona para ingreso", persona);
-        
-        if (!persona) {
-            throw new Error(`Persona with ID ${ingresoDto.idPersona} not found`);
-        }
+    // Iniciar una transacción para asegurar la atomicidad
+    const queryRunner = this.ingresoRepository.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
 
-        // Crear una nueva instancia de la entidad Ingreso
+    try {
+      const persona = await this.personaRepository.findOne({ where: { idPersona } });
+
+      if (!persona) {
+        throw new NotFoundException(`Persona con ID ${idPersona} no encontrada`);
+      }
+
+      for (const ingresoDto of ingresos) {
         const newIngreso = new Ingreso();
-        newIngreso.idPersona = persona.idPersona; // Asignar el id de persona encontrado
+        newIngreso.idPersona = persona.idPersona;
         newIngreso.situacion_laboral = ingresoDto.situacion_laboral;
         newIngreso.ocupacion = ingresoDto.ocupacion;
         newIngreso.CUIT_empleador = ingresoDto.CUIT_empleador;
         newIngreso.salario = ingresoDto.salario;
 
-        // Guardar el nuevo ingreso en la base de datos
-        const savedIngreso = await this.ingresoRepository.save(newIngreso);
-        createdIngresos.push(savedIngreso); // Agregar el ingreso guardado al array
+        const savedIngreso = await queryRunner.manager.save(newIngreso);
+        createdIngresos.push(savedIngreso);
+      }
+
+      await queryRunner.commitTransaction();
+      return createdIngresos;
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('Error al crear ingresos: ' + error.message);
+    } finally {
+      await queryRunner.release();
     }
-
-    return createdIngresos; // Devolver todas las entidades Ingreso creadas
-}
-
-
- async findAllIngreso(): Promise<Ingreso[]> {
-    const allIngreso = await this.ingresoRepository.find()
-    return allIngreso;
   }
 
-
+  async findAllIngreso(): Promise<Ingreso[]> {
+    return this.ingresoRepository.find();
+  }
 
   async findOneById(id: number): Promise<Ingreso> {
     const ingreso = await this.ingresoRepository.findOne({
       where: { idIngreso: id },
-      relations: ['persona'], // Incluimos la relación con persona
+      relations: ['persona'],
     });
 
     if (!ingreso) {
@@ -63,42 +70,30 @@ export class IngresoService {
 
     return ingreso;
   }
-  
 
   async updateIngreso(id: number, updateIngresoDto: UpdateIngresoDto): Promise<Ingreso> {
+    const ingresoFound = await this.ingresoRepository.findOne({ where: { idIngreso: id } });
+
+    if (!ingresoFound) {
+      throw new NotFoundException(`Ingreso con id ${id} no encontrado`);
+    }
+
+    Object.assign(ingresoFound, updateIngresoDto);
+
     try {
-      // Buscar el ingreso por ID
-      const ingresoFound = await this.ingresoRepository.findOne({ where: { idIngreso: id } });
-  
-      if (!ingresoFound) {
-        throw new NotFoundException(`Ingreso con id ${id} no encontrado`);
-      }
-  
-      // Actualizar los campos del ingreso encontrado con los valores del DTO
-      Object.assign(ingresoFound, updateIngresoDto);
-  
-      // Guardar los cambios en la base de datos
-      const updatedIngreso = await this.ingresoRepository.save(ingresoFound);
-  
-      // Devolver el ingreso actualizado
-      return updatedIngreso;
+      return await this.ingresoRepository.save(ingresoFound);
     } catch (error) {
       throw new InternalServerErrorException('Error al actualizar ingreso: ' + error.message);
     }
   }
-  
-
 
   async removeIngreso(id: number): Promise<void> {
-  
     const ingreso = await this.ingresoRepository.findOne({ where: { idIngreso: id } });
-  
+
     if (!ingreso) {
-      throw new Error('ingreso no encontrada');
+      throw new NotFoundException(`Ingreso con id ${id} no encontrado`);
     }
-  
-    // Eliminar ingreso de la base de datos
+
     await this.ingresoRepository.remove(ingreso);
   }
-  
 }

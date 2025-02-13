@@ -47,183 +47,94 @@ export class RegistroService {
         }[]
     ): Promise<Persona[]> {
         const createdPersonas: Persona[] = [];
-        const viviendasCreadas: { [key: string]: any } = {}; // Objeto para almacenar viviendas por clave
-        const viviendasVerificadas: { [key: string]: boolean } = {}; // Objeto para almacenar viviendas verificadas
 
-        // Verificación de si la vivienda ya existe, antes del try
-        if (personas.length > 0) {
+        const viviendasCreadas: { [key: string]: Vivienda } = {};
+        const viviendasVerificadas: { [key: string]: boolean } = {};
+    
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+    
+        try {
+            console.log("🔹 Iniciando createAll. Cantidad de personas recibidas:", personas.length);
+    
+            // Verificación previa de datos sin crear entidades
             for (const personaData of personas) {
-                const { vivienda } = personaData;
-
-                // Crear una clave única para identificar la vivienda
-                const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}-${vivienda.departamento}-${vivienda.piso_departamento}-${vivienda.numero_departamento}`;
-
-                // Si ya se verificó esta vivienda en el proceso, continuar con la siguiente
-                if (viviendasVerificadas[viviendaKey]) {
-                    continue;
-                }
-
-                console.log("que tiene viviendaKey", viviendaKey);
-
-                console.log("que tiene viviendasVerificadas", viviendasVerificadas);
-
-
-
-                // Buscar la vivienda en la base de datos
-                const viviendaFound = await this.viviendaService.findByAddress(
-                    vivienda.direccion,
-                    vivienda.numero_direccion,
-                    vivienda.localidad,
-                    vivienda.departamento,
-                    vivienda.piso_departamento,
-                    vivienda.numero_departamento
-
-                );
-                console.log("que tiene viviendaFounf", viviendaFound);
-
-
-                if (viviendaFound && viviendaFound.departamento === false) {
-                    // Si se encuentra una vivienda registrada, lanzamos una excepción
-                    console.error(`La vivienda en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.localidad} ya está registrada.`);
-                    throw new HttpException({
-                        status: HttpStatus.BAD_REQUEST,
-                        error: `La vivienda en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.localidad} ya está registrada.`,
-                    }, HttpStatus.BAD_REQUEST);
-                }
-                if (viviendaFound && viviendaFound.piso_departamento === vivienda.piso_departamento && viviendaFound.numero_departamento === vivienda.numero_departamento) {
-                    // Si se encuentra una vivienda registrada, lanzamos una excepción
-                    console.error(`El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.piso_departamento}, ${vivienda.numero_departamento} ${vivienda.localidad} ya está registrada.`);
-                    throw new HttpException({
-                        status: HttpStatus.BAD_REQUEST,
-                        error: `El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion}, ${vivienda.piso_departamento}, ${vivienda.numero_departamento} ${vivienda.localidad} ya está registrada.`,
-                    }, HttpStatus.BAD_REQUEST);
-
-                }
+                const { persona, vivienda } = personaData;
+                const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
     
-                console.log("🔹 Verificando si las personas ya están registradas...");
-    
-                for (const personaData of personas) {
-                    const { persona } = personaData;
-    
-                    console.log(`🔍 Buscando persona con DNI ${persona.dni} en la base de datos...`);
-                    const personaFound = await queryRunner.manager.findOne(Persona, {
-                        where: { dni: persona.dni }
+                if (!viviendasVerificadas[viviendaKey]) {
+                    const viviendaFound = await queryRunner.manager.findOne(Vivienda, {
+                        where: {
+                            direccion: vivienda.direccion,
+                            numero_direccion: vivienda.numero_direccion,
+                            localidad: vivienda.localidad,
+                            departamento: vivienda.departamento,
+                            piso_departamento: vivienda.piso_departamento,
+                            numero_departamento: vivienda.numero_departamento
+                        }
                     });
-    
-                    if (personaFound) {
-                        console.error(`❌ ERROR: La persona con DNI ${persona.dni} ya está registrada.`);
-                        throw new HttpException(`La persona con DNI ${persona.dni} ya está registrada.`, HttpStatus.BAD_REQUEST);
-                    }
-    
-                    // ✅ Validación: No permitir que una persona menor de edad sea titular
-                    const edad = this.calcularEdad(persona.fecha_nacimiento);
-                    if (persona.titular_cotitular === 'Titular' && edad < 18) {
-                        console.error(`❌ ERROR: La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`);
+                    if (viviendaFound) {
+
+       
                         throw new HttpException(
-                            `La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`,
+                            `El departamento en la dirección ${vivienda.direccion} ${vivienda.numero_direccion}, piso ${vivienda.piso_departamento}, número ${vivienda.numero_departamento} ya está registrado.`,
                             HttpStatus.BAD_REQUEST
                         );
                     }
+                    viviendasVerificadas[viviendaKey] = true;
                 }
     
-                console.log("✅ Verificación completada. Procediendo a crear registros...");
-    
-                for (const personaData of personas) {
-                    const { persona, vivienda, ingresos, lote } = personaData;
 
-                    if (persona.titular_cotitular === 'Titular') {
-                        const edad = this.calcularEdad(persona.fecha_nacimiento);
-                        if (edad < 18) {
-                            throw new HttpException({
-                                status: 400,
-                                error: `La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`,
-                            },
-                                400);
-                        }
-                    }
-
-
-                    // Crear una clave única para la vivienda
-
-                    const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
-    
-                    console.log(`🔹 Procesando persona: ${persona.nombre} (DNI: ${persona.dni})`);
-    
-                    if (!viviendasCreadas[viviendaKey]) {
-                        console.log(`🏠 Creando vivienda: ${viviendaKey}`);
-                        const viviendaCreada = await queryRunner.manager.save(Vivienda, vivienda);
-                        viviendasCreadas[viviendaKey] = viviendaCreada;
-                        console.log("✅ Vivienda creada:", viviendaCreada);
-                    } else {
-                        console.log(`✅ Vivienda ${viviendaKey} ya creada en este proceso.`);
-                    }
-    
-                    const viviendaReutilizada = viviendasCreadas[viviendaKey];
-    
-                    let idLote: number | null = null;
-
-                    if (persona.titular_cotitular === 'Titular') {
-                        const loteFound = await this.loteService.createLote(lote);
-
-                        idLote = loteFound.idLote; // Asignar el ID del lote solo si es titular
-
-                    }
-
-                    // Crear la persona y asignar la vivienda existente
-                    const personaCreada = await this.personaService.createPersona(persona, viviendaReutilizada.idVivienda, idLote);
-
-                    // Crear los ingresos solo si la persona es mayor de edad (18 años o más) y se han proporcionado ingresos
-                    const edad = this.calcularEdad(persona.fecha_nacimiento);
-                    if (edad >= 18 && ingresos && ingresos.length > 0) {
-                        const ingresosCreados = await this.ingresoService.createIngreso(ingresos, personaCreada.idPersona);
-
-                    }
-
-                    // Añadir la persona creada al array de resultados
-                    createdPersonas.push(personaCreada);
+                const personaFound = await queryRunner.manager.findOne(Persona, {
+                    where: { dni: persona.dni }
+                });
+                if (personaFound) {
+                    throw new HttpException(`La persona con DNI ${persona.dni} ya está registrada.`, HttpStatus.BAD_REQUEST);
                 }
 
-                const titularEmail = personas[0].persona.email;
-
-                const nombreTitular = `${createdPersonas[0].nombre} ${createdPersonas[0].apellido}`;
-                console.log('Nombre del titular:', nombreTitular);
-
-                // Obtener el número de registro de la persona creada
-                const numeroRegistro = createdPersonas[0].numero_registro;
-
-                // Enviar correo con PDF adjunto y número de registro
-                await this.mailserviceService.sendRegisterEmail(
-                    titularEmail,
-                    nombreTitular,
-                    numeroRegistro, // Pasar el número de registro al servicio de correo
-                    createdPersonas.map(personaData => {
-                        return {
-                            nombre: personaData.nombre,
-                            apellido: personaData.apellido,
-                            dni: personaData.dni,
-                            fecha_nacimiento: personaData.fecha_nacimiento,
-                            vinculo: personaData.vinculo,
-                            numero_registro: personaData.numero_registro,
-                            CUIL_CUIT: personaData.CUIL_CUIT
-                        };
-                    })
-                );
-
-                console.log('Fin de createAll. Personas retornadas:', createdPersonas);
-                return createdPersonas;
-
-            } catch (error) {
-                console.error('🔥 Error en createAll:', error);
-
-                throw new HttpException(
-                    {
-                        status: error.status || 400,
-                        error: error.response?.error || error.message || 'Ocurrió un error en el servidor',
-                    },
-                    error.status || HttpStatus.BAD_REQUEST
-                );
+    
+                const edad = this.calcularEdad(persona.fecha_nacimiento);
+                if (persona.titular_cotitular === 'Titular' && edad < 18) {
+                    throw new HttpException(`La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`, HttpStatus.BAD_REQUEST);
+                }
             }
+    
+            console.log("✅ Verificación completada. Procediendo a crear registros...");
+    
+            // Creación de entidades dentro de la transacción
+            for (const personaData of personas) {
+                const { persona, vivienda, ingresos, lote } = personaData;
+                const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
+    
 
+                let viviendaReutilizada = viviendasCreadas[viviendaKey];
+                if (!viviendaReutilizada) {
+                    viviendaReutilizada = await this.viviendaService.createVivienda(vivienda);
+                    viviendasCreadas[viviendaKey] = viviendaReutilizada;
+                }
+    
+                let idLote: number | null = null;
+                if (persona.titular_cotitular === 'Titular' && lote) {
+                    const loteCreado = await this.loteService.createLote(lote);
+                    idLote = loteCreado.idLote;
+                }
+    
+                const personaCreada = await this.personaService.createPersona(persona, viviendaReutilizada.idVivienda, idLote);
+                createdPersonas.push(personaCreada);
+    
+                if (ingresos && ingresos.length > 0) {
+                    await this.ingresoService.createIngreso(ingresos, personaCreada.idPersona);
+                }
+            }
+    
+            await queryRunner.commitTransaction();
+            return createdPersonas;
+        } catch (error) {
+            await queryRunner.rollbackTransaction();
+            throw new HttpException(`Error al crear las dependencias: ${error.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            await queryRunner.release();
         }
     }
-}
+  }
