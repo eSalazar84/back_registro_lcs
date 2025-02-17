@@ -219,7 +219,7 @@ const Formulario = ({ onSubmit }) => {
             }
 
       // Validar datos del lote
-      if (!persona.lote.localidad) {
+      if (!persona.lote.localidad && persona.persona.titular_cotitular === "Titular") {
         Swal.fire({
           icon: 'error',
           title: 'Campos incompletos',
@@ -232,7 +232,12 @@ const Formulario = ({ onSubmit }) => {
     setLoading(true);
 
     try {
+      console.log("datos formulario", personas);
+      
       const datosTransformados = personas.map(persona => transformarDatos(persona));
+
+      console.log("datos transformados para enviar", datosTransformados);
+      
       const response = await fetch("http://localhost:3000/registro", {
         method: "POST",
         body: JSON.stringify(datosTransformados),
@@ -244,27 +249,21 @@ const Formulario = ({ onSubmit }) => {
       const responseData = await response.json();
 
       if (!response.ok) {
-        if (responseData.error && responseData.error.includes("DNI")) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'DNI ya registrado',
-            text: 'El DNI que intentas registrar ya está en la base de datos.',
-          });
-        } else if (responseData.error && responseData.error.includes("La vivienda en")) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Vivienda ya registrada',
-            text: 'La vivienda que intentas registrar ya está en la base de datos.',
-          });
-        } else if (responseData.error && responseData.error.includes("El departamento en")) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Departamento ya registrado',
-            text: 'El departamento que intentas registrar ya está en la base de datos.',
-          });
-        } else {
-          throw new Error(responseData.error || 'Error desconocido');
+        let errorMessage = responseData.message || "Error desconocido";
+
+        if (responseData.code === "DNI_DUPLICADO") {
+          errorMessage = "El DNI ingresado ya está registrado en la base de datos.";
+        } else if (responseData.code === "VIVIENDA_DUPLICADA") {
+          errorMessage = "La vivienda ingresada ya está registrada.";
+        } else if (responseData.code === "DEPARTAMENTO_DUPLICADO") {
+          errorMessage = "El departamento que intentas registrar ya existe.";
         }
+
+        Swal.fire({
+          icon: 'warning',
+          title: 'Error en el registro',
+          text: errorMessage,
+        });
         return;
       }
 
@@ -285,6 +284,7 @@ const Formulario = ({ onSubmit }) => {
       setLoading(false);
     }
   };
+
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {personas.map((personaData, index) => (

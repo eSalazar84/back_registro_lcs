@@ -8,6 +8,7 @@ import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateRegistroDto } from './dto/create-registro.dto';
 import { Persona } from 'src/persona/entities/persona.entity';
+import { HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 
 @Controller('registro')
 export class RegistroController {
@@ -20,9 +21,33 @@ export class RegistroController {
       ingresos: CreateIngresoDto[];
       lote: CreateLoteDto;
     }[]
-  ): Promise<Persona[]> {
-    return this.registroService.createAll(createAllDto);
+  ) {
+    try {
+      const personas = await this.registroService.createAll(createAllDto);
+      return {
+        status: HttpStatus.CREATED,
+        message: 'Registros creados exitosamente',
+        data: personas,
+        count: personas.length
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw new HttpException({
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Error de validación',
+          message: error.message
+        }, HttpStatus.BAD_REQUEST);
+      }
+
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'Error del servidor',
+        message: 'Error al procesar los registros'
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
+
+
   // @Get()
   // findAll() {
   //   return this.registroService.findAll();
