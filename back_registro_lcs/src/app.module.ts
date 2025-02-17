@@ -17,7 +17,7 @@ import { PdfService } from './mailservice/pdf_document/pdf.service';
       host: "LOCALHOST",
       port: 3306,
       username: "root",
-      password: "anayfer13",
+      password: "root",
       database: "registro_lcs",
       entities:[ join(__dirname, '/**/*.entity{.js,.ts}')],
       synchronize: true
