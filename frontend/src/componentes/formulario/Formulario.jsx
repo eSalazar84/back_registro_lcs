@@ -20,6 +20,7 @@ const Formulario = ({ onSubmit }) => {
       estado_civil: '',
       nacionalidad: '',
       certificado_discapacidad: null,
+      rol: 'User',
       vinculo: '',
       titular_cotitular: 'Titular'
     },
@@ -112,6 +113,7 @@ const Formulario = ({ onSubmit }) => {
             estado_civil: "",
             nacionalidad: "",
             certificado_discapacidad: null,
+            rol:'User',
             vinculo: "",
             titular_cotitular: ""
           },
@@ -124,8 +126,8 @@ const Formulario = ({ onSubmit }) => {
             localidad: "",
             cantidad_dormitorios: "",
             estado_vivienda: "",
-            alquila: null,
-            monto_alquiler: "",
+            alquiler: null,
+            valor_alquiler: "",
             tipo_alquiler: ""
           },
           ingresos: [{
@@ -217,8 +219,8 @@ const Formulario = ({ onSubmit }) => {
            if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion || 
             persona.vivienda.departamento === null || !persona.vivienda.localidad || 
             !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
-            persona.vivienda.alquila === null || 
-            (persona.vivienda.alquila && (!persona.vivienda.monto_alquiler || !persona.vivienda.tipo_alquiler))) {
+            persona.vivienda.alquiler === null || 
+            (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))) {
           Swal.fire({
             icon: 'error',
             title: 'Campos incompletos',
@@ -506,7 +508,7 @@ const Formulario = ({ onSubmit }) => {
                 <option value="Casado/a">Casado/a</option>
                 <option value="Divorciado/a">Divorciado/a</option>
                 <option value="Viudo/a">Viudo/a</option>
-                <option value="Concubinato">Concubinato</option>
+                <option value="Concubinato/a">Concubinato/a</option>
               </select>
             </label>
 
@@ -727,10 +729,10 @@ const Formulario = ({ onSubmit }) => {
               <span className={styles.labelText}>¿Alquila? *</span>
               <select
                 required
-                name="alquila"
-                value={personaData.vivienda.alquila === true ? "Si" : 
-                       personaData.vivienda.alquila === false ? "No" : ""}
-                onChange={(e) => handleInputChange(index, 'vivienda.alquila', e.target.value === 'Si')}
+                name="alquiler"
+                value={personaData.vivienda.alquiler === true ? "Si" : 
+                       personaData.vivienda.alquiler === false ? "No" : ""}
+                onChange={(e) => handleInputChange(index, 'vivienda.alquiler', e.target.value === 'Si')}
                 className={styles.select}
               >
                 <option value="" disabled>¿Alquila la vivienda?</option>
@@ -739,7 +741,7 @@ const Formulario = ({ onSubmit }) => {
               </select>
             </label>
 
-            {personaData.vivienda.alquila && (
+            {personaData.vivienda.alquiler && (
               <div className={styles.alquilerGroup}>
                 <label className={styles.label}>
                   <span className={styles.labelText}>Monto del alquiler *</span>
@@ -747,8 +749,8 @@ const Formulario = ({ onSubmit }) => {
                     required
                     type="number"
                     placeholder="Monto del alquiler"
-                    value={personaData.vivienda.monto_alquiler}
-                    onChange={(e) => handleInputChange(index, 'vivienda.monto_alquiler', e.target.value)}
+                    value={personaData.vivienda.valor_alquiler}
+                    onChange={(e) => handleInputChange(index, 'vivienda.valor_alquiler', e.target.value)}
                     className={styles.input}
                   />
                 </label>
