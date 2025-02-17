@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 
 const Formulario = ({ onSubmit }) => {
   const [loading, setLoading] = useState(false);
+  const [aceptaDeclaracion, setAceptaDeclaracion] = useState(false);
   const [personas, setPersonas] = useState([{
     persona: {
       nombre: '',
@@ -19,7 +20,6 @@ const Formulario = ({ onSubmit }) => {
       estado_civil: '',
       nacionalidad: '',
       certificado_discapacidad: null,
-      rol: 'User',
       vinculo: '',
       titular_cotitular: 'Titular'
     },
@@ -63,63 +63,98 @@ const Formulario = ({ onSubmit }) => {
   };
 
   const addIngreso = (personaIndex) => {
-    const updatedPersonas = [...personas];
-    updatedPersonas[personaIndex].ingresos.push({
-      situacion_laboral: '',
-      ocupacion: '',
-      CUIT_empleador: '',
-      salario: ''
+    Swal.fire({
+      title: 'Agregar Ingreso',
+      text: "¿Desea agregar un nuevo ingreso?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, agregar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const nuevasPersonas = [...personas];
+        nuevasPersonas[personaIndex].ingresos.push({
+          situacion_laboral: "",
+          ocupacion: "",
+          CUIT_empleador: "",
+          salario: ""
+        });
+        setPersonas(nuevasPersonas);
+      }
     });
-    setPersonas(updatedPersonas);
   };
 
   const addPersona = () => {
-    setPersonas([...personas, {
-      persona: {
-        nombre: '',
-        apellido: '',
-        tipo_dni: '',
-        dni: '',
-        CUIL_CUIT: '',
-        genero: '',
-        fecha_nacimiento: '',
-        email: '',
-        telefono: '',
-        estado_civil: '',
-        nacionalidad: '',
-        certificado_discapacidad: null,
-        rol: 'User',
-        vinculo: '',
-        titular_cotitular: ''
-      },
-      ingresos: [{
-        situacion_laboral: '',
-        ocupacion: '',
-        CUIT_empleador: '',
-        salario: ''
-      }],
-      lote: {
-        localidad: ''
-      },
-      vivienda: {
-        direccion: '',
-        numero_direccion: '',
-        departamento: null,
-        piso_departamento: '',
-        numero_departamento: '',
-        alquiler: null,
-        valor_alquiler: '',
-        localidad: '',
-        cantidad_dormitorios: '',
-        estado_vivienda: '',
-        tipo_alquiler: ''
+    Swal.fire({
+      title: 'Agregar Persona',
+      text: "¿Desea agregar una nueva persona al formulario?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, agregar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const nuevaPersona = {
+          persona: {
+            nombre: "",
+            apellido: "",
+            tipo_dni: "",
+            dni: "",
+            CUIL_CUIT: "",
+            genero: "",
+            fecha_nacimiento: "",
+            email: "",
+            telefono: "",
+            estado_civil: "",
+            nacionalidad: "",
+            certificado_discapacidad: null,
+            vinculo: "",
+            titular_cotitular: ""
+          },
+          vivienda: {
+            direccion: "",
+            numero_direccion: "",
+            departamento: null,
+            piso_departamento: "",
+            numero_departamento: "",
+            localidad: "",
+            cantidad_dormitorios: "",
+            estado_vivienda: "",
+            alquila: null,
+            monto_alquiler: "",
+            tipo_alquiler: ""
+          },
+          ingresos: [{
+            situacion_laboral: "",
+            ocupacion: "",
+            CUIT_empleador: "",
+            salario: ""
+          }],
+          lote: {
+            localidad: ""
+          }
+        };
+        setPersonas([...personas, nuevaPersona]);
       }
-    }]);
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!aceptaDeclaracion) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Declaración Jurada',
+        text: 'Debe aceptar la declaración jurada para continuar.',
+      });
+      return;
+    }
+
     // Validación de campos requeridos
     for (const persona of personas) {
       // Validar datos personales
@@ -283,6 +318,52 @@ const Formulario = ({ onSubmit }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const cancelarUltimaPersona = () => {
+    Swal.fire({
+      title: '¿Cancelar registro?',
+      text: "¿Desea cancelar el registro de esta persona?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No, mantener'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPersonas(personas.slice(0, -1)); // Elimina la última persona
+        Swal.fire(
+          'Cancelado',
+          'El registro ha sido cancelado',
+          'success'
+        );
+      }
+    });
+  };
+
+  const cancelarUltimoIngreso = (personaIndex) => {
+    Swal.fire({
+      title: '¿Cancelar ingreso?',
+      text: "¿Desea cancelar este ingreso?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No, mantener'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const nuevasPersonas = [...personas];
+        nuevasPersonas[personaIndex].ingresos.pop(); // Elimina el último ingreso
+        setPersonas(nuevasPersonas);
+        Swal.fire(
+          'Cancelado',
+          'El ingreso ha sido cancelado',
+          'success'
+        );
+      }
+    });
   };
 
   return (
@@ -499,18 +580,26 @@ const Formulario = ({ onSubmit }) => {
 
             <label className={styles.label}>
               <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
-              <select
-                required
-                name="titular_cotitular"
-                value={personaData.persona.titular_cotitular || ""}
-                onChange={(e) => handleInputChange(index, 'persona.titular_cotitular', e.target.value)}
-                className={styles.select}
-              >
-                <option value="" disabled>Titular - Cotitular - Conviviente</option>
-                <option value="Titular">Titular</option>
-                <option value="Cotitular">Cotitular</option>
-                <option value="Conviviente">Conviviente</option>
-              </select>
+              {index === 0 ? (
+                <input
+                  type="text"
+                  value="Titular"
+                  disabled
+                  className={`${styles.input} ${styles.inputDisabled}`}
+                />
+              ) : (
+                <select
+                  required
+                  name="titular_cotitular"
+                  value={personaData.persona.titular_cotitular || ""}
+                  onChange={(e) => handleInputChange(index, 'persona.titular_cotitular', e.target.value)}
+                  className={styles.select}
+                >
+                  <option value="" disabled>Seleccione rol</option>
+                  <option value="Cotitular">Cotitular</option>
+                  <option value="Conviviente">Conviviente</option>
+                </select>
+              )}
             </label>
           </div>
         </div>
@@ -758,13 +847,24 @@ const Formulario = ({ onSubmit }) => {
               </label>
             </div>
           ))}
-          <button 
-            type="button" 
-            onClick={() => addIngreso(index)}
-            className={styles.button}
-          >
-            Añadir Ingreso
-          </button>
+          <div className={styles.ingresoButtonGroup}>
+            <button 
+              type="button" 
+              onClick={() => addIngreso(index)}
+              className={`${styles.button} ${styles.addButton}`}
+            >
+              Añadir Ingreso
+            </button>
+            {personaData.ingresos.length > 1 && (
+              <button 
+                type="button" 
+                onClick={() => cancelarUltimoIngreso(index)}
+                className={`${styles.button} ${styles.cancelButton}`}
+              >
+                Cancelar Último Ingreso
+              </button>
+            )}
+          </div>
         </div>
 
         <div className={styles.sectionDivider} />
@@ -799,20 +899,43 @@ const Formulario = ({ onSubmit }) => {
         </div>
       ))}
 
-      {/* Botones finales del formulario */}
+      {/* Después de todas las secciones del formulario y antes de los botones */}
+      <div className={styles.declaracionJurada}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={aceptaDeclaracion}
+            onChange={(e) => setAceptaDeclaracion(e.target.checked)}
+            className={styles.checkbox}
+          />
+          <span className={styles.checkboxText}>
+            Declaro bajo juramento que los datos ingresados son verídicos y acepto que cualquier falsedad u omisión puede dar lugar a la desestimación de mi inscripción.
+          </span>
+        </label>
+      </div>
+
       <div className={styles.buttonGroup}>
         <button 
           type="button" 
           onClick={addPersona}
           disabled={loading}
-          className={styles.button}
+          className={`${styles.button} ${styles.addButton}`}
         >
           Añadir Persona
         </button>
+        {personas.length > 1 && (
+          <button 
+            type="button" 
+            onClick={cancelarUltimaPersona}
+            className={`${styles.button} ${styles.cancelButton}`}
+          >
+            Cancelar Última Persona
+          </button>
+        )}
         <button 
           type="submit"
-          disabled={loading}
-          className={styles.button}
+          disabled={loading || !aceptaDeclaracion}
+          className={`${styles.button} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
         >
           {loading ? "Enviando..." : "Enviar"}
         </button>
