@@ -3,41 +3,97 @@
     justify-content: space-between;
     align-items: center;
     width: 100vw; /* Ocupa el ancho completo de la pantalla */
-    height: 92px; /* Ocupa el alto completo de la pantalla */
-    padding: 0 20px; /* Espaciado interno opcional */
+    height: 92px; /* Altura de la barra */
+    padding: 0 20px; /* Espaciado interno */
     box-sizing: border-box; /* Incluye el padding en el ancho y alto */
     background-color: #002b5a;   
     color: #ffffff;
 }
 
+/* Logo */
 .logo img {
-    height: 60px; /* Ajusta el tamaño del logo */
+    height: 60px;
     padding-left: 40px;
 }
 
+/* Título */
 .container_h2_nav {
-    flex: 1; /* Ocupa el espacio restante */
+    flex: 1;
     text-align: center;
 }
 
 .container_h2_nav h2 {
-    font-size: 24px; /* Tamaño del texto */
+    font-size: 24px;
     font-weight: bold;
 }
 
+/* Redes sociales */
 .container_redes {
     display: flex;
-    gap: 15px; /* Espaciado entre íconos */
-    font-size: 20px; /* Tamaño de los íconos */
+    gap: 15px;
+    font-size: 20px;
     padding-right: 40px;
     padding-left: 40px;
     border-left: #ffffff solid 1px;
     border-right: #ffffff solid 1px;
 }
 
+/* Fecha */
 .container_fecha {
-    font-size: 16px; /* Tamaño del texto */
+    font-size: 16px;
     padding-left: 100px;
     padding-right: 40px;
-  
+}
+
+/* Para pantallas menores a 768px */
+@media (max-width: 768px) {
+    .container_general_nav {
+        height: 80px; /* Altura fija */
+        padding: 5px 10px;
+    }
+
+    .logo img {
+        height: 45px; /* Reduzco el logo */
+    }
+
+    .container_h2_nav h2 {
+        font-size: 18px; /* Texto más pequeño pero visible */
+    }
+
+    .container_redes {
+        font-size: 18px; /* Iconos más chicos */
+        gap: 10px;
+        padding: 0 20px;
+    }
+
+    .container_fecha {
+        font-size: 14px;
+        padding: 0 20px;
+    }
+}
+
+/* Para pantallas menores a 480px (muy pequeñas) */
+@media (max-width: 480px) {
+    .container_general_nav {
+        height: 80px; /* Mantengo la altura */
+        padding: 5px;
+    }
+
+    .logo img {
+        height: 40px;
+    }
+
+    .container_h2_nav h2 {
+        font-size: 16px;
+    }
+
+    .container_redes {
+        font-size: 16px;
+        gap: 8px;
+        padding: 0 10px;
+    }
+
+    .container_fecha {
+        font-size: 12px;
+    }
 }

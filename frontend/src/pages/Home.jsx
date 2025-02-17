@@ -1,7 +1,11 @@
 import BtnBlue from '../componentes/btnBlue/BtnBlue';
 import styles from './home.module.css'
+import { Link, useNavigate } from "react-router-dom";
+
 
 function Home() {
+    const navigate = useNavigate();
+
 
 
     return (
@@ -44,9 +48,9 @@ function Home() {
                     </div>
 
                     <div className={styles.container_buttons_home}>
+                        <BtnBlue text="Bases y condiciones" />
+                        <Link to={'/registro'}>  <BtnBlue text="Ingreso al Registro" /></Link>
 
-                        <BtnBlue text="Bases y condiciones"/>
-                        <BtnBlue text="Ingreso al Registro"/>
 
 
                     </div>
