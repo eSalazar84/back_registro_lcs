@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Confirmación de registro</title>
+  </head>
+
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      height: 80vh; /* Ocupa toda la altura de la ventana */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    "
+  >
+    <!-- Contenedor principal -->
+    <table
+      role="presentation"
+      align="center"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="max-width: 700px"
+    >
+      <tr>
+        <td
+          style="
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          "
+        >
+          <!-- Logo -->
+          <header
+            style="
+              text-align: left;
+              margin-bottom: 20px;
+              padding: 15px;
+              background-color: #002b5a;
+            "
+          >
+            <a href="http://https://benitojuarez.gov.ar/">
+              <img
+                src="https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png"
+                alt="logo_municipalidad"
+                style="max-width: 150px; height: auto; display: block"
+              />
+            </a>
+          </header>
+
+          <!-- Título -->
+          <div
+            style="
+              font-size: 24px;
+              font-weight: bold;
+              color: #333;
+              margin-bottom: 20px;
+              text-align: center;
+            "
+          >
+            Municipalidad de Benito Juarez
+          </div>
+
+          <!-- Mensaje 1 -->
+          <div
+            style="
+              font-size: 16px;
+              color: #555;
+              margin-bottom: 20px;
+              line-height: 1.5;
+              text-align: justify; /* Justificar el texto */
+            "
+          >
+            Hola <strong>{{nombreTitular}}</strong>, te has inscripto
+            correctamente al programa 'Mi Hábitat, Mi Hogar'.
+          </div>
+
+          <!-- Mensaje 2 -->
+          <div
+            style="
+              font-size: 16px;
+              color: #555;
+              margin-bottom: 20px;
+              line-height: 1.5;
+              text-align: center; /* Centrar el texto */
+              background-color: #e7f3fe; /* Fondo azul claro */
+              padding: 10px; /* Espaciado interno */
+              border-radius: 5px; /* Bordes redondeados */
+            "
+          >
+            El número de registro asignado para el sorteo es el:
+            <div style="text-align: center">
+              <strong style="font-size: 48px; color: #007bff;">{{numero_registro}}</strong> <!-- Cambiar color del número -->
+            </div>
+          </div>
+
+          <!-- Mensaje 3 -->
+          <div
+            style="
+              font-size: 16px;
+              color: #555;
+              margin-bottom: 30px;
+              line-height: 1.5;
+              font-style: italic; /* Estilo de texto en cursiva */
+            "
+          >
+            Con este número estás habilitado para participar por el concurso de
+            venta de lotes municipales.
+          </div>
+          <div
+            style="
+              font-size: 16px;
+              color: #555;
+              margin-bottom: 30px;
+              line-height: 1.5;
+            "
+          >
+            Si necesitas más Información, por favor comunicate mediante estos
+            canales:
+          </div>
+
+          <!-- Botón -->
+          <div style="text-align: center">
+            <a
+              href="http://localhost:3000/confirmar/{{numero_registro}}"
+              style="
+                display: inline-block;
+                padding: 12px 25px;
+                background-color: #28a745; /* Cambiar color del botón a verde */
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: bold;
+                transition: background-color 0.3s; /* Efecto de transición */
+              "
+              onmouseover="this.style.backgroundColor='#218838'" /* Efecto hover */
+              onmouseout="this.style.backgroundColor='#28a745'" /* Efecto hover */
+            >
+              Ver Información
+            </a>
+          </div>
+          <div>
+            <footer
+              style="
+                text-align: center;
+                margin-bottom: 20px;
+                margin-top: 20px;
+                background-color: #002b5a;
+              "
+            >
+              hola
+            </footer>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
