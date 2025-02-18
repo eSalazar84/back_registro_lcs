@@ -1,5 +1,5 @@
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException } from '@nestjs/common';
 import { RegistroService } from './registro.service';
 
 import { UpdateRegistroDto } from './dto/update-registro.dto';
@@ -8,7 +8,6 @@ import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateRegistroDto } from './dto/create-registro.dto';
 import { Persona } from 'src/persona/entities/persona.entity';
-import { HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 
 @Controller('registro')
 export class RegistroController {
