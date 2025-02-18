@@ -56,23 +56,31 @@ export class RegistroService {
 
                 console.log(`🔍 Verificando vivienda: ${viviendaKey}`);
                 if (!viviendasVerificadas[viviendaKey]) {
-                    const viviendaFound = await queryRunner.manager.findOne(Vivienda, { where: { 
+                    const viviendaFound = await queryRunner.manager.findOne(Vivienda, { 
+                      where: { 
                         direccion: vivienda.direccion,
                         numero_direccion: vivienda.numero_direccion,
                         localidad: vivienda.localidad,
                         departamento: vivienda.departamento,
                         piso_departamento: vivienda.piso_departamento,
                         numero_departamento: vivienda.numero_departamento
-                    }});
-
+                      }
+                    });
+                  
                     if (viviendaFound) {
-                        console.error(`❌ ERROR: Vivienda ya registrada en ${viviendaKey}`);
-                        throw new Error(`La vivienda en ${vivienda.direccion} ya está registrada.`);
+                      console.error(`❌ ERROR: Vivienda ya registrada en ${viviendaKey}`);
+                  
+                      // Verificar si la vivienda es un departamento
+                      if (vivienda.departamento) {
+                        throw new Error(`El departamento en ${vivienda.direccion}, ${vivienda.numero_direccion},piso ${vivienda.piso_departamento} ${vivienda.numero_departamento} ya está registrado.`);
+                      } else {
+                        throw new Error(`La vivienda en ${vivienda.direccion}, ${vivienda.numero_direccion} ya está registrada.`);
+                      }
                     }
-
+                  
                     viviendasVerificadas[viviendaKey] = true;
-                }
-
+                  }
+                  
                 console.log(`🔍 Verificando persona con DNI ${persona.dni}`);
                 const personaFound = await queryRunner.manager.findOne(Persona, { where: { dni: persona.dni } });
 
