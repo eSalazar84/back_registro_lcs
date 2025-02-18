@@ -1,0 +1,349 @@
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+  margin-bottom: 40px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.sectionTitle {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #3498db;
+  position: relative;
+}
+
+.inputGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.labelText {
+  font-size: 0.9rem;
+  color: #34495e;
+  font-weight: 500;
+}
+
+.input, .select {
+  width: 100%;
+  max-width: 300px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.input:focus, .select:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.select {
+  background-color: white;
+}
+
+/* Separador de secciones */
+.sectionDivider {
+  height: 2px;
+  background-color: #e0e0e0;
+  margin: 30px 0;
+}
+
+/* Contenedor de botones */
+.buttonGroup {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #3498db;
+  color: white;
+  min-width: 150px;
+  text-align: center;
+}
+
+.button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Estilos específicos para cada sección */
+.personalData {
+  border-left: 4px solid #3498db;
+}
+
+.housingData {
+  border-left: 4px solid #e74c3c;
+}
+
+.incomeData {
+  border-left: 4px solid #2ecc71;
+}
+
+.locationData {
+  border-left: 4px solid #f1c40f;
+}
+
+/* Estilos para el contenedor de campos de alquiler */
+.alquilerGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #e74c3c;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Animación para la aparición suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ajustes para los campos dentro del grupo de alquiler */
+.alquilerGroup .label {
+  margin-bottom: 0;
+}
+
+.alquilerGroup .input,
+.alquilerGroup .select {
+  background-color: white;
+  border: 1px solid #ddd;
+  transition: all 0.3s ease;
+}
+
+.alquilerGroup .input:focus,
+.alquilerGroup .select:focus {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+}
+
+/* Estilo para el label principal de alquiler */
+.alquilerLabel {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  .inputGroup {
+    grid-template-columns: 1fr;
+  }
+
+  .input, .select {
+    max-width: 100%;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .alquilerGroup {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
+
+/* Estilos para pantallas más grandes */
+@media (min-width: 1200px) {
+  .inputGroup {
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas en pantallas grandes */
+  }
+}
+
+.declaracionJurada {
+  margin: 30px 0;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #2c3e50;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.checkbox {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkboxText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #2c3e50;
+}
+
+.buttonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Estilo hover para el checkbox */
+.checkboxLabel:hover .checkboxText {
+  color: #34495e;
+}
+
+/* Estilo para el checkbox cuando está checked */
+.checkbox:checked + .checkboxText {
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .declaracionJurada {
+    margin: 20px 0;
+    padding: 15px;
+  }
+
+  .checkboxText {
+    font-size: 13px;
+  }
+}
+
+.addButton {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.addButton:hover {
+  background-color: #2980b9;
+}
+
+.addButton:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Para el botón de añadir ingreso específicamente */
+.ingresoButtonGroup {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: flex-start;
+}
+
+/* Para los botones principales al final del formulario */
+.buttonGroup {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .buttonGroup, .ingresoButtonGroup {
+    flex-direction: column;
+  }
+  
+  .addButton, .cancelButton {
+    width: 100%;
+  }
+}
+
+.cancelButton {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.cancelButton:hover {
+  background-color: #c82333;
+}
+
+@media (max-width: 768px) {
+  .buttonGroup {
+    flex-direction: column;
+  }
+  
+  .cancelButton {
+    width: 100%;
+  }
+}
+
+.inputDisabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  color: #495057;
+  border: 1px solid #ced4da;
+}
+
+.inputDisabled:hover {
+  border-color: #ced4da;
+}
