@@ -7,7 +7,7 @@ import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles'
 const Formulario = ({ onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [aceptaDeclaracion, setAceptaDeclaracion] = useState(false);
-  const [invalidAddresses, setInvalidAddresses] = useState([]);
+  const [invalidAddresses, setInvalidAddresses] = useState([false]);
   const [personas, setPersonas] = useState([{
     persona: {
       nombre: '',
@@ -115,7 +115,7 @@ const Formulario = ({ onSubmit }) => {
             estado_civil: "",
             nacionalidad: "",
             certificado_discapacidad: null,
-            rol: 'User',
+            rol:'User',
             vinculo: "",
             titular_cotitular: ""
           },
@@ -201,7 +201,7 @@ const Formulario = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (!aceptaDeclaracion) {
       Swal.fire({
         icon: 'warning',
@@ -213,30 +213,6 @@ const Formulario = ({ onSubmit }) => {
 
     // Validar ingresos antes de enviar
     for (const persona of personas) {
-      // Validar datos personales
-      if (!persona.persona.nombre || !persona.persona.apellido || !persona.persona.tipo_dni ||
-        !persona.persona.dni || !persona.persona.CUIL_CUIT || !persona.persona.genero ||
-        !persona.persona.fecha_nacimiento || !persona.persona.email || !persona.persona.telefono ||
-        !persona.persona.estado_civil || !persona.persona.nacionalidad ||
-        persona.persona.certificado_discapacidad === null || !persona.persona.vinculo ||
-        !persona.persona.titular_cotitular) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Campos incompletos',
-          text: 'Por favor complete todos los datos personales',
-        });
-        return;
-      }
-
-      // Validar email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(persona.persona.email)) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Email inválido',
-          text: 'Por favor ingrese un email válido',
-        });
-        return;
       if (!esMenorDeEdad(persona.persona.fecha_nacimiento)) {
         for (const ingreso of persona.ingresos) {
           if (ingreso.situacion_laboral === "Relación de dependencia" || 
@@ -283,53 +259,6 @@ const Formulario = ({ onSubmit }) => {
         return;
       }
 
-
-      // Validación de direcciones
-      const addressValidation = personas.map((persona, index) => {
-        const localidad = persona.vivienda.localidad;
-        const direccion = persona.vivienda.direccion.trim().toUpperCase();
-        const callesValidas = callesPorLocalidad[localidad]?.map(calle => calle.trim().toUpperCase()) || [];
-        return callesValidas.includes(direccion);
-      });
-
-      // Validar datos de vivienda
-      if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion ||
-        persona.vivienda.departamento === null || !persona.vivienda.localidad ||
-        !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
-        persona.vivienda.alquiler === null ||
-        (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Campos incompletos',
-          text: 'Por favor complete todos los datos de la vivienda',
-        });
-        return;
-      }
-
-
-      // Validar datos de ingresos
-      // Dentro de handleSubmit, modificar la validación de ingresos:
-      for (const ingreso of persona.ingresos) {
-        if (!ingreso.situacion_laboral || !ingreso.ocupacion || !ingreso.salario) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Campos incompletos',
-            text: 'Por favor complete los campos obligatorios de ingresos',
-          });
-          return;
-        }
-
-        // Solo validar CUIT del empleador si es trabajo en relación de dependencia
-        if ((ingreso.situacion_laboral === "Relación de dependencia" ||
-          ingreso.situacion_laboral === "Relación de dependencia y Autonomo") &&
-          !ingreso.CUIT_empleador) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Campos incompletos',
-            text: 'El CUIT del empleador es requerido para trabajos en relación de dependencia',
-          });
-          return;
-
       // Validar campos adicionales solo para mayores de edad
       if (!esPersonaMenor) {
         if (!persona.persona.CUIL_CUIT || !persona.persona.email || 
@@ -374,6 +303,13 @@ const Formulario = ({ onSubmit }) => {
         }
       }
 
+      const addressValidation = personas.map((persona, index) => {
+        const localidad = persona.vivienda.localidad;
+        const direccion = persona.vivienda.direccion.trim().toUpperCase();
+        const callesValidas = callesPorLocalidad[localidad]?.map(calle => calle.trim().toUpperCase()) || [];
+        return callesValidas.includes(direccion);
+      });
+
       // Validar datos de vivienda
       if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion || 
           persona.vivienda.departamento === null || !persona.vivienda.localidad || 
@@ -417,13 +353,8 @@ const Formulario = ({ onSubmit }) => {
     setLoading(true);
 
     try {
-      console.log("datos formulario", personas);
-
       const datosTransformados = personas.map(persona => transformarDatos(persona));
-
-      console.log("datos transformados para enviar", datosTransformados);
-
-
+      
       const response = await fetch("http://localhost:3000/registro", {
         method: "POST",
         headers: {
@@ -625,174 +556,76 @@ const Formulario = ({ onSubmit }) => {
                 </select>
               </label>
               <label className={styles.label}>
-              <span className={styles.labelText}>DNI *</span>
-              <input
-                required
-                type="text"
-                placeholder="DNI"
-                value={personaData.persona.dni}
-                onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)}
-                className={styles.input}
-                maxLength="8"
-              />
-            </label>
-
-            {!esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
-              <>
-                <label className={styles.label}>
-                  <span className={styles.labelText}>CUIL/CUIT *</span>
-                  <input
-                    required
-                    type="text"
-                    placeholder="CUIL/CUIT"
-                    value={personaData.persona.CUIL_CUIT}
-                    onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)}
-                    className={styles.input}
-                    maxLength="11"
-                  />
-                </label>
-
-                <label className={styles.label}>
-                  <span className={styles.labelText}>Email *</span>
-                  <input
-                    required
-                    type="email"
-                    placeholder="Email"
-                    value={personaData.persona.email}
-                    onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)}
-                    className={styles.input}
-                  />
-                </label>
-
-                <label className={styles.label}>
-                  <span className={styles.labelText}>Teléfono *</span>
-                  <input
-                    required
-                    type="text"
-                    placeholder="Teléfono"
-                    value={personaData.persona.telefono}
-                    onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)}
-                    className={styles.input}
-                  />
-                </label>
-
-                <label className={styles.label}>
-                  <span className={styles.labelText}>Estado Civil *</span>
-                  <select
-                    required
-                    name="estado_civil"
-                    value={personaData.persona.estado_civil || ""}
-                    onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="" disabled>Seleccione estado civil</option>
-                    <option value="Soltero/a">Soltero/a</option>
-                    <option value="Casado/a">Casado/a</option>
-                    <option value="Divorciado/a">Divorciado/a</option>
-                    <option value="Viudo/a">Viudo/a</option>
-                    <option value="Concubinato/a">Concubinato/a</option>
-                  </select>
-                </label>
-              </>
-            )}
-
-            <label className={styles.label}>
-              <span className={styles.labelText}>Género *</span>
-              <select
-                required
-                name="genero"
-                value={personaData.persona.genero || ""}
-                onChange={(e) => handleInputChange(index, 'persona.genero', e.target.value)}
-                className={styles.select}
-              >
-                <option value="" disabled>Seleccione género</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </label>
-
-            <label className={styles.label}>
-              <span className={styles.labelText}>Nacionalidad *</span>
-              <select
-                required
-                name="nacionalidad"
-                value={personaData.persona.nacionalidad || ""}
-                onChange={(e) => handleInputChange(index, 'persona.nacionalidad', e.target.value)}
-                className={styles.select}
-              >
-                <option value="" disabled>Seleccione nacionalidad</option>
-                <option value="Argentina">Argentina</option>
-                <option value="Bolivia">Bolivia</option>
-                <option value="Chilena">Chilena</option>
-                <option value="Paraguaya">Paraguaya</option>
-                <option value="Uruguaya">Uruguaya</option>
-                <option value="Peruana">Peruana</option>
-                <option value="Brasileña">Brasileña</option>
-                <option value="Venezolana">Venezolana</option>
-                <option value="Colombiana">Colombiana</option>
-                <option value="Española">Española</option>
-                <option value="Italiana">Italiana</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </label>
-
-            <label className={styles.label}>
-              <span className={styles.labelText}>Certificado de discapacidad *</span>
-              <select
-                required
-                name="certificado_discapacidad"
-                value={personaData.persona.certificado_discapacidad === true ? "Si" : 
-                       personaData.persona.certificado_discapacidad === false ? "No" : ""}
-                onChange={(e) => handleInputChange(index, 'persona.certificado_discapacidad', e.target.value === 'Si')}
-                className={styles.select}
-              >
-                <option value="" disabled>¿Posee certificado de discapacidad?</option>
-                <option value="Si">Sí</option>
-                <option value="No">No</option>
-              </select>
-            </label>
-
-            <label className={styles.label}>
-              <span className={styles.labelText}>Vínculo *</span>
-              <select
-                required
-                name="vinculo"
-                value={personaData.persona.vinculo || ""}
-                onChange={(e) => handleInputChange(index, 'persona.vinculo', e.target.value)}
-                className={styles.select}
-              >
-                <option value="" disabled>Seleccione Vínculo</option>
-                <option value="Esposo/a">Esposo/a</option>
-                <option value="Concubino/a">Concubino/a</option>
-                <option value="Conyuge">Cónyuge</option>
-                <option value="Hermano/a">Hermano/a</option>
-                <option value="Hijo/a">Hijo/a</option>
-                <option value="Madre">Madre</option>
-                <option value="Padre">Padre</option>
-                <option value="Primo/a">Primo/a</option>
-                <option value="Nieto/a">Nieto/a</option>
-                <option value="Tio/a">Tío/a</option>
-                <option value="Sobrino/a">Sobrino/a</option>
-                <option value="Suegro/a">Suegro/a</option>
-                <option value="Abuelo/a">Abuelo/a</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </label>
-
-            <label className={styles.label}>
-              <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
-              {index === 0 ? (
+                <span className={styles.labelText}>DNI *</span>
                 <input
                   required
                   type="text"
-                  placeholder="CUIL/CUIT"
-                  value={personaData.persona.CUIL_CUIT}
-                  onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)}
+                  placeholder="DNI"
+                  value={personaData.persona.dni}
+                  onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)}
                   className={styles.input}
-                  maxLength="11"
+                  maxLength="8"
                 />
               </label>
+
+              {!esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
+                <>
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>CUIL/CUIT *</span>
+                    <input
+                      required
+                      type="text"
+                      placeholder="CUIL/CUIT"
+                      value={personaData.persona.CUIL_CUIT}
+                      onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)}
+                      className={styles.input}
+                      maxLength="11"
+                    />
+                  </label>
+
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Email *</span>
+                    <input
+                      required
+                      type="email"
+                      placeholder="Email"
+                      value={personaData.persona.email}
+                      onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)}
+                      className={styles.input}
+                    />
+                  </label>
+
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Teléfono *</span>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Teléfono"
+                      value={personaData.persona.telefono}
+                      onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)}
+                      className={styles.input}
+                    />
+                  </label>
+
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Estado Civil *</span>
+                    <select
+                      required
+                      name="estado_civil"
+                      value={personaData.persona.estado_civil || ""}
+                      onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)}
+                      className={styles.select}
+                    >
+                      <option value="" disabled>Seleccione estado civil</option>
+                      <option value="Soltero/a">Soltero/a</option>
+                      <option value="Casado/a">Casado/a</option>
+                      <option value="Divorciado/a">Divorciado/a</option>
+                      <option value="Viudo/a">Viudo/a</option>
+                      <option value="Concubinato/a">Concubinato/a</option>
+                    </select>
+                  </label>
+                </>
+              )}
 
               <label className={styles.label}>
                 <span className={styles.labelText}>Género *</span>
@@ -807,60 +640,6 @@ const Formulario = ({ onSubmit }) => {
                   <option value="Masculino">Masculino</option>
                   <option value="Femenino">Femenino</option>
                   <option value="Otro">Otro</option>
-                </select>
-              </label>
-
-              <label className={styles.label}>
-                <span className={styles.labelText}>Fecha de nacimiento *</span>
-                <input
-                  required
-                  type="date"
-                  value={personaData.persona.fecha_nacimiento}
-                  onChange={(e) => handleInputChange(index, 'persona.fecha_nacimiento', e.target.value)}
-                  className={styles.input}
-                  max={new Date().toISOString().split('T')[0]}
-                />
-              </label>
-
-              <label className={styles.label}>
-                <span className={styles.labelText}>Email *</span>
-                <input
-                  required
-                  type="email"
-                  placeholder="Email"
-                  value={personaData.persona.email}
-                  onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)}
-                  className={styles.input}
-                />
-              </label>
-
-              <label className={styles.label}>
-                <span className={styles.labelText}>Teléfono *</span>
-                <input
-                  required
-                  type="text"
-                  placeholder="Teléfono"
-                  value={personaData.persona.telefono}
-                  onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)}
-                  className={styles.input}
-                />
-              </label>
-
-              <label className={styles.label}>
-                <span className={styles.labelText}>Estado Civil *</span>
-                <select
-                  required
-                  name="estado_civil"
-                  value={personaData.persona.estado_civil || ""}
-                  onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="" disabled>Seleccione estado civil</option>
-                  <option value="Soltero/a">Soltero/a</option>
-                  <option value="Casado/a">Casado/a</option>
-                  <option value="Divorciado/a">Divorciado/a</option>
-                  <option value="Viudo/a">Viudo/a</option>
-                  <option value="Concubinato/a">Concubinato/a</option>
                 </select>
               </label>
 
@@ -957,6 +736,7 @@ const Formulario = ({ onSubmit }) => {
               </label>
             </div>
           </div>
+
           <div className={`${styles.section} ${styles.housingData}`}>
             <h3 className={styles.sectionTitle}>Datos de la Vivienda</h3>
             <div className={styles.inputGroup}>
@@ -1161,99 +941,98 @@ const Formulario = ({ onSubmit }) => {
           <div className={styles.sectionDivider} />
 
           {/* Sección de Ingresos */}
-          <div className={`${styles.section} ${styles.incomeData}`}>
-            <h3 className={styles.sectionTitle}>Ingresos</h3>
-            {personaData.ingresos.map((ingreso, ingresoIndex) => (
-              <div key={ingresoIndex} className={styles.inputGroup}>
-                <label className={styles.label}>
-                  <span className={styles.labelText}>Situación laboral *</span>
-                  <select
-                    required
-                    name="situacion_laboral"
-                    value={ingreso.situacion_laboral || ""}
-                    onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="" disabled>Situación laboral</option>
-                    <option value="Relación de dependencia">Relación de dependencia</option>
-                    <option value="Autónomo">Autónomo</option>
-                    <option value="Relación de dependencia y Autonomo">Relación de dependencia y Autónomo</option>
-                    <option value="Jubilado">Jubilado</option>
-                    <option value="Pensionado">Pensionado</option>
-                    <option value="Jubilado y Pensionado">Jubilado y Pensionado</option>
-                    <option value="Informal">Informal</option>
-                    <option value="Desempleado">Desempleado</option>
-                  </select>
-                </label>
-
-                <label className={styles.label}>
-                  <span className={styles.labelText}>Ocupación</span>
-                  <input
-
-                    type="text"
-                    placeholder="Ocupación"
-                    value={ingreso.ocupacion}
-                    onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
-                    className={styles.input}
-                  />
-                </label>
-                
-                {/* CUIT del empleador condicionado */}
-                {ingreso.situacion_laboral && (
+          {!esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
+            <div className={`${styles.section} ${styles.incomeData}`}>
+              <h3 className={styles.sectionTitle}>Ingresos</h3>
+              {personaData.ingresos.map((ingreso, ingresoIndex) => (
+                <div key={ingresoIndex} className={styles.inputGroup}>
                   <label className={styles.label}>
-                    <span className={styles.labelText}>
+                    <span className={styles.labelText}>Situación laboral *</span>
+                    <select
+                      required
+                      name="situacion_laboral"
+                      value={ingreso.situacion_laboral || ""}
+                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
+                      className={styles.select}
+                    >
+                      <option value="" disabled>Situación laboral</option>
+                      <option value="Relación de dependencia">Relación de dependencia</option>
+                      <option value="Autónomo">Autónomo</option>
+                      <option value="Relación de dependencia y Autonomo">Relación de dependencia y Autónomo</option>
+                      <option value="Jubilado">Jubilado</option>
+                      <option value="Pensionado">Pensionado</option>
+                      <option value="Jubilado y Pensionado">Jubilado y Pensionado</option>
+                      <option value="Informal">Informal</option>
+                      <option value="Desempleado">Desempleado</option>
+                    </select>
+                  </label>
 
-                      {(ingreso.situacion_laboral === "Relación de dependencia" || 
-                        ingreso.situacion_laboral === "Relación de dependencia y Autonomo") 
-                          ? "CUIT del empleador *" 
-                          : "CUIT del empleador (opcional)"}
-                    </span>
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Ocupación</span>
                     <input
-                      type="text"
-                      placeholder="CUIT del empleador"
-                      value={ingreso.CUIT_empleador || ""}
-                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
-                      className={styles.input}
 
-                      required={ingreso.situacion_laboral === "Relación de dependencia" || 
-                              ingreso.situacion_laboral === "Relación de dependencia y Autonomo"}
+                      type="text"
+                      placeholder="Ocupación"
+                      value={ingreso.ocupacion}
+                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
+                      className={styles.input}
                     />
                   </label>
-                )}
 
-                <label className={styles.label}>
-                  <span className={styles.labelText}>Ingreso mensual</span>
-                  <input
-                    type="number"
-                    placeholder="Ingreso mensual"
-                    value={ingreso.salario}
-                    onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
-                    className={styles.input}
-                  />
-                </label>
-              </div>
-            ))}
-            <div className={styles.ingresoButtonGroup}>
-              <button 
-                type="button" 
-                onClick={() => addIngreso(index)}
-                className={`${styles.button} ${styles.addButton}`}
-              >
-                Añadir Ingreso
-              </button>
-              {personaData.ingresos.length > 1 && (
-                <button 
-                  type="button" 
-                  onClick={() => cancelarUltimoIngreso(index)}
-                  className={`${styles.button} ${styles.cancelButton}`}
+                  {/* CUIT del empleador condicionado */}
+                  {ingreso.situacion_laboral && (
+                    <label className={styles.label}>
+                      <span className={styles.labelText}>
+                        {(ingreso.situacion_laboral === "Relación de dependencia" ||
+                          ingreso.situacion_laboral === "Relación de dependencia y Autonomo")
+                          ? "CUIT del empleador *"
+                          : "CUIT del empleador (opcional)"}
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="CUIT del empleador"
+                        value={ingreso.CUIT_empleador || ""}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
+                        className={styles.input}
+                        required={ingreso.situacion_laboral === "Relación de dependencia" ||
+                          ingreso.situacion_laboral === "Relación de dependencia y Autonomo"}
+                      />
+                    </label>
+                  )}
+
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Ingreso mensual</span>
+                    <input
+
+                      type="number"
+                      placeholder="Ingreso mensual"
+                      value={ingreso.salario}
+                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
+                      className={styles.input}
+                    />
+                  </label>
+                </div>
+              ))}
+              <div className={styles.ingresoButtonGroup}>
+                <button
+                  type="button"
+                  onClick={() => addIngreso(index)}
+                  className={`${styles.button} ${styles.addButton}`}
                 >
-                  Cancelar Último Ingreso
+                  Añadir Ingreso
                 </button>
-              )}
+                {personaData.ingresos.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => cancelarUltimoIngreso(index)}
+                    className={`${styles.button} ${styles.cancelButton}`}
+                  >
+                    Cancelar Último Ingreso
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-
-        )}
+          )}
 
           <div className={styles.sectionDivider} />
 
