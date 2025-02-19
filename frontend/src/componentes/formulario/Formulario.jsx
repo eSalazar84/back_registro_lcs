@@ -147,6 +147,58 @@ const Formulario = ({ onSubmit }) => {
     });
   };
 
+  const resetForm = () => {
+    setPersonas([{
+      persona: {
+        nombre: '',
+        apellido: '',
+        tipo_dni: '',
+        dni: '',
+        CUIL_CUIT: '',
+        email: '',
+        telefono: '',
+        estado_civil: '',
+        genero: '',
+        fecha_nacimiento: '',
+        nacionalidad: '',
+        certificado_discapacidad: null,
+        vinculo: '',
+        titular_cotitular: 'Titular'
+      },
+      vivienda: {
+        direccion: '',
+        numero_direccion: '',
+        departamento: null,
+        piso_departamento: null,
+        numero_departamento: null,
+        localidad: '',
+        cantidad_dormitorios: '',
+        estado_vivienda: '',
+        alquiler: null,
+        valor_alquiler: null,
+        tipo_alquiler: null
+      },
+      lote: {
+        localidad: ''
+      },
+      ingresos: [{
+        situacion_laboral: '',
+        ocupacion: '',
+        CUIT_empleador: '',
+        salario: ''
+      }]
+    }]);
+    setAceptaDeclaracion(false);
+
+    // Agregar un pequeño retraso para asegurar que el scroll ocurra después de que el estado se actualice
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }, 100);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -159,7 +211,7 @@ const Formulario = ({ onSubmit }) => {
       return;
     }
 
-    // Validación de campos requeridos
+    // Validar ingresos antes de enviar
     for (const persona of personas) {
       // Validar datos personales
       if (!persona.persona.nombre || !persona.persona.apellido || !persona.persona.tipo_dni ||
@@ -185,37 +237,52 @@ const Formulario = ({ onSubmit }) => {
           text: 'Por favor ingrese un email válido',
         });
         return;
+      if (!esMenorDeEdad(persona.persona.fecha_nacimiento)) {
+        for (const ingreso of persona.ingresos) {
+          if (ingreso.situacion_laboral === "Relación de dependencia" || 
+              ingreso.situacion_laboral === "Relación de dependencia y Autonomo") {
+            if (!ingreso.CUIT_empleador) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error en ingresos',
+                text: 'El CUIT del empleador es requerido para trabajos en relación de dependencia',
+              });
+              return;
+            }
+          }
+        }
       }
+    }
 
-      // Validar DNI (8 dígitos)
-      if (!/^\d{8}$/.test(persona.persona.dni)) {
+    // Agregar validación de edad para el titular
+    if (esMenorDeEdad(personas[0].persona.fecha_nacimiento)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El titular debe ser mayor de edad',
+      });
+      return;
+    }
+
+    // Dentro de handleSubmit, modificar la validación de campos requeridos
+    for (const persona of personas) {
+      const esPersonaMenor = esMenorDeEdad(persona.persona.fecha_nacimiento);
+
+      // Validar datos personales básicos (requeridos para todos)
+      if (!persona.persona.nombre || !persona.persona.apellido || 
+          !persona.persona.tipo_dni || !persona.persona.dni || 
+          !persona.persona.genero || !persona.persona.fecha_nacimiento || 
+          !persona.persona.nacionalidad || 
+          persona.persona.certificado_discapacidad === null || 
+          !persona.persona.vinculo || !persona.persona.titular_cotitular) {
         Swal.fire({
           icon: 'error',
-          title: 'DNI inválido',
-          text: 'El DNI debe tener 8 dígitos',
+          title: 'Campos incompletos',
+          text: 'Por favor complete todos los datos personales básicos',
         });
         return;
       }
 
-      // Validar CUIL/CUIT (11 dígitos)
-      if (!/^\d{11}$/.test(persona.persona.CUIL_CUIT)) {
-        Swal.fire({
-          icon: 'error',
-          title: 'CUIL/CUIT inválido',
-          text: 'El CUIL/CUIT debe tener 11 dígitos',
-        });
-        return;
-      }
-
-      // Validar teléfono (mínimo 10 dígitos)
-      if (!/^\d{10,}$/.test(persona.persona.telefono)) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Teléfono inválido',
-          text: 'El teléfono debe tener al menos 10 dígitos',
-        });
-        return;
-      }
 
       // Validación de direcciones
       const addressValidation = personas.map((persona, index) => {
@@ -262,6 +329,77 @@ const Formulario = ({ onSubmit }) => {
             text: 'El CUIT del empleador es requerido para trabajos en relación de dependencia',
           });
           return;
+
+      // Validar campos adicionales solo para mayores de edad
+      if (!esPersonaMenor) {
+        if (!persona.persona.CUIL_CUIT || !persona.persona.email || 
+            !persona.persona.telefono || !persona.persona.estado_civil) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Campos incompletos',
+            text: 'Por favor complete todos los datos personales',
+          });
+          return;
+        }
+
+        // Validar email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(persona.persona.email)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Email inválido',
+            text: 'Por favor ingrese un email válido',
+          });
+          return;
+        }
+
+        // Validar CUIL/CUIT (11 dígitos)
+        if (!/^\d{11}$/.test(persona.persona.CUIL_CUIT)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'CUIL/CUIT inválido',
+            text: 'El CUIL/CUIT debe tener 11 dígitos',
+          });
+          return;
+        }
+
+        // Validar teléfono (mínimo 10 dígitos)
+        if (!/^\d{10,}$/.test(persona.persona.telefono)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Teléfono inválido',
+            text: 'El teléfono debe tener al menos 10 dígitos',
+          });
+          return;
+        }
+      }
+
+      // Validar datos de vivienda
+      if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion || 
+          persona.vivienda.departamento === null || !persona.vivienda.localidad || 
+          !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
+          persona.vivienda.alquiler === null || 
+          (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Campos incompletos',
+          text: 'Por favor complete todos los datos de la vivienda',
+        });
+        return;
+      }
+           
+
+      // Validar datos de ingresos solo para mayores de edad
+      if (!esPersonaMenor) {
+        for (const ingreso of persona.ingresos) {
+          if (!ingreso.situacion_laboral || !ingreso.ocupacion || !ingreso.salario) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Campos incompletos',
+              text: 'Por favor complete los campos obligatorios de ingresos',
+            });
+            return;
+          }
         }
       }
 
@@ -285,12 +423,13 @@ const Formulario = ({ onSubmit }) => {
 
       console.log("datos transformados para enviar", datosTransformados);
 
+
       const response = await fetch("http://localhost:3000/registro", {
         method: "POST",
-        body: JSON.stringify(datosTransformados),
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(datosTransformados),
       });
 
       const responseData = await response.json();
@@ -314,11 +453,23 @@ const Formulario = ({ onSubmit }) => {
         return;
       }
 
-      Swal.fire({
+      // Si el registro fue exitoso
+      await Swal.fire({
         icon: 'success',
         title: 'Registro Exitoso',
         text: 'Los datos se han registrado correctamente.',
       });
+
+      // Limpiar el formulario
+      resetForm();
+
+      // Scroll al inicio después de todo el proceso
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 200);
 
     } catch (error) {
       console.error('Error en el frontend:', error);
@@ -378,6 +529,41 @@ const Formulario = ({ onSubmit }) => {
     });
   };
 
+  const esMenorDeEdad = (fechaNacimiento) => {
+    if (!fechaNacimiento) return false;
+    const hoy = new Date();
+    const fechaNac = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mes = hoy.getMonth() - fechaNac.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+      edad--;
+    }
+    return edad < 18;
+  };
+
+  const transformarDatos = (persona) => {
+    const esPersonaMenor = esMenorDeEdad(persona.persona.fecha_nacimiento);
+    
+    // Procesar ingresos para manejar CUIT_empleador vacío
+    const ingresosProcessed = persona.ingresos.map(ingreso => ({
+      ...ingreso,
+      CUIT_empleador: ingreso.CUIT_empleador || "0" // Si está vacío, usar "0"
+    }));
+    
+    return {
+      persona: {
+        ...persona.persona,
+        CUIL_CUIT: esPersonaMenor ? "0" : persona.persona.CUIL_CUIT,
+        email: esPersonaMenor ? "no@aplica.com" : persona.persona.email,
+        telefono: esPersonaMenor ? "0000000000" : persona.persona.telefono,
+        estado_civil: esPersonaMenor ? "Soltero/a" : persona.persona.estado_civil,
+      },
+      vivienda: persona.vivienda,
+      lote: persona.lote,
+      ingresos: esPersonaMenor ? [] : ingresosProcessed
+    };
+  };
+
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {personas.map((personaData, index) => (
@@ -411,6 +597,18 @@ const Formulario = ({ onSubmit }) => {
               </label>
 
               <label className={styles.label}>
+                <span className={styles.labelText}>Fecha de nacimiento *</span>
+                <input
+                  required
+                  type="date"
+                  value={personaData.persona.fecha_nacimiento}
+                  onChange={(e) => handleInputChange(index, 'persona.fecha_nacimiento', e.target.value)}
+                  className={styles.input}
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </label>
+
+              <label className={styles.label}>
                 <span className={styles.labelText}>Tipo de Documento *</span>
                 <select
                   required
@@ -427,20 +625,164 @@ const Formulario = ({ onSubmit }) => {
                 </select>
               </label>
               <label className={styles.label}>
-                <span className={styles.labelText}>DNI *</span>
-                <input
-                  required
-                  type="text"
-                  placeholder="DNI"
-                  value={personaData.persona.dni}
-                  onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)}
-                  className={styles.input}
-                  maxLength="8"
-                />
-              </label>
+              <span className={styles.labelText}>DNI *</span>
+              <input
+                required
+                type="text"
+                placeholder="DNI"
+                value={personaData.persona.dni}
+                onChange={(e) => handleInputChange(index, 'persona.dni', e.target.value)}
+                className={styles.input}
+                maxLength="8"
+              />
+            </label>
 
-              <label className={styles.label}>
-                <span className={styles.labelText}>CUIL/CUIT *</span>
+            {!esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
+              <>
+                <label className={styles.label}>
+                  <span className={styles.labelText}>CUIL/CUIT *</span>
+                  <input
+                    required
+                    type="text"
+                    placeholder="CUIL/CUIT"
+                    value={personaData.persona.CUIL_CUIT}
+                    onChange={(e) => handleInputChange(index, 'persona.CUIL_CUIT', e.target.value)}
+                    className={styles.input}
+                    maxLength="11"
+                  />
+                </label>
+
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Email *</span>
+                  <input
+                    required
+                    type="email"
+                    placeholder="Email"
+                    value={personaData.persona.email}
+                    onChange={(e) => handleInputChange(index, 'persona.email', e.target.value)}
+                    className={styles.input}
+                  />
+                </label>
+
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Teléfono *</span>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Teléfono"
+                    value={personaData.persona.telefono}
+                    onChange={(e) => handleInputChange(index, 'persona.telefono', e.target.value)}
+                    className={styles.input}
+                  />
+                </label>
+
+                <label className={styles.label}>
+                  <span className={styles.labelText}>Estado Civil *</span>
+                  <select
+                    required
+                    name="estado_civil"
+                    value={personaData.persona.estado_civil || ""}
+                    onChange={(e) => handleInputChange(index, 'persona.estado_civil', e.target.value)}
+                    className={styles.select}
+                  >
+                    <option value="" disabled>Seleccione estado civil</option>
+                    <option value="Soltero/a">Soltero/a</option>
+                    <option value="Casado/a">Casado/a</option>
+                    <option value="Divorciado/a">Divorciado/a</option>
+                    <option value="Viudo/a">Viudo/a</option>
+                    <option value="Concubinato/a">Concubinato/a</option>
+                  </select>
+                </label>
+              </>
+            )}
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Género *</span>
+              <select
+                required
+                name="genero"
+                value={personaData.persona.genero || ""}
+                onChange={(e) => handleInputChange(index, 'persona.genero', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione género</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Nacionalidad *</span>
+              <select
+                required
+                name="nacionalidad"
+                value={personaData.persona.nacionalidad || ""}
+                onChange={(e) => handleInputChange(index, 'persona.nacionalidad', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione nacionalidad</option>
+                <option value="Argentina">Argentina</option>
+                <option value="Bolivia">Bolivia</option>
+                <option value="Chilena">Chilena</option>
+                <option value="Paraguaya">Paraguaya</option>
+                <option value="Uruguaya">Uruguaya</option>
+                <option value="Peruana">Peruana</option>
+                <option value="Brasileña">Brasileña</option>
+                <option value="Venezolana">Venezolana</option>
+                <option value="Colombiana">Colombiana</option>
+                <option value="Española">Española</option>
+                <option value="Italiana">Italiana</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Certificado de discapacidad *</span>
+              <select
+                required
+                name="certificado_discapacidad"
+                value={personaData.persona.certificado_discapacidad === true ? "Si" : 
+                       personaData.persona.certificado_discapacidad === false ? "No" : ""}
+                onChange={(e) => handleInputChange(index, 'persona.certificado_discapacidad', e.target.value === 'Si')}
+                className={styles.select}
+              >
+                <option value="" disabled>¿Posee certificado de discapacidad?</option>
+                <option value="Si">Sí</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Vínculo *</span>
+              <select
+                required
+                name="vinculo"
+                value={personaData.persona.vinculo || ""}
+                onChange={(e) => handleInputChange(index, 'persona.vinculo', e.target.value)}
+                className={styles.select}
+              >
+                <option value="" disabled>Seleccione Vínculo</option>
+                <option value="Esposo/a">Esposo/a</option>
+                <option value="Concubino/a">Concubino/a</option>
+                <option value="Conyuge">Cónyuge</option>
+                <option value="Hermano/a">Hermano/a</option>
+                <option value="Hijo/a">Hijo/a</option>
+                <option value="Madre">Madre</option>
+                <option value="Padre">Padre</option>
+                <option value="Primo/a">Primo/a</option>
+                <option value="Nieto/a">Nieto/a</option>
+                <option value="Tio/a">Tío/a</option>
+                <option value="Sobrino/a">Sobrino/a</option>
+                <option value="Suegro/a">Suegro/a</option>
+                <option value="Abuelo/a">Abuelo/a</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </label>
+
+            <label className={styles.label}>
+              <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
+              {index === 0 ? (
                 <input
                   required
                   type="text"
@@ -855,15 +1197,16 @@ const Formulario = ({ onSubmit }) => {
                     className={styles.input}
                   />
                 </label>
-
+                
                 {/* CUIT del empleador condicionado */}
                 {ingreso.situacion_laboral && (
                   <label className={styles.label}>
                     <span className={styles.labelText}>
-                      {(ingreso.situacion_laboral === "Relación de dependencia" ||
-                        ingreso.situacion_laboral === "Relación de dependencia y Autonomo")
-                        ? "CUIT del empleador *"
-                        : "CUIT del empleador (opcional)"}
+
+                      {(ingreso.situacion_laboral === "Relación de dependencia" || 
+                        ingreso.situacion_laboral === "Relación de dependencia y Autonomo") 
+                          ? "CUIT del empleador *" 
+                          : "CUIT del empleador (opcional)"}
                     </span>
                     <input
                       type="text"
@@ -871,8 +1214,9 @@ const Formulario = ({ onSubmit }) => {
                       value={ingreso.CUIT_empleador || ""}
                       onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
                       className={styles.input}
-                      required={ingreso.situacion_laboral === "Relación de dependencia" ||
-                        ingreso.situacion_laboral === "Relación de dependencia y Autonomo"}
+
+                      required={ingreso.situacion_laboral === "Relación de dependencia" || 
+                              ingreso.situacion_laboral === "Relación de dependencia y Autonomo"}
                     />
                   </label>
                 )}
@@ -880,7 +1224,6 @@ const Formulario = ({ onSubmit }) => {
                 <label className={styles.label}>
                   <span className={styles.labelText}>Ingreso mensual</span>
                   <input
-
                     type="number"
                     placeholder="Ingreso mensual"
                     value={ingreso.salario}
@@ -891,16 +1234,16 @@ const Formulario = ({ onSubmit }) => {
               </div>
             ))}
             <div className={styles.ingresoButtonGroup}>
-              <button
-                type="button"
+              <button 
+                type="button" 
                 onClick={() => addIngreso(index)}
                 className={`${styles.button} ${styles.addButton}`}
               >
                 Añadir Ingreso
               </button>
               {personaData.ingresos.length > 1 && (
-                <button
-                  type="button"
+                <button 
+                  type="button" 
                   onClick={() => cancelarUltimoIngreso(index)}
                   className={`${styles.button} ${styles.cancelButton}`}
                 >
@@ -909,6 +1252,8 @@ const Formulario = ({ onSubmit }) => {
               )}
             </div>
           </div>
+
+        )}
 
           <div className={styles.sectionDivider} />
 
