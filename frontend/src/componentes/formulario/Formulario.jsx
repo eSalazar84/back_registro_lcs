@@ -225,16 +225,6 @@ const Formulario = ({ onSubmit }) => {
         return callesValidas.includes(direccion);
       });
 
-      if (addressValidation.some(isValid => !isValid)) {
-        setInvalidAddresses(addressValidation.map(isValid => !isValid));
-        Swal.fire({
-          icon: 'error',
-          title: 'Direcciones inválidas',
-          html: 'Algunas direcciones no son válidas.<br>Verifique los campos marcados en rojo.',
-        });
-        return;
-      }
-
       // Validar datos de vivienda
       if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion ||
         persona.vivienda.departamento === null || !persona.vivienda.localidad ||
@@ -635,18 +625,13 @@ const Formulario = ({ onSubmit }) => {
                 <select
                   required
                   name="localidad"
-                  value={personaData.vivienda.localidad || ""}
+                  value={personas[0].vivienda.localidad || ""}
                   onChange={(e) => {
-                    // Actualizar la localidad
-                    handleInputChange(index, 'vivienda.localidad', e.target.value);
-
-                    // Limpiar la dirección
-                    handleInputChange(index, 'vivienda.direccion', '');
-
-                    // Resetear el error de dirección
-                    if (invalidAddresses[index]) {
+                    handleInputChange(0, 'vivienda.localidad', e.target.value);
+                    handleInputChange(0, 'vivienda.direccion', ''); // Limpiar la dirección al cambiar la localidad
+                    if (invalidAddresses[0]) {
                       const newInvalidAddresses = [...invalidAddresses];
-                      newInvalidAddresses[index] = false;
+                      newInvalidAddresses[0] = false;
                       setInvalidAddresses(newInvalidAddresses);
                     }
                   }}
@@ -655,40 +640,40 @@ const Formulario = ({ onSubmit }) => {
                   <option value="" disabled>Seleccione localidad</option>
                   <option value="Benito Juarez">Benito Juárez</option>
                   <option value="Barker">Barker</option>
+                  <option value="Villa Cacique">Villa Cacique</option>
                   <option value="Estacion Lopez">Estación López</option>
                   <option value="El Luchador">El Luchador</option>
                   <option value="Tedin Uriburu">Tedín Uriburu</option>
+                  <option value="Coronel Rodolfo Bunge">Coronel Rodolfo Bunge</option>
                 </select>
               </label>
 
               <label className={styles.label}>
                 <span className={styles.labelText}>Dirección *</span>
-                <input
+                <select
                   required
-                  type="text"
-                  placeholder="Dirección"
-                  list="calles-localidad"
-                  value={personaData.vivienda.direccion}
+                  value={personas[0].vivienda.direccion}
                   onChange={(e) => {
-                    handleInputChange(index, 'vivienda.direccion', e.target.value);
-                    // Resetear el error al modificar
-                    if (invalidAddresses[index]) {
+                    handleInputChange(0, 'vivienda.direccion', e.target.value);
+                    if (invalidAddresses[0]) {
                       const newInvalidAddresses = [...invalidAddresses];
-                      newInvalidAddresses[index] = false;
+                      newInvalidAddresses[0] = false;
                       setInvalidAddresses(newInvalidAddresses);
                     }
                   }}
-                  className={`${styles.input} ${invalidAddresses[index] ? styles.inputError : ''}`}
-                />
-                <datalist id="calles-localidad">
-                  {personaData.vivienda.localidad &&
-                    callesPorLocalidad[personaData.vivienda.localidad]?.map((calle, i) => (
-                      <option key={i} value={calle} />
+                  className={`${styles.select} ${invalidAddresses[0] ? styles.inputError : ''}`}
+                >
+                  <option value="" disabled>Seleccione una dirección</option>
+                  {personas[0].vivienda.localidad &&
+                    callesPorLocalidad[personas[0].vivienda.localidad]?.map((calle, i) => (
+                      <option key={i} value={calle}>
+                        {calle}
+                      </option>
                     ))}
-                </datalist>
-                {invalidAddresses[index] && (
+                </select>
+                {invalidAddresses[0] && (
                   <div className={styles.errorMessage}>
-                    ⚠ La dirección no existe en {personaData.vivienda.localidad}
+                    ⚠ La dirección no existe en {personas[0].vivienda.localidad}
                   </div>
                 )}
               </label>
