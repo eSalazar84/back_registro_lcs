@@ -9,6 +9,8 @@ import { LoteModule } from './lote/lote.module';
 import { IngresoModule } from './ingreso/ingreso.module';
 import { MailserviceModule } from './mailservice/mailservice.module';
 import { PdfService } from './mailservice/pdf_document/pdf.service';
+import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [RegistroModule,
@@ -26,7 +28,9 @@ import { PdfService } from './mailservice/pdf_document/pdf.service';
     PersonaModule,
     LoteModule,
     IngresoModule,
-    MailserviceModule
+    MailserviceModule,
+    AuthModule,
+    AdminModule
   ],
   
   controllers: [],
