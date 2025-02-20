@@ -1,4 +1,4 @@
-import BtnBlue from '../componentes/btnBlue/BtnBlue';
+import BtnBlue from '../../componentes/btnBlue/BtnBlue';
 import styles from './home.module.css'
 import { Link, useNavigate } from "react-router-dom";
 

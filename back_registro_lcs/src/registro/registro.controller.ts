@@ -22,7 +22,9 @@ export class RegistroController {
     }[]
   ) {
     try {
+      // Llamada al servicio para crear los registros
       const personas = await this.registroService.createAll(createAllDto);
+      
       return {
         status: HttpStatus.CREATED,
         message: 'Registros creados exitosamente',
@@ -30,14 +32,17 @@ export class RegistroController {
         count: personas.length
       };
     } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw new HttpException({
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Error de validación',
-          message: error.message
-        }, HttpStatus.BAD_REQUEST);
+      console.log("error controller catch", error);
+  
+      // Si el error es un Error genérico lanzado desde el servicio, lo tratamos como BadRequestException
+      if (error instanceof Error) {
+        console.log("Error de servicio:", error.message);
+        
+        // Convertimos el error a BadRequestException para devolver un estado 400
+        throw new BadRequestException(error.message);
       }
-
+  
+      // Si no es un BadRequestException, se maneja como error 500
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'Error del servidor',
