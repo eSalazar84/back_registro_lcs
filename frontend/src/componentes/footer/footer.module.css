@@ -42,6 +42,10 @@
     line-height: 1.1em;
 }
 
+.numero_texto{
+    text-decoration: none;
+}
+
 .texto {
     margin: 1px 0;
     color: #E3E3E3;
@@ -280,53 +284,36 @@
         align-items: center;
     }
 
+    .container_numeros_emergencias {
+        margin-right: 50px;
+    }
+
 }
 
 /* Para pantallas menores a 480px */
 @media (max-width: 480px) {
-    .container_numeros_emergencias_footer{
+    .container_numeros_emergencias_footer {
         padding-right: 20px;
+    }
+
+    .top_footer {
+        margin: auto;
+        text-align: center;
+        padding: 10px 0;
     }
 }
 
 /* Para pantallas menores a 360px */
 @media (max-width: 360px) {
-    .numero {
-        font-size: 22px;
+    .container_numero {
+        display: flex;
+        width: 45%;
+        margin-left: 45px;
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .texto {
-        font-size: 12px;
-    }
-
-    .icon_emergencias {
-        font-size: 20px;
-    }
-
-    .logo_footer {
-        height: 50px;
-    }
-
-    .texto_contacto {
-        font-size: 14px;
-    }
-
-    .icon_contacto {
-        font-size: 20px;
-    }
-
-    .container_redes {
-        font-size: 20px;
-    }
-
-    .icon_redes_footer {
-        width: 25px;
-        height: 25px;
-        font-size: 12px;
-    }
-
-    .top_footer {
-        font-size: 12px;
-        height: 50px;
+    .logo_footer{
+        height: 64%;
     }
 }
