@@ -15,39 +15,41 @@ function Footer() {
             <div className={styles.container_general_footer}>
                 <div className={styles.container_numeros_emergencias_footer}>
 
-                    <div className={styles.container_numero}>
-                        <FaPhoneAlt className={styles.icon_emergencias} />
-                        <div className={styles.numero_texto}>
-                            <p className={styles.numero}>100</p>
-                            <p className={styles.texto}>BOMBEROS</p>
+                    <div className={styles.container_numeros_emergencias}>
+                        <div className={styles.container_numero}>
+                            <FaPhoneAlt className={styles.icon_emergencias} />
+                            <div className={styles.numero_texto}>
+                                <p className={styles.numero}>100</p>
+                                <p className={styles.texto}>BOMBEROS</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.container_numero}>
+                            <FaPhoneAlt className={styles.icon_emergencias} />
+                            <div className={styles.numero_texto}>
+                                <p className={styles.numero}>101</p>
+                                <p className={styles.texto}>POLICIA</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className={styles.container_numero}>
-                        <FaPhoneAlt className={styles.icon_emergencias} />
-                        <div className={styles.numero_texto}>
-                            <p className={styles.numero}>101</p>
-                            <p className={styles.texto}>POLICIA</p>
+                    <div className={styles.container_numeros_emergencias}>
+                        <div className={styles.container_numero}>
+                            <FaPhoneAlt className={styles.icon_emergencias} />
+                            <div className={styles.numero_texto}>
+                                <p className={styles.numero}>103</p>
+                                <p className={styles.texto}>DEFENSA CIVIL</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.container_numero}>
+                            <FaPhoneAlt className={styles.icon_emergencias} />
+                            <div className={styles.numero_texto}>
+                                <p className={styles.numero}>107</p>
+                                <p className={styles.texto}> EMERGENCIAS MEDICAS</p>
+                            </div>
                         </div>
                     </div>
-
-                    <div className={styles.container_numero}>
-                        <FaPhoneAlt className={styles.icon_emergencias} />
-                        <div className={styles.numero_texto}>
-                            <p className={styles.numero}>103</p>
-                            <p className={styles.texto}>DEFENSA CIVIL</p>
-                        </div>
-                    </div>
-
-                    <div className={styles.container_numero}>
-                        <FaPhoneAlt className={styles.icon_emergencias} />
-                        <div className={styles.numero_texto}>
-                            <p className={styles.numero}>107</p>
-                            <p className={styles.texto}> EMERGENCIAS MEDICAS</p>
-                        </div>
-                    </div>
-
-
                 </div>
 
                 <div className={styles.container_contacto_footer}>
@@ -56,24 +58,26 @@ function Footer() {
                         <img src="/Logo_Muni2024.png" alt="logo" className={styles.logo_footer} />
                     </div>
 
-                    <div className={styles.container_numero_telefono}>
+                    <div className={styles.container_contacto}>
+                        <div className={styles.container_numero_telefono}>
 
-                        <div className={styles.icon_telefono}>
-                            <LiaPhoneVolumeSolid className={styles.icon_contacto} />
-                        </div>
-                        <div className={styles.numero_telefono}>
-                            <p className={styles.texto_contacto}>2292 451400</p>
-                        </div>
+                            <div className={styles.icon_telefono}>
+                                <LiaPhoneVolumeSolid className={styles.icon_contacto} />
+                            </div>
+                            <div className={styles.numero_telefono}>
+                                <p className={styles.texto_contacto}>2292 451400</p>
+                            </div>
 
-                    </div>
-
-                    <div className={styles.container_direccion}>
-                        <div className={styles.icono_ubicacion}>
-                            <TbMapPin className={styles.icon_contacto} />
                         </div>
 
-                        <div className={styles.direccion}>
-                            <p className={styles.texto_contacto}>Av. Mitre N° 42</p>
+                        <div className={styles.container_direccion}>
+                            <div className={styles.icono_ubicacion}>
+                                <TbMapPin className={styles.icon_contacto} />
+                            </div>
+
+                            <div className={styles.direccion}>
+                                <p className={styles.texto_contacto}>Av. Mitre N° 42</p>
+                            </div>
                         </div>
                     </div>
 
@@ -91,7 +95,7 @@ function Footer() {
                 </div>
 
                 <div className={styles.top_footer}>
-                    <p>Municipio de Benito Juárez © 2024 - Todos los derechos reservados | EFA.CODE</p>
+                    <p>Municipio de Benito Juárez © 2024 - Todos los derechos reservados | <strong>EFA.CODE</strong></p>
                 </div>
 
             </div>
