@@ -344,6 +344,10 @@
   border: 1px solid #ced4da;
 }
 
+.inputHidden{
+  display: none;
+}
+
 .inputDisabled:hover {
   border-color: #ced4da;
 }

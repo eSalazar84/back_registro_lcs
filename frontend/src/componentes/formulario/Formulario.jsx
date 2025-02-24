@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import styles from "./Formulario.module.css";
-import { transformarDatos } from '../../services/transformDataDto';
+// import { transformarDatos } from '../../services/transformDataDto';
 import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
+import { useNavigate } from 'react-router-dom';
 
 const Formulario = ({ onSubmit }) => {
+  useEffect(()=>{
+    window.scrollTo(0,0);
+  }, []);
+  const agregarPersona=useRef(null)
   const [loading, setLoading] = useState(false);
   const [aceptaDeclaracion, setAceptaDeclaracion] = useState(false);
-  const [invalidAddresses, setInvalidAddresses] = useState([false]);
+  // const [invalidAddresses, setInvalidAddresses] = useState([false]);
   const [personas, setPersonas] = useState([{
     persona: {
       nombre: '',
@@ -23,7 +28,7 @@ const Formulario = ({ onSubmit }) => {
       nacionalidad: '',
       certificado_discapacidad: null,
       rol: 'User',
-      vinculo: '',
+      vinculo: 'Otro',
       titular_cotitular: 'Titular'
     },
     ingresos: [{
@@ -49,6 +54,8 @@ const Formulario = ({ onSubmit }) => {
       tipo_alquiler: ''
     }
   }]);
+
+  const navigate = useNavigate();
 
   const handleInputChange = (index, path, value) => {
     const updatedPersonas = [...personas];
@@ -143,9 +150,14 @@ const Formulario = ({ onSubmit }) => {
           }
         };
         setPersonas([...personas, nuevaPersona]);
+         // Esperar a que se actualice el estado y luego hacer scroll
+         setTimeout(() => {
+          agregarPersona.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 300); // Pequeño delay para asegurar que el DOM se actualice
       }
     });
   };
+
 
   const resetForm = () => {
     setPersonas([{
@@ -384,23 +396,28 @@ const Formulario = ({ onSubmit }) => {
         return;
       }
 
-      // Si el registro fue exitoso
-      await Swal.fire({
+      console.log('Registro exitoso, intentando redireccionar...');
+
+      navigate('/registro-exitoso');
+      
+      console.log('Navegación ejecutada');
+
+      Swal.fire({
         icon: 'success',
         title: 'Registro Exitoso',
         text: 'Los datos se han registrado correctamente.',
       });
 
-      // Limpiar el formulario
-      resetForm();
+       // Limpiar el formulario
+       resetForm();
 
-      // Scroll al inicio después de todo el proceso
-      setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }, 200);
+       // Scroll al inicio después de todo el proceso
+       setTimeout(() => {
+         window.scrollTo({
+           top: 0,
+           behavior: 'smooth'
+         });
+       }, 200);
 
     } catch (error) {
       console.error('Error en el frontend:', error);
@@ -500,7 +517,9 @@ const Formulario = ({ onSubmit }) => {
       {personas.map((personaData, index) => (
         <div key={index}>
           {/* Sección de Datos Personales */}
-          <div className={`${styles.section} ${styles.personalData}`}>
+          <div
+           ref={index === personas.length - 1 ? agregarPersona : null} // Referencia al último agregado
+           className={`${styles.section} ${styles.personalData}`}>
             <h3 className={styles.sectionTitle}>Datos del Titular</h3>
             <div className={styles.inputGroup}>
               <label className={styles.label}>
@@ -684,6 +703,16 @@ const Formulario = ({ onSubmit }) => {
                 </select>
               </label>
 
+              {
+                index === 0 ? (
+                  <input
+                    type="text"
+                    value='Otro'
+                    disabled
+                    className={`${styles.input} ${styles.inputDisabled} ${styles.inputHidden}`}
+                  />
+                ) : (
+
               <label className={styles.label}>
                 <span className={styles.labelText}>Vínculo *</span>
                 <select
@@ -710,7 +739,8 @@ const Formulario = ({ onSubmit }) => {
                   <option value="Otro">Otro</option>
                 </select>
               </label>
-
+                )
+              }
               <label className={styles.label}>
                 <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
                 {index === 0 ? (
@@ -747,17 +777,10 @@ const Formulario = ({ onSubmit }) => {
                 <select
                   required
                   name="localidad"
-                  value={personas[0].vivienda.localidad || ""}
-                  onChange={(e) => {
-                    handleInputChange(0, 'vivienda.localidad', e.target.value);
-                    handleInputChange(0, 'vivienda.direccion', ''); // Limpiar la dirección al cambiar la localidad
-                    if (invalidAddresses[0]) {
-                      const newInvalidAddresses = [...invalidAddresses];
-                      newInvalidAddresses[0] = false;
-                      setInvalidAddresses(newInvalidAddresses);
-                    }
-                  }}
-                  className={styles.select}
+                  value={personaData.vivienda.localidad || ""}
+                  onChange={(e) => 
+                    handleInputChange(index,'vivienda.localidad', e.target.value)}// cambios
+                    className={styles.select}
                 >
                   <option value="" disabled>Seleccione localidad</option>
                   <option value="Benito Juarez">Benito Juárez</option>
@@ -774,30 +797,19 @@ const Formulario = ({ onSubmit }) => {
                 <span className={styles.labelText}>Dirección *</span>
                 <select
                   required
-                  value={personas[0].vivienda.direccion}
-                  onChange={(e) => {
-                    handleInputChange(0, 'vivienda.direccion', e.target.value);
-                    if (invalidAddresses[0]) {
-                      const newInvalidAddresses = [...invalidAddresses];
-                      newInvalidAddresses[0] = false;
-                      setInvalidAddresses(newInvalidAddresses);
-                    }
-                  }}
-                  className={`${styles.select} ${invalidAddresses[0] ? styles.inputError : ''}`}
+                  value={personaData.vivienda.direccion}
+                  onChange={(e) => 
+                    handleInputChange(index, 'vivienda.direccion', e.target.value)}
+                    className={styles.select}
                 >
                   <option value="" disabled>Seleccione una dirección</option>
-                  {personas[0].vivienda.localidad &&
-                    callesPorLocalidad[personas[0].vivienda.localidad]?.map((calle, i) => (
+                  {personaData.vivienda.localidad &&
+                    callesPorLocalidad[personaData.vivienda.localidad]?.map((calle, i) => (
                       <option key={i} value={calle}>
                         {calle}
                       </option>
                     ))}
                 </select>
-                {invalidAddresses[0] && (
-                  <div className={styles.errorMessage}>
-                    ⚠ La dirección no existe en {personas[0].vivienda.localidad}
-                  </div>
-                )}
               </label>
 
               {/* Número - Se mantiene igual */}
@@ -1019,7 +1031,7 @@ const Formulario = ({ onSubmit }) => {
                   onClick={() => addIngreso(index)}
                   className={`${styles.button} ${styles.addButton}`}
                 >
-                  Añadir Ingreso
+                  Añadir otro ingreso
                 </button>
                 {personaData.ingresos.length > 1 && (
                   <button
