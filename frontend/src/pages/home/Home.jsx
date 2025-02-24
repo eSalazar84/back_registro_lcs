@@ -26,9 +26,10 @@ function Home() {
 
                 <div className={styles.container_requisitos}>
                     <h3>Requisitos para registrarse:</h3>
+                    
                     <ul>
-                        <li>Numero de documento y CUIL/CUIT.</li>
-                        <li>Poseer una cuenta de correo electronico.</li>
+                        <li>Número de documento y CUIL/CUIT.</li>
+                        <li>Poseer una cuenta de correo electrónico.</li>
                         <li>No poseer vivienda propia.</li>
                         <li>Mayor de 18 años.</li>
                     </ul>
