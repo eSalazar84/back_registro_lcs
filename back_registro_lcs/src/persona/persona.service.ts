@@ -20,44 +20,57 @@ export class PersonaService {
   ) { }
 
   async createPersona(createPersonaDto: CreatePersonaDto, idVivienda: number, idLote: number): Promise<Persona> {
-    // Inicializar el objeto persona con el DTO y los IDs de vivienda y lote
     console.log("personaS", idLote);
-
-    const personaFound = await this.personaRepository.findOne({ where: { dni: createPersonaDto.dni } })
+  
+    // Verificar si el DNI ya existe
+    const personaFound = await this.personaRepository.findOne({ where: { dni: createPersonaDto.dni } });
     if (personaFound) {
       throw new HttpException({
         status: HttpStatus.BAD_REQUEST,
         error: `DNI ya registrado`
       }, HttpStatus.BAD_REQUEST);
-    } else {
-      const personaData = {
-        ...createPersonaDto,
-        idVivienda,
-        idLote,
-      };
-
-      // Asignar el número de registro si es titular
-      if (createPersonaDto.titular_cotitular === Titular_Cotitular.Titular) {
-        // Buscar el último número de registro entre los titulares
-        const lastPersona = await this.personaRepository.findOne({
-          order: { numero_registro: 'DESC' },
-          where: { titular_cotitular: Titular_Cotitular.Titular },
-        });
-        // Si existe una persona, incrementa el número, sino empieza desde 0
-        personaData.numero_registro = (lastPersona?.numero_registro ?? 0 ) + 1;
-        personaData.vinculo = createPersonaDto.vinculo ?? null;
-
-      } else {
-        // Si es cotitular, asignar null al número de registro
-        personaData.numero_registro = null;
-      }
-      // Crear una instancia de la entidad Persona
-      const persona = this.personaRepository.create(personaData);
-
-      // Guardar la persona en la base de datos
-      return await this.personaRepository.save(persona);
     }
+  
+    let personaData = {
+      ...createPersonaDto,
+      idVivienda,
+      idLote,
+    };
+  
+    // Asignar el número de registro si es titular
+    if (createPersonaDto.titular_cotitular === Titular_Cotitular.Titular) {
+      // Buscar el último número de registro entre los titulares
+      const lastPersona = await this.personaRepository.findOne({
+        order: { numero_registro: 'DESC' },
+        where: { titular_cotitular: Titular_Cotitular.Titular },
+      });
+      personaData.numero_registro = (lastPersona?.numero_registro ?? 0) + 1;
+      personaData.vinculo = createPersonaDto.vinculo ?? null;
+    } else {
+      personaData.numero_registro = null;
+    }
+  
+    // 🔹 Limpiar espacios antes y después de cada string en personaData
+    personaData = this.trimStrings(personaData);
+  
+    // Crear instancia de Persona
+    const persona = this.personaRepository.create(personaData);
+  
+    // Guardar en la base de datos
+    return await this.personaRepository.save(persona);
   }
+  
+  /**
+   * 🔥 Función que recorre un objeto y aplica `.trim()` a todas sus propiedades tipo `string`
+   */
+  private trimStrings<T>(obj: T): T {
+    return Object.keys(obj).reduce((acc, key) => {
+      const value = obj[key];
+      acc[key] = typeof value === "string" ? value.trim() : value;
+      return acc;
+    }, {} as T);
+  }
+  
 
   async findAll(): Promise<Persona[]> {
     try {
@@ -150,37 +163,28 @@ export class PersonaService {
 
 
   async updatePersona(id: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
-    // Buscar la persona por su DNI
+    // Buscar la persona por su ID
     const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
-
+  
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
-
+  
     // Asegúrate de que hay valores a actualizar (no esté vacío)
     if (Object.keys(updatePersonaDto).length === 0) {
       throw new Error('No hay valores para actualizar');
     }
-
+  
+    // 🔹 Limpiar espacios antes y después de cada string en updatePersonaDto
+    const trimmedDto = this.trimStrings(updatePersonaDto);
+  
     // Actualizar los campos de la persona con los valores del DTO
-    Object.assign(persona, updatePersonaDto);  // Actualiza la persona con el DTO
-
+    Object.assign(persona, trimmedDto);
+  
     // Guardar la persona actualizada
     return await this.personaRepository.save(persona);
   }
 
-
-  // async remove(id: number): Promise<void> {
-  //   // Buscar la persona por su DNI
-  //   const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
-
-  //   if (!persona) {
-  //     throw new Error('Persona no encontrada');
-  //   }
-
-  //   // Eliminar la persona de la base de datos
-  //   await this.personaRepository.remove(persona);
-  // }
   async remove(id: number): Promise<void> {
     // Buscar la persona por su ID
     const persona = await this.personaRepository.findOne({
