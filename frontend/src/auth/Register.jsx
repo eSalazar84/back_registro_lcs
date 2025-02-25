@@ -1,41 +1,51 @@
 import { useState } from "react";
-import { useContext } from "react";
-
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../api/authApi";
-import { AuthContext } from "../auth/AuthContext";
-
+import styles from "./register.module.css"; // Importa los estilos
 
 const Register = () => {
   const [adminName, setAdminName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
- 
   const navigate = useNavigate();
-  const { login, register} = useContext(AuthContext);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log("registro", adminName, email,password);
-      
+      console.log("Registro:", adminName, email, password);
       await registerUser(adminName, email, password);
-    
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error) {
       alert(error.message);
     }
   };
 
   return (
-    <div>
-      <h2>Registro</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Nombre de usuario" value={adminName} onChange={(e) => setAdminName(e.target.value)} />
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button type="submit">Registrar</button>
+    <div className={styles.container}>
+      <h2 className={styles.title}>Registro</h2>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Nombre de usuario"
+          value={adminName}
+          onChange={(e) => setAdminName(e.target.value)}
+          className={styles.input}
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={styles.input}
+        />
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={styles.input}
+        />
+        <button type="submit" className={styles.button}>Registrar</button>
       </form>
     </div>
   );

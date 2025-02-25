@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Relacion } from "../enum/relacion.enum";
 import { Persona } from "src/persona/entities/persona.entity";
+
 @Entity()
 export class Ingreso {
     @PrimaryGeneratedColumn()

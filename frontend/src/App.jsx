@@ -7,8 +7,8 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import PrivateRoute from "./componentes/PrivateRouts";
 import Dashboard from "./pages/Dashboar";
-
 import { AuthProvider } from "./auth/AuthContext"; // Asegúrate de importar el AuthProvider
+import EditarRegistro from "./pages/edit/EditarRegistro";
 
 function App() {
   return (
@@ -20,6 +20,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/registro" element={<Formulario />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/editar-registro/:id" element={<PrivateRoute><EditarRegistro /></PrivateRoute>} />
+
       </Routes>
       <Footer />
     </AuthProvider>
