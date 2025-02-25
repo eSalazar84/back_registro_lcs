@@ -248,24 +248,22 @@ export const callesPorLocalidad = {
         "Tomasa Tapia de Bustos"
     ],
     "Tedin Uriburu": [
-        [
-            "1era Comisión Municipal",
-            "Alberto Elhaiek",
-            "Ángel Salmerón",
-            "Belgrano",
-            "Calle 9",
-            "Constancio Vigil",
-            "David Prieto",
-            "Hugo Sbalbi",
-            "I. Irigoyen",
-            "María D. Golia",
-            "Mariano Roldán",
-            "Mitre",
-            "Raúl Garavaglia",
-            "Rivadavia",
-            "Roca",
-            "Sarmiento",
-            "Toribio Taladriz"
-        ]
+        "1era Comisión Municipal",
+        "Alberto Elhaiek",
+        "Ángel Salmerón",
+        "Belgrano",
+        "Calle 9",
+        "Constancio Vigil",
+        "David Prieto",
+        "Hugo Sbalbi",
+        "I. Irigoyen",
+        "María D. Golia",
+        "Mariano Roldán",
+        "Mitre",
+        "Raúl Garavaglia",
+        "Rivadavia",
+        "Roca",
+        "Sarmiento",
+        "Toribio Taladriz"
     ]
 };
