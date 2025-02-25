@@ -1,4 +1,28 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateRegistroDto } from './create-registro.dto';
+import { UpdateViviendaDto } from 'src/vivienda/dto/update-vivienda.dto';
+import { UpdateIngresoDto } from 'src/ingreso/dto/update-ingreso.dto';
+import { UpdateLoteDto } from 'src/lote/dto/update-lote.dto';
+import { UpdatePersonaDto } from 'src/persona/dto/update-persona.dto';
+import { IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class UpdateRegistroDto extends PartialType(CreateRegistroDto) {}
+export class UpdateRegistroDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdatePersonaDto)
+  persona?: UpdatePersonaDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateViviendaDto)
+  vivienda?: UpdateViviendaDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateLoteDto)
+  lote?: UpdateLoteDto;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateIngresoDto)
+  ingresos?: UpdateIngresoDto[];
+}

@@ -1,5 +1,5 @@
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException, Put, Query } from '@nestjs/common';
 import { RegistroService } from './registro.service';
 
 import { UpdateRegistroDto } from './dto/update-registro.dto';
@@ -48,6 +48,49 @@ export class RegistroController {
         error: 'Error del servidor',
         message: 'Error al procesar los registros'
       }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
+  @Get()
+  async findAll(
+      @Query('page') page?: number,
+      @Query('limit') limit?: number,
+      @Query('search') search?: string,
+      @Query('localidad') localidad?: string,
+      @Query('titular') titular?: boolean
+  ) {
+      return await this.registroService.findAll({
+          page: page ? +page : undefined,
+          limit: limit ? +limit : undefined,
+          search,
+          localidad,
+          titular
+      });
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+      return await this.registroService.findOneById(id);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() updateDto: any) {
+    try {
+      const registroActualizado = await this.registroService.update(id, updateDto);
+      return {
+        status: HttpStatus.OK,
+        message: 'Registro actualizado exitosamente',
+        data: registroActualizado
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Error en la actualización',
+          message: error.message
+        },
+        HttpStatus.BAD_REQUEST
+      );
     }
   }
 
