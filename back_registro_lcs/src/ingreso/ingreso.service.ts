@@ -77,7 +77,14 @@ export class IngresoService {
     if (!ingresoFound) {
       throw new NotFoundException(`Ingreso con id ${id} no encontrado`);
     }
-
+    // Convertir cadenas vacías a null para campos numéricos
+    if (String(updateIngresoDto.CUIT_empleador) === '') {
+      updateIngresoDto.CUIT_empleador = null;
+    }
+    if (String(updateIngresoDto.salario) === '') {
+      updateIngresoDto.salario = null;
+    }
+    
     Object.assign(ingresoFound, updateIngresoDto);
 
     try {
