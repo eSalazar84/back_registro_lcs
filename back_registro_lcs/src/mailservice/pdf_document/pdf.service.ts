@@ -9,6 +9,16 @@ import { IngresoService } from 'src/ingreso/ingreso.service';
 
 @Injectable()
 export class PdfService {
+    private readonly leftMargin = 50;
+    private readonly lineHeight = 20;
+    private readonly fieldLabelWidth = 160;
+    private readonly colors = {
+        primary: '#2c3e50',
+        secondary: '#007bff',
+        accent: '#34495e',
+        text: '#4a4a4a',
+        lightBg: '#f8f9fa'
+    };
 
     constructor(
         private readonly viviendaService: ViviendaService,
@@ -29,31 +39,70 @@ export class PdfService {
 
     async generateRegistrationPDF(data: any[]): Promise<string> {
         return new Promise(async (resolve, reject) => {
-            const doc = new PDFDocument();
+            const doc = new PDFDocument({ margin: 0 });
             const filePath = path.join(process.cwd(), `src/temp/registro_${Date.now()}.pdf`);
             const stream = fs.createWriteStream(filePath);
-
             doc.pipe(stream);
 
-            // Estilos reutilizables
-            const titleStyle = { fontSize: 18, bold: true, color: '#2c3e50' };
-            const sectionStyle = { fontSize: 14, bold: true, color: '#34495e' };
+            // --- ENCABEZADO ---
+            doc.rect(0, 0, doc.page.width, 120).fill(this.colors.lightBg);
 
-            // Cargar imagen con validación
-            const logoPath = path.join(process.cwd(), 'https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png');
-            if (fs.existsSync(logoPath)) {
-                doc.image(logoPath, 50, 50, { width: 100 });
-            } else {
-                console.warn('Logo no encontrado en:', logoPath);
+            try {
+                const imageUrl = 'https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png';
+                const response = await fetch(imageUrl);
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
+                const imageBuffer = Buffer.from(await response.arrayBuffer());
+                doc.image(imageBuffer, this.leftMargin, 40, { width: 80 });
+
+                // Título
+                doc.font('Helvetica-Bold')
+                    .fontSize(20)
+                    .fillColor(this.colors.primary)
+                    .text('Comprobante de Registro', 150, 50)
+                    .font('Helvetica')
+                    .fontSize(14)
+                    .fillColor(this.colors.accent)
+                    .text('Programa "Mi hábitat, mi hogar"', 150, 75);
+
+            } catch (error) {
+                console.error('Error al cargar el logo:', error);
             }
 
-            // Encabezado
-            doc.fillColor(titleStyle.color)
-                .fontSize(titleStyle.fontSize)
-                .text('Comprobante de registro al programa "Mi hábitat, mi hogar"', { align: 'center' })
-                .moveDown(1.5);
+            // Línea decorativa
+            doc.moveTo(this.leftMargin, 120)
+                .lineTo(doc.page.width - this.leftMargin, 120)
+                .lineWidth(2)
+                .strokeColor(this.colors.secondary)
+                .stroke();
 
-            // Iterar sobre todas las personas
+            // --- DATOS PRINCIPALES ---
+            let yPosition = 140;
+            doc.roundedRect(this.leftMargin, yPosition, doc.page.width - 2 * this.leftMargin, 60, 5)
+                .fill(this.colors.lightBg);
+
+            // Número de registro
+            doc.font('Helvetica-Bold')
+                .fontSize(12)
+                .fillColor(this.colors.primary)
+                .text('NÚMERO DE REGISTRO:', this.leftMargin + 30, yPosition + 20, { align: 'center' })
+                .fontSize(16)
+                .fillColor(this.colors.secondary)
+                .text(data[0].numero_registro || 'N/D', this.leftMargin + 30, yPosition + 40, { align: 'center' });
+
+            // Localidad del lote
+            doc.font('Helvetica-Bold')
+                .fontSize(12)
+                .fillColor(this.colors.primary)
+                .text('LOCALIDAD DEL LOTE:', doc.page.width - 280, yPosition + 20, { align: 'center' })
+                .font('Helvetica')
+                .fontSize(16)
+                .fillColor(this.colors.secondary)
+                .text(data[0].lote?.localidad || 'N/D', doc.page.width - 280, yPosition + 40, { align: 'center' });
+
+            yPosition += 90;
+
+            // --- CUERPO PRINCIPAL ---
             for (const personaData of data) {
                 const {
                     nombre,
@@ -62,7 +111,6 @@ export class PdfService {
                     CUIL_CUIT,
                     fecha_nacimiento,
                     vinculo,
-                    numero_registro,
                     idVivienda,
                     idLote,
                     idPersona,
@@ -70,142 +118,157 @@ export class PdfService {
                     genero,
                     email,
                     telefono,
+                    numero_registro,
                     nacionalidad
                 } = personaData;
 
-                // Obtener datos adicionales
                 const vivienda = await this.viviendaService.getViviendaById(idVivienda);
                 const lote = idLote ? await this.loteService.getLoteById(idLote) : null;
                 const ingresos = await this.ingresoService.getIngresosByPersonaId(idPersona);
-
                 const edad = this.calcularEdad(new Date(fecha_nacimiento));
                 const esMenor = edad < 18;
 
-                if (data.indexOf(personaData) === 0) {
-                    this.addFieldBold(doc, 'Número de registro: ', numero_registro || 'N/D');
-                }
+                // Número de registro
+                doc.font('Helvetica-Bold')
+                    .fontSize(styles.mainFieldLabel.fontSize)
+                    .fillColor(styles.mainFieldLabel.color)
+                    .text('NÚMERO DE REGISTRO:', 50, yPosition + 20, {
+                        width: 250,
+                        align: 'left' // Asegura que el texto esté alineado a la izquierda
+                    });
 
-                // Sección de Lote para el titular
-                if (lote && data.indexOf(personaData) === 0) {
-                    this.addField(doc, 'Localidad del lote elegido: ', lote.localidad || 'N/D');
-                }
+                doc.font('Helvetica-Bold')
+                    .fontSize(16)
+                    .fillColor(this.colors.secondary)
+                    .text(numero_registro || 'N/D', 50, yPosition + 40, {
+                        width: 250,
+                        align: 'left' // Asegura que el texto esté alineado a la izquierda
+                    });
 
-                // Sección de Persona
-                doc.fillColor(sectionStyle.color)
-                    .fontSize(sectionStyle.fontSize)
-                    .text(`${data.indexOf(personaData) === 0 ? 'Interesado Titular' : 'Grupo Familiar (Co-Titulares - Convivientes)'} ${data.indexOf(personaData) + 1}:`, {
-                        underline: true
-                    })
-                    .moveDown(0.5);
+                // Localidad del lote
+                doc.font('Helvetica-Bold')
+                    .fontSize(styles.mainFieldLabel.fontSize)
+                    .fillColor(styles.mainFieldLabel.color)
+                    .text('LOCALIDAD DEL LOTE:', 350, yPosition + 20, {
+                        width: 250,
+                        align: 'left' // Asegura que el texto esté alineado a la izquierda
+                    });
 
-                // Datos básicos comunes
-                this.addField(doc, 'Nombre completo: ', `${nombre || 'N/D'} ${apellido || ''}`);
-                this.addField(doc, 'DNI: ', dni || 'N/D');
-                this.addField(doc, 'CUIL/CUIT: ', CUIL_CUIT || 'N/D');
-                this.addField(doc, 'Fecha nacimiento: ', new Date(fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-AR'));
-                this.addField(doc, 'Edad: ', `${edad} años`);
-                this.addField(doc, 'Género: ', genero || 'N/D');
-                this.addField(doc, 'Email: ', email || 'N/D');
-                this.addField(doc, 'Teléfono: ', telefono || 'N/D');
-                this.addField(doc, 'Nacionalidad: ', nacionalidad || 'N/D');
-                this.addField(doc, 'Estado civil: ', estado_civil || 'N/D');
+                doc.font('Helvetica')
+                    .fontSize(16)
+                    .fillColor(this.colors.secondary)
+                    .text(lote.localidad || 'N/D', 350, yPosition + 40, {
+                        width: 250,
+                        align: 'left' // Asegura que el texto esté alineado a la izquierda
+                    });
+
+                yPosition += 90;
+
+                // Título sección
+                doc.font('Helvetica-Bold')
+                    .fontSize(14)
+                    .fillColor(this.colors.accent)
+                    .text(`${data.indexOf(personaData) === 0 ? 'INTERESADO TITULAR' : 'GRUPO FAMILIAR'}`, this.leftMargin, yPosition, { underline: true });
+
+                yPosition += this.lineHeight + 10;
+
+                // Campos alineados
+                yPosition = this.addFieldAligned(doc, 'Nombre completo:', `${nombre} ${apellido}`, yPosition);
+                yPosition = this.addFieldAligned(doc, 'DNI:', dni, yPosition);
+                yPosition = this.addFieldAligned(doc, 'CUIL/CUIT:', CUIL_CUIT, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Fecha nacimiento:', new Date(fecha_nacimiento).toLocaleDateString('es-AR'), yPosition);
+                yPosition = this.addFieldAligned(doc, 'Edad:', `${edad} años`, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Género:', genero, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Estado civil:', estado_civil, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Nacionalidad:', nacionalidad, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Email:', email, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Teléfono:', telefono, yPosition);
 
                 if (data.indexOf(personaData) > 0) {
-                    this.addField(doc, 'Vínculo con titular: ', vinculo || 'N/D');
+                    yPosition = this.addFieldAligned(doc, 'Vínculo con titular:', vinculo, yPosition);
                 }
 
-                // Sección de Vivienda para todos
+                // Vivienda
                 if (vivienda) {
-                    doc.fillColor(sectionStyle.color)
-                        .fontSize(sectionStyle.fontSize)
-                        .text('\nDatos de la vivienda:', { underline: true })
-                        .moveDown(0.5);
+                    yPosition += 10;
+                    doc.font('Helvetica-Bold')
+                        .fontSize(14)
+                        .fillColor(this.colors.accent)
+                        .text('DATOS DE LA VIVIENDA', this.leftMargin, yPosition, { underline: true });
+                    yPosition += this.lineHeight + 10;
 
-                    this.addField(doc, 'Dirección: ', `${vivienda.direccion || 'N/D'} ${vivienda.numero_direccion || ''}`);
-                    this.addField(doc, 'Localidad: ', vivienda.localidad || 'N/D');
-                    this.addField(doc, 'Cantidad dormitorios: ', vivienda.cantidad_dormitorios?.toString() || 'N/D');
-                    this.addField(doc, 'Estado vivienda: ', vivienda.estado_vivienda || 'N/D');
+                    yPosition = this.addFieldAligned(doc, 'Dirección:', `${vivienda.direccion} ${vivienda.numero_direccion}`, yPosition);
+                    yPosition = this.addFieldAligned(doc, 'Localidad:', vivienda.localidad, yPosition);
+                    yPosition = this.addFieldAligned(doc, 'Dormitorios:', vivienda.cantidad_dormitorios, yPosition);
+                    yPosition = this.addFieldAligned(doc, 'Estado:', vivienda.estado_vivienda, yPosition);
 
                     if (vivienda.departamento) {
-                        this.addField(doc, 'Piso: ', vivienda.piso_departamento?.toString() || 'N/D');
-                        this.addField(doc, 'N° departamento: ', vivienda.numero_departamento || 'N/D');
+                        yPosition = this.addFieldAligned(doc, 'Piso:', vivienda.piso_departamento, yPosition);
+                        yPosition = this.addFieldAligned(doc, 'N° Departamento:', vivienda.numero_departamento, yPosition);
                     }
                 }
 
-
-                // Sección de Ingresos solo para mayores de edad
+                // Ingresos
                 if (!esMenor) {
-                    doc.fillColor(sectionStyle.color)
-                        .fontSize(sectionStyle.fontSize)
-                        .text('\nSituación laboral:', { underline: true })
-                        .moveDown(0.5);
+                    yPosition += 10;
+                    doc.font('Helvetica-Bold')
+                        .fontSize(14)
+                        .fillColor(this.colors.accent)
+                        .text('SITUACIÓN LABORAL', this.leftMargin, yPosition, { underline: true });
+                    yPosition += this.lineHeight + 10;
 
-                    if (Array.isArray(ingresos) && ingresos.length > 0) {
-                        ingresos.forEach((ingreso, i) => {
-                            this.addField(doc, `Empleador ${i + 1}: `, ingreso.ocupacion || 'N/D');
-                            this.addField(doc, 'CUIT empleador: ', ingreso.CUIT_empleador?.toString() || 'N/D');
-                            this.addField(doc, 'Salario: ', ingreso.salario ?
-                                `$${ingreso.salario.toLocaleString('es-AR')}` : 'N/D');
-                            doc.moveDown(0.3);
+                    if (ingresos.length > 0) {
+                        ingresos.forEach((ingreso, index) => {
+                            yPosition = this.addFieldAligned(doc, `Empleador ${index + 1}:`, ingreso.ocupacion, yPosition);
+                            yPosition = this.addFieldAligned(doc, 'CUIT:', ingreso.CUIT_empleador, yPosition);
+                            yPosition = this.addFieldAligned(doc, 'Salario:', `$${ingreso.salario?.toLocaleString('es-AR')}`, yPosition);
+                            yPosition += 10;
                         });
                     } else {
-                        this.addField(doc, 'Información laboral: ', 'No registrada');
+                        yPosition = this.addFieldAligned(doc, 'Información laboral:', 'No registrada', yPosition);
                     }
                 } else {
-                    doc.fillColor(sectionStyle.color)
-                        .fontSize(sectionStyle.fontSize)
-                        .text('\nSituación laboral:', { underline: true })
-                        .moveDown(0.5);
-                    this.addField(doc, 'Información laboral: ', 'No aplica (menor de edad)');
+                    yPosition = this.addFieldAligned(doc, 'Información laboral:', 'No aplica (menor de edad)', yPosition);
                 }
 
-                doc.moveDown(1.5);
+                yPosition += 30; // Espacio entre personas
             }
 
-            // Pie de documento
-            doc.fillColor('#2c3e50')
-                .fontSize(12)
-                .text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, { align: 'center' })
-                .moveDown(0.5);
-
-            doc.fillColor('#95a5a6')
-                .fontSize(10)
-                .text('N/D = Dato no proporcionado', { align: 'left' })
-                .moveDown(0.5);
-
-            doc.fillColor('#7f8c8d')
-                .fontSize(10)
-                .text('Este documento es válido como comprobante de registro oficial.', { align: 'center' });
+            // --- PIE DE PÁGINA ---
+            doc.fontSize(10)
+                .fillColor(this.colors.text)
+                .text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, this.leftMargin, yPosition, { align: 'left' })
+                .text('N/D = Dato no proporcionado', this.leftMargin, yPosition + 15)
+                .text('Este documento es válido como comprobante de registro oficial.', this.leftMargin, yPosition + 30, { align: 'left' });
 
             doc.end();
 
             stream.on('finish', () => resolve(filePath));
             stream.on('error', reject);
-            console.log('PDF generado correctamente en:', filePath);
         });
     }
 
-    private addField(doc: typeof PDFDocument, label: string, value: any) {
-        const displayValue = value !== undefined && value !== null ? value.toString() : 'N/D';
-        doc.fillColor('#2c3e50')
-            .fontSize(12)
-            .text(label, { continued: true })
-            .fillColor('#7f8c8d')
-            .text(displayValue)
-            .moveDown(0.3);
-    }
+    private addFieldAligned(
+        doc: PDFKit.PDFDocument,
+        label: string,
+        value: any,
+        yPosition: number
+    ): number {
+        const displayValue = value?.toString() || 'N/D';
 
-    private addFieldBold(doc: typeof PDFDocument, label: string, value: any) {
-        const displayValue = value !== undefined && value !== null ? value.toString() : 'N/D';
-    
-        doc.fillColor('#000000') // Negro para el texto en negrita
-            .font('Helvetica-Bold') // Aplica negrita
-            .text(label, { continued: true }) // Mantiene en la misma línea
-        
-            .fillColor('#007bff') // Celeste para el número
-            .font('Helvetica') // Texto normal (sin negrita)
-            .text(displayValue)
-            .moveDown(0.3);
+        doc.font('Helvetica-Bold')
+            .fontSize(12)
+            .fillColor(this.colors.primary)
+            .text(label, this.leftMargin, yPosition, {
+                width: this.fieldLabelWidth,
+                align: 'left'
+            });
+
+        doc.font('Helvetica')
+            .fontSize(12)
+            .fillColor(this.colors.text)
+            .text(displayValue, this.leftMargin + this.fieldLabelWidth + 10, yPosition);
+
+        return yPosition + this.lineHeight;
     }
-    
 }
