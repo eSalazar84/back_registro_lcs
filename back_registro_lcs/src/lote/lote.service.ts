@@ -22,7 +22,7 @@ export class LoteService {
     return lote;
   }
 
-//-------------------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------------------
 
 
   findAll() {
@@ -38,6 +38,19 @@ export class LoteService {
       throw new HttpException('Lote no encontrado', HttpStatus.NOT_FOUND);
     }
     return lote;
+  }
+
+  async getLoteById(id: number): Promise<Lote> {
+    try {
+      const query: FindOneOptions = { where: { idLote: id } }
+      const lote = await this.loteRepository.findOne(query)
+      if (!lote) {
+        throw new NotFoundException(`Lote con id ${id} no encontrado`)
+      }
+      return lote
+    } catch (error) {
+      throw new InternalServerErrorException('error al buscar lote')
+    }
   }
 
 
