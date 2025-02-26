@@ -21,7 +21,7 @@ export class PersonaService {
 
   async createPersona(createPersonaDto: CreatePersonaDto, idVivienda: number, idLote: number): Promise<Persona> {
     console.log("personaS", idLote);
-  
+
     // Verificar si el DNI ya existe
     const personaFound = await this.personaRepository.findOne({ where: { dni: createPersonaDto.dni } });
     if (personaFound) {
@@ -30,13 +30,13 @@ export class PersonaService {
         error: `DNI ya registrado`
       }, HttpStatus.BAD_REQUEST);
     }
-  
+
     let personaData = {
       ...createPersonaDto,
       idVivienda,
       idLote,
     };
-  
+
     // Asignar el número de registro si es titular
     if (createPersonaDto.titular_cotitular === Titular_Cotitular.Titular) {
       // Buscar el último número de registro entre los titulares
@@ -49,17 +49,17 @@ export class PersonaService {
     } else {
       personaData.numero_registro = null;
     }
-  
+
     // 🔹 Limpiar espacios antes y después de cada string en personaData
     personaData = this.trimStrings(personaData);
-  
+
     // Crear instancia de Persona
     const persona = this.personaRepository.create(personaData);
-  
+
     // Guardar en la base de datos
     return await this.personaRepository.save(persona);
   }
-  
+
   /**
    * 🔥 Función que recorre un objeto y aplica `.trim()` a todas sus propiedades tipo `string`
    */
@@ -70,7 +70,7 @@ export class PersonaService {
       return acc;
     }, {} as T);
   }
-  
+
 
   async findAll(): Promise<Persona[]> {
     try {
@@ -165,22 +165,22 @@ export class PersonaService {
   async updatePersona(id: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
     // Buscar la persona por su ID
     const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
-  
+
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
-  
+
     // Asegúrate de que hay valores a actualizar (no esté vacío)
     if (Object.keys(updatePersonaDto).length === 0) {
       throw new Error('No hay valores para actualizar');
     }
-  
+
     // 🔹 Limpiar espacios antes y después de cada string en updatePersonaDto
     const trimmedDto = this.trimStrings(updatePersonaDto);
-  
+
     // Actualizar los campos de la persona con los valores del DTO
     Object.assign(persona, trimmedDto);
-  
+
     // Guardar la persona actualizada
     return await this.personaRepository.save(persona);
   }
@@ -213,5 +213,4 @@ export class PersonaService {
       }
     }
   }
-
 }
