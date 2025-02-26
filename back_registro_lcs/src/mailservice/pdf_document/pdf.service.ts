@@ -36,6 +36,7 @@ export class PdfService {
             } else {
                 console.warn('Logo no encontrado en:', logoPath);
             }
+
             // Encabezado
             doc.fillColor(titleStyle.color)
                 .fontSize(titleStyle.fontSize)
@@ -55,10 +56,12 @@ export class PdfService {
                     vivienda,
                     ingresos,
                     estado_civil,
+                    certificado_discapacidad,
                     genero,
                     email,
                     telefono,
-                    nacionalidad
+                    nacionalidad,
+                    lote
                 } = personaData;
 
                 const edad = this.calcularEdad(new Date(fecha_nacimiento));
@@ -67,31 +70,31 @@ export class PdfService {
                 if (index === 0) {
                     this.addFieldBold(doc, 'Número de registro: ', numero_registro || 'N/D');
                 }
+
                 // Sección de Persona
                 doc.fillColor(sectionStyle.color)
                     .fontSize(sectionStyle.fontSize)
-                    .text(`${index === 0 ? 'Interesado Titular' : 'Persona a cargo'} ${index + 1}:`, {
+                    .text(`${index === 0 ? 'Interesado Titular' : 'Persona a cargo (Co-Titular - Conviviente)'}:`, {
                         underline: true
                     })
                     .moveDown(0.5);
 
                 // Datos básicos comunes
                 this.addField(doc, 'Nombre completo: ', `${nombre || 'N/D'} ${apellido || ''}`);
-                this.addField(doc, 'DNI: ', dni || 'N/D');
+                this.addField(doc, 'Documento: ', dni || 'N/D');
                 this.addField(doc, 'CUIL/CUIT: ', CUIL_CUIT || 'N/D');
-                this.addField(doc, 'Fecha nacimiento: ', new Date(fecha_nacimiento).toLocaleDateString('es-AR'));
+                this.addField(doc, 'Fecha nacimiento: ', new Date(fecha_nacimiento + 'T0:00:00').toLocaleDateString('es-AR'));
                 this.addField(doc, 'Edad: ', `${edad} años`);
                 this.addField(doc, 'Género: ', genero || 'N/D');
                 this.addField(doc, 'Email: ', email || 'N/D');
                 this.addField(doc, 'Teléfono: ', telefono || 'N/D');
                 this.addField(doc, 'Nacionalidad: ', nacionalidad || 'N/D');
                 this.addField(doc, 'Estado civil: ', estado_civil || 'N/D');
+                this.addField(doc, 'Posee Certificado de Discapacidad: ', certificado_discapacidad || 'N/D');
 
                 if (index > 0) {
                     this.addField(doc, 'Vínculo con titular: ', vinculo || 'N/D');
                 }
-
-                // Datos específicos del titular
 
                 // Sección de Vivienda para todos
                 if (vivienda) {
@@ -109,6 +112,16 @@ export class PdfService {
                         this.addField(doc, 'Piso: ', vivienda.piso_departamento?.toString() || 'N/D');
                         this.addField(doc, 'N° departamento: ', vivienda.numero_departamento || 'N/D');
                     }
+                }
+
+                // Sección de Lote para el titular
+                if (lote && index === 0) {
+                    doc.fillColor(sectionStyle.color)
+                        .fontSize(sectionStyle.fontSize)
+                        .text('\nDatos del lote:', { underline: true })
+                        .moveDown(0.5);
+
+                    this.addField(doc, 'Ubicación del lote elegido: ', lote.localidad || 'N/D');
                 }
 
                 // Sección de Ingresos solo para mayores de edad
