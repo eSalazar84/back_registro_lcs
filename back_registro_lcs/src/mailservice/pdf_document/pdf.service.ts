@@ -3,9 +3,19 @@ import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ViviendaService } from 'src/vivienda/vivienda.service';
+import { LoteService } from 'src/lote/lote.service';
+import { IngresoService } from 'src/ingreso/ingreso.service';
 
 @Injectable()
 export class PdfService {
+
+    constructor(
+        private readonly viviendaService: ViviendaService,
+        private readonly loteService: LoteService,
+        private readonly ingresoService: IngresoService
+    ) { }
+
     private calcularEdad(fechaNacimiento: Date): number {
         const hoy = new Date();
         const fechaNac = new Date(fechaNacimiento);
@@ -18,7 +28,7 @@ export class PdfService {
     }
 
     async generateRegistrationPDF(data: any[]): Promise<string> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const doc = new PDFDocument();
             const filePath = path.join(process.cwd(), `src/temp/registro_${Date.now()}.pdf`);
             const stream = fs.createWriteStream(filePath);
@@ -44,7 +54,7 @@ export class PdfService {
                 .moveDown(1.5);
 
             // Iterar sobre todas las personas
-            data.forEach((personaData, index) => {
+            for (const personaData of data) {
                 const {
                     nombre,
                     apellido,
@@ -53,46 +63,54 @@ export class PdfService {
                     fecha_nacimiento,
                     vinculo,
                     numero_registro,
-                    vivienda,
-                    ingresos,
+                    idVivienda,
+                    idLote,
+                    idPersona,
                     estado_civil,
-                    certificado_discapacidad,
                     genero,
                     email,
                     telefono,
-                    nacionalidad,
-                    lote
+                    nacionalidad
                 } = personaData;
+
+                // Obtener datos adicionales
+                const vivienda = await this.viviendaService.getViviendaById(idVivienda);
+                const lote = idLote ? await this.loteService.getLoteById(idLote) : null;
+                const ingresos = await this.ingresoService.getIngresosByPersonaId(idPersona);
 
                 const edad = this.calcularEdad(new Date(fecha_nacimiento));
                 const esMenor = edad < 18;
 
-                if (index === 0) {
+                if (data.indexOf(personaData) === 0) {
                     this.addFieldBold(doc, 'Número de registro: ', numero_registro || 'N/D');
+                }
+
+                // Sección de Lote para el titular
+                if (lote && data.indexOf(personaData) === 0) {
+                    this.addField(doc, 'Localidad del lote elegido: ', lote.localidad || 'N/D');
                 }
 
                 // Sección de Persona
                 doc.fillColor(sectionStyle.color)
                     .fontSize(sectionStyle.fontSize)
-                    .text(`${index === 0 ? 'Interesado Titular' : 'Persona a cargo (Co-Titular - Conviviente)'}:`, {
+                    .text(`${data.indexOf(personaData) === 0 ? 'Interesado Titular' : 'Grupo Familiar (Co-Titulares - Convivientes)'} ${data.indexOf(personaData) + 1}:`, {
                         underline: true
                     })
                     .moveDown(0.5);
 
                 // Datos básicos comunes
                 this.addField(doc, 'Nombre completo: ', `${nombre || 'N/D'} ${apellido || ''}`);
-                this.addField(doc, 'Documento: ', dni || 'N/D');
+                this.addField(doc, 'DNI: ', dni || 'N/D');
                 this.addField(doc, 'CUIL/CUIT: ', CUIL_CUIT || 'N/D');
-                this.addField(doc, 'Fecha nacimiento: ', new Date(fecha_nacimiento + 'T0:00:00').toLocaleDateString('es-AR'));
+                this.addField(doc, 'Fecha nacimiento: ', new Date(fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-AR'));
                 this.addField(doc, 'Edad: ', `${edad} años`);
                 this.addField(doc, 'Género: ', genero || 'N/D');
                 this.addField(doc, 'Email: ', email || 'N/D');
                 this.addField(doc, 'Teléfono: ', telefono || 'N/D');
                 this.addField(doc, 'Nacionalidad: ', nacionalidad || 'N/D');
                 this.addField(doc, 'Estado civil: ', estado_civil || 'N/D');
-                this.addField(doc, 'Posee Certificado de Discapacidad: ', certificado_discapacidad || 'N/D');
 
-                if (index > 0) {
+                if (data.indexOf(personaData) > 0) {
                     this.addField(doc, 'Vínculo con titular: ', vinculo || 'N/D');
                 }
 
@@ -114,15 +132,6 @@ export class PdfService {
                     }
                 }
 
-                // Sección de Lote para el titular
-                if (lote && index === 0) {
-                    doc.fillColor(sectionStyle.color)
-                        .fontSize(sectionStyle.fontSize)
-                        .text('\nDatos del lote:', { underline: true })
-                        .moveDown(0.5);
-
-                    this.addField(doc, 'Ubicación del lote elegido: ', lote.localidad || 'N/D');
-                }
 
                 // Sección de Ingresos solo para mayores de edad
                 if (!esMenor) {
@@ -131,7 +140,7 @@ export class PdfService {
                         .text('\nSituación laboral:', { underline: true })
                         .moveDown(0.5);
 
-                    if (ingresos?.length > 0) {
+                    if (Array.isArray(ingresos) && ingresos.length > 0) {
                         ingresos.forEach((ingreso, i) => {
                             this.addField(doc, `Empleador ${i + 1}: `, ingreso.ocupacion || 'N/D');
                             this.addField(doc, 'CUIT empleador: ', ingreso.CUIT_empleador?.toString() || 'N/D');
@@ -151,7 +160,7 @@ export class PdfService {
                 }
 
                 doc.moveDown(1.5);
-            });
+            }
 
             // Pie de documento
             doc.fillColor('#2c3e50')
@@ -188,11 +197,15 @@ export class PdfService {
 
     private addFieldBold(doc: typeof PDFDocument, label: string, value: any) {
         const displayValue = value !== undefined && value !== null ? value.toString() : 'N/D';
-        doc.fillColor('#007bff')
-            .fontSize(28)
-            .text(label, { continued: true })
-            .fillColor('#7f8c8d')
+    
+        doc.fillColor('#000000') // Negro para el texto en negrita
+            .font('Helvetica-Bold') // Aplica negrita
+            .text(label, { continued: true }) // Mantiene en la misma línea
+        
+            .fillColor('#007bff') // Celeste para el número
+            .font('Helvetica') // Texto normal (sin negrita)
             .text(displayValue)
             .moveDown(0.3);
     }
+    
 }

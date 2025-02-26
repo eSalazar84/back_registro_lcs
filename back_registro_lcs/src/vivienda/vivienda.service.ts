@@ -19,10 +19,10 @@ export class ViviendaService {
   async createVivienda(createViviendaDto: CreateViviendaDto): Promise<Vivienda> {
     // Aplicar trim() a todas las propiedades de tipo string
     const trimmedDto = this.trimStrings(createViviendaDto);
-  
+
     // Crear una nueva instancia de Vivienda
     const nuevaVivienda = new Vivienda();
-  
+
     // Asignar propiedades del DTO a la entidad
     nuevaVivienda.direccion = trimmedDto.direccion;
     nuevaVivienda.numero_direccion = trimmedDto.numero_direccion;
@@ -35,13 +35,13 @@ export class ViviendaService {
     nuevaVivienda.cantidad_dormitorios = trimmedDto.cantidad_dormitorios;
     nuevaVivienda.estado_vivienda = trimmedDto.estado_vivienda;
     nuevaVivienda.tipo_alquiler = trimmedDto.tipo_alquiler || null;
-  
+
     console.log("🏠 Vivienda enviada:", nuevaVivienda);
-  
+
     // Guardar la vivienda en la base de datos
     return await this.viviendaRepository.save(nuevaVivienda);
   }
-  
+
   /**
    * 🔥 Función para limpiar espacios antes y después de cada string en un objeto
    */
@@ -52,7 +52,7 @@ export class ViviendaService {
       return acc;
     }, {} as T);
   }
-  
+
 
   async findAllVivienda(): Promise<Vivienda[]> {
     const allVivienda = await this.viviendaRepository.find()
@@ -73,26 +73,26 @@ export class ViviendaService {
   async updateVivienda(id: number, updateViviendaDto: UpdateViviendaDto): Promise<Vivienda> {
     try {
       console.log('🔍 Buscando vivienda con ID:', id);
-  
+
       // Buscar la vivienda actual
       const viviendaFound = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
-  
+
       if (!viviendaFound) {
         throw new NotFoundException(`⚠️ Vivienda con ID ${id} no encontrada`);
       }
-  
+
       // Aplicar trim() a todas las propiedades de tipo string
       const trimmedDto = this.trimStrings(updateViviendaDto);
-  
+
       // 🔹 Verificar si la vivienda ya existe antes de actualizar
       if (await this.isViviendaDuplicada(id, trimmedDto)) {
         throw new ConflictException(`❌ La vivienda en esta dirección ya está registrada.`);
       }
-  
+
       // 🚀 Actualizar solo si no hay duplicados
       Object.assign(viviendaFound, trimmedDto);
       console.log('📝 Datos antes de guardar la vivienda actualizada:', viviendaFound);
-  
+
       // Guardar en la base de datos
       return await this.viviendaRepository.save(viviendaFound);
     } catch (error) {
@@ -100,7 +100,7 @@ export class ViviendaService {
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
-  
+
 
   /**
    * ✅ Verifica si la vivienda ya existe antes de actualizar.
@@ -110,13 +110,13 @@ export class ViviendaService {
       ? await this.isDepartamentoDuplicado(id, dto)
       : await this.isCasaDuplicada(id, dto);
   }
-  
+
   /**
    * ✅ Verifica si la casa ya está registrada en la base de datos.
    */
   private async isCasaDuplicada(id: number, dto: UpdateViviendaDto): Promise<boolean> {
     console.log(`🔎 Verificando casa duplicada en ${dto.direccion} ${dto.numero_direccion}`);
-  
+
     return await this.viviendaRepository
       .createQueryBuilder("v")
       .where("LOWER(TRIM(v.localidad)) = LOWER(TRIM(:localidad))", { localidad: dto.localidad })
@@ -125,13 +125,13 @@ export class ViviendaService {
       .andWhere("v.idVivienda != :id", { id }) // Excluimos la vivienda actual
       .getExists();
   }
-  
+
   /**
    * ✅ Verifica si el departamento ya está registrado en la base de datos.
    */
   private async isDepartamentoDuplicado(id: number, dto: UpdateViviendaDto): Promise<boolean> {
     console.log(`🔎 Verificando departamento duplicado en ${dto.direccion} ${dto.numero_direccion}, Piso ${dto.piso_departamento}, Nº ${dto.numero_departamento}`);
-  
+
     return await this.viviendaRepository
       .createQueryBuilder("v")
       .where("LOWER(TRIM(v.localidad)) = LOWER(TRIM(:localidad))", { localidad: dto.localidad })
@@ -142,26 +142,33 @@ export class ViviendaService {
       .andWhere("v.idVivienda != :id", { id }) // Excluimos la vivienda actual
       .getExists();
   }
-  
-  
-// Se utiliza en el registro para ver si la vivienda ya existe
-  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean |  null, piso_departamento:number, numero_departamento:string): Promise<Vivienda | null> {
+
+
+  // Se utiliza en el registro para ver si la vivienda ya existe
+  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean | null, piso_departamento: number, numero_departamento: string): Promise<Vivienda | null> {
     return await this.viviendaRepository.findOne({
-        where: { direccion, numero_direccion, localidad, departamento, piso_departamento, numero_departamento }
+      where: { direccion, numero_direccion, localidad, departamento, piso_departamento, numero_departamento }
     });
-}
-
-async removeVivienda(id: number): Promise<void> {
-  
-  const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
-
-  if (!vivienda) {
-    throw new Error('vivienda no encontrada');
   }
 
-  // Eliminar la vivienda de la base de datos
-  await this.viviendaRepository.remove(vivienda);
-}
+  async removeVivienda(id: number): Promise<void> {
 
+    const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
 
+    if (!vivienda) {
+      throw new Error('vivienda no encontrada');
+    }
+
+    // Eliminar la vivienda de la base de datos
+    await this.viviendaRepository.remove(vivienda);
+  }
+
+  // Metodo para obtener la vivienda por id para usar en pdfService
+  async getViviendaById(id: number): Promise<Vivienda> {
+    const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
+    if (!vivienda) {
+      throw new NotFoundException(`Vivienda con ID ${id} no encontrada`);
+    }
+    return vivienda;
+  }
 }
