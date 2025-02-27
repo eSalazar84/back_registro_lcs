@@ -6,6 +6,7 @@ import * as path from 'path';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
+import fetch from 'node-fetch'; // Si usas Node.js <18
 
 @Injectable()
 export class PdfService {
@@ -76,31 +77,7 @@ export class PdfService {
                 .strokeColor(this.colors.secondary)
                 .stroke();
 
-            // --- DATOS PRINCIPALES ---
             let yPosition = 140;
-            doc.roundedRect(this.leftMargin, yPosition, doc.page.width - 2 * this.leftMargin, 60, 5)
-                .fill(this.colors.lightBg);
-
-            // Número de registro
-            doc.font('Helvetica-Bold')
-                .fontSize(12)
-                .fillColor(this.colors.primary)
-                .text('NÚMERO DE REGISTRO:', this.leftMargin + 30, yPosition + 20, { align: 'center' })
-                .fontSize(16)
-                .fillColor(this.colors.secondary)
-                .text(data[0].numero_registro || 'N/D', this.leftMargin + 30, yPosition + 40, { align: 'center' });
-
-            // Localidad del lote
-            doc.font('Helvetica-Bold')
-                .fontSize(12)
-                .fillColor(this.colors.primary)
-                .text('LOCALIDAD DEL LOTE:', doc.page.width - 280, yPosition + 20, { align: 'center' })
-                .font('Helvetica')
-                .fontSize(16)
-                .fillColor(this.colors.secondary)
-                .text(data[0].lote?.localidad || 'N/D', doc.page.width - 280, yPosition + 40, { align: 'center' });
-
-            yPosition += 90;
 
             // --- CUERPO PRINCIPAL ---
             for (const personaData of data) {
@@ -111,6 +88,7 @@ export class PdfService {
                     CUIL_CUIT,
                     fecha_nacimiento,
                     vinculo,
+                    numero_registro,
                     idVivienda,
                     idLote,
                     idPersona,
@@ -118,7 +96,6 @@ export class PdfService {
                     genero,
                     email,
                     telefono,
-                    numero_registro,
                     nacionalidad
                 } = personaData;
 
@@ -128,39 +105,32 @@ export class PdfService {
                 const edad = this.calcularEdad(new Date(fecha_nacimiento));
                 const esMenor = edad < 18;
 
-                // Número de registro
-                doc.font('Helvetica-Bold')
-                    .fontSize(styles.mainFieldLabel.fontSize)
-                    .fillColor(styles.mainFieldLabel.color)
-                    .text('NÚMERO DE REGISTRO:', 50, yPosition + 20, {
-                        width: 250,
-                        align: 'left' // Asegura que el texto esté alineado a la izquierda
-                    });
+                // --- DATOS PRINCIPALES ---
+                const boxWidth = doc.page.width - 2 * this.leftMargin; // Ancho de la caja
+                const halfWidth = boxWidth / 2; // Dividir en 2 partes iguales
 
+                // Fondo de la caja
+                doc.roundedRect(this.leftMargin, yPosition, boxWidth, 60, 5)
+                    .fill(this.colors.lightBg);
+
+                // Número de registro (primera mitad)
                 doc.font('Helvetica-Bold')
+                    .fontSize(12)
+                    .fillColor(this.colors.primary)
+                    .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 20, { width: halfWidth, align: 'center' })
                     .fontSize(16)
                     .fillColor(this.colors.secondary)
-                    .text(numero_registro || 'N/D', 50, yPosition + 40, {
-                        width: 250,
-                        align: 'left' // Asegura que el texto esté alineado a la izquierda
-                    });
+                    .text(numero_registro || 'N/D', this.leftMargin, yPosition + 40, { width: halfWidth, align: 'center' });
 
-                // Localidad del lote
+                // Localidad del lote (segunda mitad)
                 doc.font('Helvetica-Bold')
-                    .fontSize(styles.mainFieldLabel.fontSize)
-                    .fillColor(styles.mainFieldLabel.color)
-                    .text('LOCALIDAD DEL LOTE:', 350, yPosition + 20, {
-                        width: 250,
-                        align: 'left' // Asegura que el texto esté alineado a la izquierda
-                    });
-
-                doc.font('Helvetica')
+                    .fontSize(12)
+                    .fillColor(this.colors.primary)
+                    .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 20, { width: halfWidth, align: 'center' })
+                    .font('Helvetica')
                     .fontSize(16)
                     .fillColor(this.colors.secondary)
-                    .text(lote.localidad || 'N/D', 350, yPosition + 40, {
-                        width: 250,
-                        align: 'left' // Asegura que el texto esté alineado a la izquierda
-                    });
+                    .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 40, { width: halfWidth, align: 'center' });
 
                 yPosition += 90;
 
