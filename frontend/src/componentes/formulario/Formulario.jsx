@@ -227,8 +227,18 @@ const Formulario = ({ onSubmit }) => {
     for (const persona of personas) {
       if (!esMenorDeEdad(persona.persona.fecha_nacimiento)) {
         for (const ingreso of persona.ingresos) {
-          if (ingreso.situacion_laboral === "Relación de dependencia" || 
-              ingreso.situacion_laboral === "Relación de dependencia y Autonomo") {
+          // Validar que el ingreso no sea negativo
+          if (ingreso.salario < 0) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error en ingresos',
+              text: 'El monto del ingreso no puede ser negativo',
+            });
+            return;
+          }
+    
+          // Validar CUIT del empleador si aplica
+          if (ingreso.situacion_laboral === "Relación de dependencia") {
             if (!ingreso.CUIT_empleador) {
               Swal.fire({
                 icon: 'error',
@@ -241,6 +251,7 @@ const Formulario = ({ onSubmit }) => {
         }
       }
     }
+    
 
     // Agregar validación de edad para el titular
     if (esMenorDeEdad(personas[0].persona.fecha_nacimiento)) {
@@ -292,7 +303,16 @@ const Formulario = ({ onSubmit }) => {
             text: 'Por favor ingrese un email válido',
           });
           return;
-        }
+        } 
+         // Validar DNI (7 a 8 dígitos)
+      if (!/^\d{7,8}$/.test(persona.persona.dni)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'DNI inválido',
+          text: 'El DNI debe tener 7 u 8 dígitos',
+        });
+        return;
+      }
 
         // Validar CUIL/CUIT (11 dígitos)
         if (!/^\d{11}$/.test(persona.persona.CUIL_CUIT)) {
@@ -323,6 +343,17 @@ const Formulario = ({ onSubmit }) => {
       });
 
       // Validar datos de vivienda
+      const cantidadDormitorios=Number(persona.vivienda.cantidad_dormitorios);
+      // Validar que la cantidad de dormitorios no sea negativa
+        if (isNaN(cantidadDormitorios) || cantidadDormitorios < 0) {
+        Swal.fire({
+        icon: 'error',
+        title: 'Error en cantidad de dormitorios',
+        text: 'La cantidad de dormitorios no puede ser un valor negativo',
+    });
+        return;
+      }
+
       if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion || 
           persona.vivienda.departamento === null || !persona.vivienda.localidad || 
           !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
@@ -486,7 +517,7 @@ const Formulario = ({ onSubmit }) => {
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
       edad--;
     }
-    return edad < 18;
+    return edad <= 18;
   };
 
   const transformarDatos = (persona) => {
@@ -970,10 +1001,8 @@ const Formulario = ({ onSubmit }) => {
                       <option value="" disabled>Situación laboral</option>
                       <option value="Relación de dependencia">Relación de dependencia</option>
                       <option value="Autónomo">Autónomo</option>
-                      <option value="Relación de dependencia y Autonomo">Relación de dependencia y Autónomo</option>
                       <option value="Jubilado">Jubilado</option>
                       <option value="Pensionado">Pensionado</option>
-                      <option value="Jubilado y Pensionado">Jubilado y Pensionado</option>
                       <option value="Informal">Informal</option>
                       <option value="Desempleado">Desempleado</option>
                     </select>
@@ -995,8 +1024,7 @@ const Formulario = ({ onSubmit }) => {
                   {ingreso.situacion_laboral && (
                     <label className={styles.label}>
                       <span className={styles.labelText}>
-                        {(ingreso.situacion_laboral === "Relación de dependencia" ||
-                          ingreso.situacion_laboral === "Relación de dependencia y Autonomo")
+                        {(ingreso.situacion_laboral === "Relación de dependencia")
                           ? "CUIT del empleador *"
                           : "CUIT del empleador (opcional)"}
                       </span>
@@ -1006,8 +1034,7 @@ const Formulario = ({ onSubmit }) => {
                         value={ingreso.CUIT_empleador || ""}
                         onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
                         className={styles.input}
-                        required={ingreso.situacion_laboral === "Relación de dependencia" ||
-                          ingreso.situacion_laboral === "Relación de dependencia y Autonomo"}
+                        required={ingreso.situacion_laboral === "Relación de dependencia"}
                       />
                     </label>
                   )}
