@@ -24,7 +24,7 @@ export class RegistroController {
     try {
       // Llamada al servicio para crear los registros
       const personas = await this.registroService.createAll(createAllDto);
-      
+
       return {
         status: HttpStatus.CREATED,
         message: 'Registros creados exitosamente',
@@ -33,15 +33,15 @@ export class RegistroController {
       };
     } catch (error) {
       console.log("error controller catch", error);
-  
+
       // Si el error es un Error genérico lanzado desde el servicio, lo tratamos como BadRequestException
       if (error instanceof Error) {
         console.log("Error de servicio:", error.message);
-        
+
         // Convertimos el error a BadRequestException para devolver un estado 400
         throw new BadRequestException(error.message);
       }
-  
+
       // Si no es un BadRequestException, se maneja como error 500
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -50,27 +50,27 @@ export class RegistroController {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
   @Get()
   async findAll(
-      @Query('page') page?: number,
-      @Query('limit') limit?: number,
-      @Query('search') search?: string,
-      @Query('localidad') localidad?: string,
-      @Query('titular') titular?: boolean
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('localidad') localidad?: string,
+    @Query('titular') titular?: boolean
   ) {
-      return await this.registroService.findAll({
-          page: page ? +page : undefined,
-          limit: limit ? +limit : undefined,
-          search,
-          localidad,
-          titular
-      });
+    return await this.registroService.findAll({
+      page: page ? +page : undefined,
+      limit: limit ? +limit : undefined,
+      search,
+      localidad,
+      titular
+    });
   }
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
-      return await this.registroService.findOneById(id);
+    return await this.registroService.findOneById(id);
   }
 
   @Patch(':id')
@@ -93,25 +93,12 @@ export class RegistroController {
       );
     }
   }
+  
+  @Get('vivienda/:id')
+  async findByViviendaId(@Param('id') id: number) {
+    return this.registroService.findByViviendaId(id);
+  }
 
 
-  // @Get()
-  // findAll() {
-  //   return this.registroService.findAll();
-  // }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.registroService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateRegistroDto: UpdateRegistroDto) {
-  //   return this.registroService.update(+id, updateRegistroDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.registroService.remove(+id);
-  // }
 }
