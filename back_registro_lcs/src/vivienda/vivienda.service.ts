@@ -163,5 +163,17 @@ async removeVivienda(id: number): Promise<void> {
   await this.viviendaRepository.remove(vivienda);
 }
 
+async findOneWithRelations(id: number) {
+  const vivienda = await this.viviendaRepository.findOne({
+    where: { idVivienda: id },
+    relations: ['personas', 'personas.ingresos', 'personas.lote']
+  });
+
+  if (!vivienda) {
+    throw new NotFoundException(`Vivienda con ID ${id} no encontrada`);
+  }
+
+  return vivienda;
+}
 
 }

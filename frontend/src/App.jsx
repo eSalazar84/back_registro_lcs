@@ -7,7 +7,7 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import PrivateRoute from "./componentes/PrivateRouts";
 import Dashboard from "./pages/Dashboar";
-
+import Vivienda from "./pages/Vivienda/Vivienda";
 import RegistroExitoso from './pages/registro/RegistroExitoso';
 
 
@@ -25,9 +25,8 @@ function App() {
         <Route path="/registro" element={<Formulario />} />
         <Route path="/registro-exitoso" element={<RegistroExitoso />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-
         <Route path="/editar-registro/:id" element={<PrivateRoute><EditarRegistro /></PrivateRoute>} />
-
+        <Route path="/vivienda/:id" element={<PrivateRoute><Vivienda /></PrivateRoute>} />
       </Routes>
       <Footer />
     </AuthProvider>
