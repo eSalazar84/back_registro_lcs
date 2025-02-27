@@ -49,42 +49,45 @@ const Dashboard = () => {
   };
 
   // Función auxiliar para manejar valores nulos
- // Modifica la función getSafeValue para asegurar que siempre devuelva un string
-const getSafeValue = (obj, path, defaultValue = '-') => {
-  try {
-    const value = path.split('.').reduce((acc, curr) => acc?.[curr], obj);
-    // Convertir el valor a string de manera segura
-    return value?.toString() ?? defaultValue;
-  } catch (error) {
-    return defaultValue;
-  }
-};
+  // Modifica la función getSafeValue para asegurar que siempre devuelva un string
+  const getSafeValue = (obj, path, defaultValue = '-') => {
+    try {
+      const value = path.split('.').reduce((acc, curr) => acc?.[curr], obj);
+      // Convertir el valor a string de manera segura
+      return value?.toString() ?? defaultValue;
+    } catch (error) {
+      return defaultValue;
+    }
+  };
 
-// Modifica la función de filtrado
-const registrosFiltrados = registros?.filter(registro => {
-  return (
-    (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro)) &&
-    (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
-    (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
-    (!filtros.localidadVivienda || getSafeValue(registro, 'vivienda.localidad').toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
-    (!filtros.localidadLote || getSafeValue(registro, 'lote.localidad').toLowerCase().includes(filtros.localidadLote.toLowerCase()))
-  );
-});
+  // Modifica la función de filtrado
+  const registrosFiltrados = registros?.filter(registro => {
+    return (
+      (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro)) &&
+      (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
+      (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
+      (!filtros.localidadVivienda || getSafeValue(registro, 'vivienda.localidad').toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
+      (!filtros.localidadLote || getSafeValue(registro, 'lote.localidad').toLowerCase().includes(filtros.localidadLote.toLowerCase()))
+    );
+  });
 
   // Función para calcular el total de ingresos
   const calcularTotalIngresos = (ingresos) => {
     if (!Array.isArray(ingresos)) return 0;
-    return ingresos.reduce((total, ingreso) => 
+    return ingresos.reduce((total, ingreso) =>
       total + (Number(ingreso?.salario) || 0), 0
     );
   };
 
-  
+
 
   const handleEdit = (id) => {
-    navigate(`/editar/${id}`);
+    navigate(`/editar-registro/${id}`);
   };
 
+  const handleVivienda = (id) => {
+    navigate(`/vivienda/${id}`);
+  };
   if (loading) return <div className={styles.loading}>Cargando...</div>;
   if (error) return <div className={styles.error}>Error: {error}</div>;
 
@@ -141,7 +144,10 @@ const registrosFiltrados = registros?.filter(registro => {
             <option value="Barker">Barker</option>
             <option value="Villa Cacique">Villa Cacique</option>
             <option value="Tedín Uriburu">Tedín Uriburu</option>
+            <option value="Estación López">Estación López</option>
+
             <option value="El Luchador">El Luchador</option>
+            <option value="Coronel Rodolfo Bunge">Coronel Rodolfo Bunge</option>
           </select>
           <select
             name="localidadLote"
@@ -152,11 +158,10 @@ const registrosFiltrados = registros?.filter(registro => {
             <option value="">Localidad Lote</option>
             <option value="Benito Juarez">Benito Juárez</option>
             <option value="Barker">Barker</option>
-            <option value="Villa Cacique">Villa Cacique</option>
             <option value="Tedín Uriburu">Tedín Uriburu</option>
             <option value="El Luchador">El Luchador</option>
           </select>
-          <button 
+          <button
             onClick={limpiarFiltros}
             className={styles.limpiarFiltros}
           >
@@ -196,19 +201,28 @@ const registrosFiltrados = registros?.filter(registro => {
                   ${calcularTotalIngresos(registro?.ingresos).toLocaleString('es-AR')}
                 </td>
                 <td>
-                  <button 
+                 <div className={styles.containerButtonAccion}>
+                 <button
                     className={styles.editButton}
                     onClick={() => handleEdit(getSafeValue(registro, 'persona.idPersona'))}
                   >
                     Editar
                   </button>
-                </td>
+
+                  <button 
+                  className={styles.viviendaButton}
+                  onClick={()=> handleVivienda(getSafeValue(registro,'vivienda.idVivienda'))}
+                  >
+                  Ver vivienda
+                </button>
+                 </div>
+              </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
+        </tbody>
+      </table>
     </div>
+    </div >
   );
 };
 
