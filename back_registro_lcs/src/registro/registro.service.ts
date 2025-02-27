@@ -91,7 +91,7 @@ export class RegistroService {
                 }
 
                 const edad = this.calcularEdad(persona.fecha_nacimiento);
-                if (persona.titular_cotitular === 'Titular' && edad < 18) {
+                if (persona.titular_cotitular === 'Titular' && edad <= 18) {
                     console.error(`❌ ERROR: ${persona.nombre} es menor de edad y no puede ser titular.`);
                     throw new Error(`La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`);
                 }

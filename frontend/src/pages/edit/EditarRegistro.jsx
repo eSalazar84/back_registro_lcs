@@ -371,10 +371,8 @@ const EditarRegistro = () => {
                 <option value="" disabled>Situación laboral</option>
                 <option value="Relación de dependencia">Relación de dependencia</option>
                 <option value="Autónomo">Autónomo</option>
-                <option value="Relación de dependencia y Autonomo">Relación de dependencia y Autónomo</option>
                 <option value="Jubilado">Jubilado</option>
                 <option value="Pensionado">Pensionado</option>
-                <option value="Jubilado y Pensionado">Jubilado y Pensionado</option>
                 <option value="Informal">Informal</option>
                 <option value="Desempleado">Desempleado</option>
               </select>
