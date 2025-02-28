@@ -5,6 +5,8 @@ import styles from './dashboard.module.css';
 import { RegistroContext } from "../context/RegistroConext";
 import Swal from 'sweetalert2';
 import { jwtDecode } from "jwt-decode";
+import { CSVLink } from "react-csv";
+
 
 const Dashboard = () => {
   const { registros, loading, error, getRegistros } = useContext(RegistroContext);
@@ -98,26 +100,26 @@ const Dashboard = () => {
     }
   };
   // Filtrar primero los titulares y ordenarlos por número de registro
-const registrosTitulares = registros
-?.filter(registro => getSafeValue(registro, 'persona.titular_cotitular') === 'Titular')
-.sort((a, b) => {
-  const numRegA = parseInt(getSafeValue(a, 'persona.numero_registro')) || 0;
-  const numRegB = parseInt(getSafeValue(b, 'persona.numero_registro')) || 0;
-  return numRegA - numRegB;
-});
+  const registrosTitulares = registros
+    ?.filter(registro => getSafeValue(registro, 'persona.titular_cotitular') === 'Titular')
+    .sort((a, b) => {
+      const numRegA = parseInt(getSafeValue(a, 'persona.numero_registro')) || 0;
+      const numRegB = parseInt(getSafeValue(b, 'persona.numero_registro')) || 0;
+      return numRegA - numRegB;
+    });
 
-// Aplicar los filtros de búsqueda a los registros ya ordenados
-const registrosFiltrados = registrosTitulares?.filter(registro => {
-return (
-  (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
-  (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
-  (!filtros.localidadVivienda || getSafeValue(registro, 'vivienda.localidad').toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
-  (!filtros.localidadLote || getSafeValue(registro, 'lote.localidad').toLowerCase().includes(filtros.localidadLote.toLowerCase())) &&
-  (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro))
-);
-});
+  // Aplicar los filtros de búsqueda a los registros ya ordenados
+  const registrosFiltrados = registrosTitulares?.filter(registro => {
+    return (
+      (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
+      (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
+      (!filtros.localidadVivienda || getSafeValue(registro, 'vivienda.localidad').toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
+      (!filtros.localidadLote || getSafeValue(registro, 'lote.localidad').toLowerCase().includes(filtros.localidadLote.toLowerCase())) &&
+      (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro))
+    );
+  });
 
- 
+
   const calcularTotalIngresos = (ingresos) => {
     if (!Array.isArray(ingresos)) return 0;
     return ingresos.reduce((total, ingreso) =>
@@ -141,7 +143,29 @@ return (
   const registrosActuales = registrosFiltrados.slice(indexOfFirstRegistro, indexOfLastRegistro);
   const totalPaginas = Math.ceil(registrosFiltrados.length / registrosPorPagina);
 
-  
+
+  const generarCSV = (datos) => {
+    const encabezados = [
+      { label: "N° Registro", key: "numeroRegistro" },
+      { label: "Apellido", key: "apellido" },
+      { label: "Nombre", key: "nombre" },
+      { label: "DNI", key: "dni" },
+      { label: "Teléfono", key: "telefono" },
+      { label: "Localidad Lote", key: "localidadLote" },
+    ];
+
+    const datosCSV = datos.map((registro) => ({
+      numeroRegistro: getSafeValue(registro, "persona.numero_registro"),
+      apellido: getSafeValue(registro, "persona.apellido"),
+      nombre: getSafeValue(registro, "persona.nombre"),
+      dni: getSafeValue(registro, "persona.dni"),
+      telefono: getSafeValue(registro, "persona.telefono"),
+      localidadLote: getSafeValue(registro, "lote.localidad"),
+    }));
+
+    return { headers: encabezados, data: datosCSV };
+  };
+
 
   return (
     <div className={styles.container}>
@@ -157,6 +181,16 @@ return (
       )}
 
       <h1 className={styles.title}>Registros de Inscripción</h1>
+
+      <div className={styles.downloadButtons}>
+        <CSVLink {...generarCSV(registros)} filename="todos_registros.csv" className={styles.downloadButton}>
+          Descargar Todos
+        </CSVLink>
+
+        <CSVLink {...generarCSV(registrosFiltrados)} filename="registros_filtrados.csv" className={styles.downloadButton}>
+          Descargar Filtrados
+        </CSVLink>
+      </div>
 
       <div className={styles.filtrosContainer}>
         <div className={styles.filtroGroup}>
