@@ -12,10 +12,10 @@ export class IngresoService {
   constructor(
     @InjectRepository(Ingreso)
     private readonly ingresoRepository: Repository<Ingreso>, // Corregido a Repository<Ingreso>
-    
+
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
-  ) {}
+  ) { }
 
   async createIngreso(ingresos: CreateIngresoDto[], idPersona: number): Promise<Ingreso[]> {
     const createdIngresos: Ingreso[] = [];
@@ -84,7 +84,7 @@ export class IngresoService {
     if (String(updateIngresoDto.salario) === '') {
       updateIngresoDto.salario = null;
     }
-    
+
     Object.assign(ingresoFound, updateIngresoDto);
 
     try {
@@ -102,5 +102,16 @@ export class IngresoService {
     }
 
     await this.ingresoRepository.remove(ingreso);
+  }
+
+
+  // Metodo para buscar los ingresos de las personas por id (se usa en PdfService)
+
+  async getIngresosByPersonaId(idPersona: number): Promise<Ingreso[]> {
+    const persona = await this.personaRepository.findOne({ where: { idPersona }, relations: ['ingresos'] });
+    if (!persona) {
+      throw new NotFoundException(`Persona con ID ${idPersona} no encontrada`);
+    }
+    return persona.ingresos;
   }
 }
