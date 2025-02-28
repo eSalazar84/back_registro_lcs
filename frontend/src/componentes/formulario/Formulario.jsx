@@ -1,18 +1,16 @@
-import React, { useState, useEffect,useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from "./Formulario.module.css";
-// import { transformarDatos } from '../../services/transformDataDto';
 import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
 
 const Formulario = ({ onSubmit }) => {
-  useEffect(()=>{
-    window.scrollTo(0,0);
+  useEffect(() => {
+    window.scrollTo(0, 0);
   }, []);
-  const agregarPersona=useRef(null)
+  const agregarPersona = useRef(null);
   const [loading, setLoading] = useState(false);
   const [aceptaDeclaracion, setAceptaDeclaracion] = useState(false);
-  // const [invalidAddresses, setInvalidAddresses] = useState([false]);
   const [personas, setPersonas] = useState([{
     persona: {
       nombre: '',
@@ -122,7 +120,7 @@ const Formulario = ({ onSubmit }) => {
             estado_civil: "",
             nacionalidad: "",
             certificado_discapacidad: null,
-            rol:'User',
+            rol: 'User',
             vinculo: "",
             titular_cotitular: ""
           },
@@ -150,14 +148,14 @@ const Formulario = ({ onSubmit }) => {
           }
         };
         setPersonas([...personas, nuevaPersona]);
-         // Esperar a que se actualice el estado y luego hacer scroll
-         setTimeout(() => {
+
+        // Esperar a que se actualice el estado y luego hacer scroll
+        setTimeout(() => {
           agregarPersona.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         }, 300); // Pequeño delay para asegurar que el DOM se actualice
       }
     });
   };
-
 
   const resetForm = () => {
     setPersonas([{
@@ -213,7 +211,7 @@ const Formulario = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!aceptaDeclaracion) {
       Swal.fire({
         icon: 'warning',
@@ -236,7 +234,7 @@ const Formulario = ({ onSubmit }) => {
             });
             return;
           }
-    
+
           // Validar CUIT del empleador si aplica
           if (ingreso.situacion_laboral === "Relación de dependencia") {
             if (!ingreso.CUIT_empleador) {
@@ -251,7 +249,6 @@ const Formulario = ({ onSubmit }) => {
         }
       }
     }
-    
 
     // Agregar validación de edad para el titular
     if (esMenorDeEdad(personas[0].persona.fecha_nacimiento)) {
@@ -268,12 +265,12 @@ const Formulario = ({ onSubmit }) => {
       const esPersonaMenor = esMenorDeEdad(persona.persona.fecha_nacimiento);
 
       // Validar datos personales básicos (requeridos para todos)
-      if (!persona.persona.nombre || !persona.persona.apellido || 
-          !persona.persona.tipo_dni || !persona.persona.dni || 
-          !persona.persona.genero || !persona.persona.fecha_nacimiento || 
-          !persona.persona.nacionalidad || 
-          persona.persona.certificado_discapacidad === null || 
-          !persona.persona.vinculo || !persona.persona.titular_cotitular) {
+      if (!persona.persona.nombre || !persona.persona.apellido ||
+        !persona.persona.tipo_dni || !persona.persona.dni ||
+        !persona.persona.genero || !persona.persona.fecha_nacimiento ||
+        !persona.persona.nacionalidad ||
+        persona.persona.certificado_discapacidad === null ||
+        !persona.persona.vinculo || !persona.persona.titular_cotitular) {
         Swal.fire({
           icon: 'error',
           title: 'Campos incompletos',
@@ -284,8 +281,8 @@ const Formulario = ({ onSubmit }) => {
 
       // Validar campos adicionales solo para mayores de edad
       if (!esPersonaMenor) {
-        if (!persona.persona.CUIL_CUIT || !persona.persona.email || 
-            !persona.persona.telefono || !persona.persona.estado_civil) {
+        if (!persona.persona.CUIL_CUIT || !persona.persona.email ||
+          !persona.persona.telefono || !persona.persona.estado_civil) {
           Swal.fire({
             icon: 'error',
             title: 'Campos incompletos',
@@ -303,16 +300,17 @@ const Formulario = ({ onSubmit }) => {
             text: 'Por favor ingrese un email válido',
           });
           return;
-        } 
-         // Validar DNI (7 a 8 dígitos)
-      if (!/^\d{7,8}$/.test(persona.persona.dni)) {
-        Swal.fire({
-          icon: 'error',
-          title: 'DNI inválido',
-          text: 'El DNI debe tener 7 u 8 dígitos',
-        });
-        return;
-      }
+        }
+
+        // Validar DNI (7 a 8 dígitos)
+        if (!/^\d{7,8}$/.test(persona.persona.dni)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'DNI inválido',
+            text: 'El DNI debe tener 7 u 8 dígitos',
+          });
+          return;
+        }
 
         // Validar CUIL/CUIT (11 dígitos)
         if (!/^\d{11}$/.test(persona.persona.CUIL_CUIT)) {
@@ -342,23 +340,23 @@ const Formulario = ({ onSubmit }) => {
         return callesValidas.includes(direccion);
       });
 
-      // Validar datos de vivienda
-      const cantidadDormitorios=Number(persona.vivienda.cantidad_dormitorios);
+      const cantidadDormitorios = Number(persona.vivienda.cantidad_dormitorios);
       // Validar que la cantidad de dormitorios no sea negativa
-        if (isNaN(cantidadDormitorios) || cantidadDormitorios < 0) {
+      if (isNaN(cantidadDormitorios) || cantidadDormitorios < 0) {
         Swal.fire({
-        icon: 'error',
-        title: 'Error en cantidad de dormitorios',
-        text: 'La cantidad de dormitorios no puede ser un valor negativo',
-    });
+          icon: 'error',
+          title: 'Error en cantidad de dormitorios',
+          text: 'La cantidad de dormitorios no puede ser un valor negativo',
+        });
         return;
       }
 
-      if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion || 
-          persona.vivienda.departamento === null || !persona.vivienda.localidad || 
-          !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
-          persona.vivienda.alquiler === null || 
-          (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))) {
+      // Validar datos de vivienda
+      if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion ||
+        persona.vivienda.departamento === null || !persona.vivienda.localidad ||
+        !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
+        persona.vivienda.alquiler === null ||
+        (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))) {
         Swal.fire({
           icon: 'error',
           title: 'Campos incompletos',
@@ -366,7 +364,7 @@ const Formulario = ({ onSubmit }) => {
         });
         return;
       }
-           
+
 
       // Validar datos de ingresos solo para mayores de edad
       if (!esPersonaMenor) {
@@ -397,7 +395,7 @@ const Formulario = ({ onSubmit }) => {
 
     try {
       const datosTransformados = personas.map(persona => transformarDatos(persona));
-      
+
       const response = await fetch("http://localhost:3000/registro", {
         method: "POST",
         headers: {
@@ -429,26 +427,27 @@ const Formulario = ({ onSubmit }) => {
 
       console.log('Registro exitoso, intentando redireccionar...');
 
-      navigate('/registro-exitoso');
       
       console.log('Navegación ejecutada');
-
-      Swal.fire({
+      // Si el registro fue exitoso
+      await Swal.fire({
         icon: 'success',
         title: 'Registro Exitoso',
         text: 'Los datos se han registrado correctamente.',
+      }).then(() => {
+        navigate('/registro-exitoso');
       });
 
-       // Limpiar el formulario
-       resetForm();
+      // Limpiar el formulario
+      resetForm();
 
-       // Scroll al inicio después de todo el proceso
-       setTimeout(() => {
-         window.scrollTo({
-           top: 0,
-           behavior: 'smooth'
-         });
-       }, 200);
+      // Scroll al inicio después de todo el proceso
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 200);
 
     } catch (error) {
       console.error('Error en el frontend:', error);
@@ -522,13 +521,13 @@ const Formulario = ({ onSubmit }) => {
 
   const transformarDatos = (persona) => {
     const esPersonaMenor = esMenorDeEdad(persona.persona.fecha_nacimiento);
-    
+
     // Procesar ingresos para manejar CUIT_empleador vacío
     const ingresosProcessed = persona.ingresos.map(ingreso => ({
       ...ingreso,
       CUIT_empleador: ingreso.CUIT_empleador || "0" // Si está vacío, usar "0"
     }));
-    
+
     return {
       persona: {
         ...persona.persona,
@@ -549,9 +548,28 @@ const Formulario = ({ onSubmit }) => {
         <div key={index}>
           {/* Sección de Datos Personales */}
           <div
-           ref={index === personas.length - 1 ? agregarPersona : null} // Referencia al último agregado
-           className={`${styles.section} ${styles.personalData}`}>
-            <h3 className={styles.sectionTitle}>Datos del Titular</h3>
+            ref={index === personas.length - 1 ? agregarPersona : null} // Referencia al último agregado
+            className={styles.sectionContainer}
+          >
+            {
+              index === 0 ? (
+                <h2 className={styles.title}>Datos del Titular</h2>
+              ) : (
+                <h2 className={styles.title}>Grupo Familiar</h2>
+              )
+            }
+          </div>
+          <div
+            className={`${styles.section} ${styles.personalData}`}>
+            <h3 className={styles.sectionTitle}>
+              {
+                index === 0 ? (
+                  'Datos del Titular'
+                ) : (
+                  'Datos de los Co-titulares / Convivientes'
+                )
+              }
+            </h3>
             <div className={styles.inputGroup}>
               <label className={styles.label}>
                 <span className={styles.labelText}>Nombres *</span>
@@ -743,35 +761,35 @@ const Formulario = ({ onSubmit }) => {
                     className={`${styles.input} ${styles.inputDisabled} ${styles.inputHidden}`}
                   />
                 ) : (
-
-              <label className={styles.label}>
-                <span className={styles.labelText}>Vínculo *</span>
-                <select
-                  required
-                  name="vinculo"
-                  value={personaData.persona.vinculo || ""}
-                  onChange={(e) => handleInputChange(index, 'persona.vinculo', e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="" disabled>Seleccione Vínculo</option>
-                  <option value="Esposo/a">Esposo/a</option>
-                  <option value="Concubino/a">Concubino/a</option>
-                  <option value="Conyuge">Cónyuge</option>
-                  <option value="Hermano/a">Hermano/a</option>
-                  <option value="Hijo/a">Hijo/a</option>
-                  <option value="Madre">Madre</option>
-                  <option value="Padre">Padre</option>
-                  <option value="Primo/a">Primo/a</option>
-                  <option value="Nieto/a">Nieto/a</option>
-                  <option value="Tio/a">Tío/a</option>
-                  <option value="Sobrino/a">Sobrino/a</option>
-                  <option value="Suegro/a">Suegro/a</option>
-                  <option value="Abuelo/a">Abuelo/a</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </label>
+                  <label className={styles.label}>
+                    <span className={styles.labelText}>Vínculo *</span>
+                    <select
+                      required
+                      name="vinculo"
+                      value={personaData.persona.vinculo || ""}
+                      onChange={(e) => handleInputChange(index, 'persona.vinculo', e.target.value)}
+                      className={styles.select}
+                    >
+                      <option value="" disabled>Seleccione Vínculo</option>
+                      <option value="Esposo/a">Esposo/a</option>
+                      <option value="Concubino/a">Concubino/a</option>
+                      <option value="Conyuge">Cónyuge</option>
+                      <option value="Hermano/a">Hermano/a</option>
+                      <option value="Hijo/a">Hijo/a</option>
+                      <option value="Madre">Madre</option>
+                      <option value="Padre">Padre</option>
+                      <option value="Primo/a">Primo/a</option>
+                      <option value="Nieto/a">Nieto/a</option>
+                      <option value="Tio/a">Tío/a</option>
+                      <option value="Sobrino/a">Sobrino/a</option>
+                      <option value="Suegro/a">Suegro/a</option>
+                      <option value="Abuelo/a">Abuelo/a</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </label>
                 )
               }
+
               <label className={styles.label}>
                 <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
                 {index === 0 ? (
@@ -809,9 +827,8 @@ const Formulario = ({ onSubmit }) => {
                   required
                   name="localidad"
                   value={personaData.vivienda.localidad || ""}
-                  onChange={(e) => 
-                    handleInputChange(index,'vivienda.localidad', e.target.value)}// cambios
-                    className={styles.select}
+                  onChange={(e) => handleInputChange(index, 'vivienda.localidad', e.target.value)}
+                  className={styles.select}
                 >
                   <option value="" disabled>Seleccione localidad</option>
                   <option value="Benito Juarez">Benito Juárez</option>
@@ -829,9 +846,8 @@ const Formulario = ({ onSubmit }) => {
                 <select
                   required
                   value={personaData.vivienda.direccion}
-                  onChange={(e) => 
-                    handleInputChange(index, 'vivienda.direccion', e.target.value)}
-                    className={styles.select}
+                  onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
+                  className={styles.select}
                 >
                   <option value="" disabled>Seleccione una dirección</option>
                   {personaData.vivienda.localidad &&
@@ -1076,7 +1092,9 @@ const Formulario = ({ onSubmit }) => {
           <div className={styles.sectionDivider} />
 
           {/* Sección de Lote */}
-          {personaData.persona.titular_cotitular !== "Cotitular" &&
+          {
+            index === 0 &&
+            personaData.persona.titular_cotitular !== "Cotitular" &&
             personaData.persona.titular_cotitular !== "Conviviente" && (
               <div className={`${styles.section} ${styles.locationData}`}>
                 <h3 className={styles.sectionTitle}>Ubicación del Lote a Sortear</h3>

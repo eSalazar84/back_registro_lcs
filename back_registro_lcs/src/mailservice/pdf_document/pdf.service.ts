@@ -103,7 +103,7 @@ export class PdfService {
                 const lote = idLote ? await this.loteService.getLoteById(idLote) : null;
                 const ingresos = await this.ingresoService.getIngresosByPersonaId(idPersona);
                 const edad = this.calcularEdad(new Date(fecha_nacimiento));
-                const esMenor = edad < 18;
+                const esMenor = edad <= 18;
 
                 // Verificar si hay suficiente espacio para la siguiente persona
                 if (yPosition > doc.page.height - 300) { // 300 es un margen estimado
