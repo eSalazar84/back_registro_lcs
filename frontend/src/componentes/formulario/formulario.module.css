@@ -7,6 +7,19 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  padding: 20px;
+  margin-left: 10%;
+  margin-right: 10%;
+  border-radius: 12px;
+  position: relative;
+  background-color: rgba(41, 128, 185, 0.5);
+}
+
+
 .section {
   margin-bottom: 40px;
   padding: 20px;
@@ -47,7 +60,8 @@
   font-weight: 600;
 }
 
-.input, .select {
+.input,
+.select {
   width: 100%;
   max-width: 300px;
   padding: 8px 12px;
@@ -57,7 +71,8 @@
   transition: all 0.3s ease;
 }
 
-.input:focus, .select:focus {
+.input:focus,
+.select:focus {
   border-color: #3498db;
   outline: none;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -144,6 +159,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -185,7 +201,8 @@
     grid-template-columns: 1fr;
   }
 
-  .input, .select {
+  .input,
+  .select {
     max-width: 100%;
   }
 
@@ -206,7 +223,8 @@
 /* Estilos para pantallas más grandes */
 @media (min-width: 1200px) {
   .inputGroup {
-    grid-template-columns: repeat(3, 1fr); /* 3 columnas en pantallas grandes */
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 columnas en pantallas grandes */
   }
 }
 
@@ -249,7 +267,7 @@
 }
 
 /* Estilo para el checkbox cuando está checked */
-.checkbox:checked + .checkboxText {
+.checkbox:checked+.checkboxText {
   font-weight: 500;
 }
 
@@ -303,11 +321,14 @@
 }
 
 @media (max-width: 768px) {
-  .buttonGroup, .ingresoButtonGroup {
+
+  .buttonGroup,
+  .ingresoButtonGroup {
     flex-direction: column;
   }
-  
-  .addButton, .cancelButton {
+
+  .addButton,
+  .cancelButton {
     width: 100%;
   }
 }
@@ -331,7 +352,7 @@
   .buttonGroup {
     flex-direction: column;
   }
-  
+
   .cancelButton {
     width: 100%;
   }
@@ -344,7 +365,7 @@
   border: 1px solid #ced4da;
 }
 
-.inputHidden{
+.inputHidden {
   display: none;
 }
 
@@ -353,7 +374,8 @@
 }
 
 /* Aseguramos que los placeholders no estén en negrita */
-.input::placeholder, .select::placeholder {
+.input::placeholder,
+.select::placeholder {
   font-weight: normal;
   color: #95a5a6;
 }
