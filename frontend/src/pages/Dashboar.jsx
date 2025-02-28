@@ -4,13 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import styles from './dashboard.module.css';
 import { RegistroContext } from "../context/RegistroConext";
 import Swal from 'sweetalert2';
+import { jwtDecode } from "jwt-decode";
 
 const Dashboard = () => {
   const { registros, loading, error, getRegistros } = useContext(RegistroContext);
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, token } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
 
-  // Estado para los filtros
   const [filtros, setFiltros] = useState({
     dni: '',
     apellido: '',
@@ -18,6 +19,9 @@ const Dashboard = () => {
     localidadLote: '',
     numeroRegistro: ''
   });
+
+  const [paginaActual, setPaginaActual] = useState(1);
+  const registrosPorPagina = 10;
 
   useEffect(() => {
     getRegistros();
@@ -28,7 +32,45 @@ const Dashboard = () => {
     navigate("/login");
   };
 
-  // Función para manejar cambios en los filtros
+  const decodeToken = () => {
+    try {
+      if (token) {
+        const decoded = jwtDecode(token);
+        setUserData(decoded);
+        console.log('Token decodificado:', decoded);
+
+        const currentTime = Date.now() / 1000;
+        if (decoded.exp < currentTime) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sesión expirada',
+            text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.'
+          });
+          handleLogout();
+        }
+        return decoded;
+      }
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al verificar la sesión'
+      });
+      handleLogout();
+    }
+  };
+
+  useEffect(() => {
+    const checkToken = () => {
+      const decoded = decodeToken();
+      if (!decoded) {
+        handleLogout();
+      }
+    };
+    checkToken();
+  }, [token]);
+
   const handleFiltroChange = (e) => {
     const { name, value } = e.target;
     setFiltros(prev => ({
@@ -37,7 +79,6 @@ const Dashboard = () => {
     }));
   };
 
-  // Función para limpiar filtros
   const limpiarFiltros = () => {
     setFiltros({
       dni: '',
@@ -48,38 +89,41 @@ const Dashboard = () => {
     });
   };
 
-  // Función auxiliar para manejar valores nulos
-  // Modifica la función getSafeValue para asegurar que siempre devuelva un string
   const getSafeValue = (obj, path, defaultValue = '-') => {
     try {
       const value = path.split('.').reduce((acc, curr) => acc?.[curr], obj);
-      // Convertir el valor a string de manera segura
       return value?.toString() ?? defaultValue;
     } catch (error) {
       return defaultValue;
     }
   };
+  // Filtrar primero los titulares y ordenarlos por número de registro
+const registrosTitulares = registros
+?.filter(registro => getSafeValue(registro, 'persona.titular_cotitular') === 'Titular')
+.sort((a, b) => {
+  const numRegA = parseInt(getSafeValue(a, 'persona.numero_registro')) || 0;
+  const numRegB = parseInt(getSafeValue(b, 'persona.numero_registro')) || 0;
+  return numRegA - numRegB;
+});
 
-  // Modifica la función de filtrado
-  const registrosFiltrados = registros?.filter(registro => {
-    return (
-      (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro)) &&
-      (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
-      (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
-      (!filtros.localidadVivienda || getSafeValue(registro, 'vivienda.localidad').toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
-      (!filtros.localidadLote || getSafeValue(registro, 'lote.localidad').toLowerCase().includes(filtros.localidadLote.toLowerCase()))
-    );
-  });
+// Aplicar los filtros de búsqueda a los registros ya ordenados
+const registrosFiltrados = registrosTitulares?.filter(registro => {
+return (
+  (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
+  (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
+  (!filtros.localidadVivienda || getSafeValue(registro, 'vivienda.localidad').toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
+  (!filtros.localidadLote || getSafeValue(registro, 'lote.localidad').toLowerCase().includes(filtros.localidadLote.toLowerCase())) &&
+  (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro))
+);
+});
 
-  // Función para calcular el total de ingresos
+ 
   const calcularTotalIngresos = (ingresos) => {
     if (!Array.isArray(ingresos)) return 0;
     return ingresos.reduce((total, ingreso) =>
       total + (Number(ingreso?.salario) || 0), 0
     );
   };
-
-
 
   const handleEdit = (id) => {
     navigate(`/editar-registro/${id}`);
@@ -91,12 +135,20 @@ const Dashboard = () => {
   if (loading) return <div className={styles.loading}>Cargando...</div>;
   if (error) return <div className={styles.error}>Error: {error}</div>;
 
+
+  const indexOfLastRegistro = paginaActual * registrosPorPagina;
+  const indexOfFirstRegistro = indexOfLastRegistro - registrosPorPagina;
+  const registrosActuales = registrosFiltrados.slice(indexOfFirstRegistro, indexOfLastRegistro);
+  const totalPaginas = Math.ceil(registrosFiltrados.length / registrosPorPagina);
+
+  
+
   return (
     <div className={styles.container}>
-      {user && (
+      {userData && (
         <div className={styles.header}>
           <p className={styles.userInfo}>
-            Usuario logueado: <strong>{user.nombre}</strong>
+            Bienvenido <strong>{userData.adminName}</strong>
           </p>
           <button onClick={handleLogout} className={styles.logoutButton}>
             Cerrar Sesión
@@ -106,7 +158,6 @@ const Dashboard = () => {
 
       <h1 className={styles.title}>Registros de Inscripción</h1>
 
-      {/* Sección de filtros */}
       <div className={styles.filtrosContainer}>
         <div className={styles.filtroGroup}>
           <input
@@ -178,52 +229,64 @@ const Dashboard = () => {
               <th>Apellido</th>
               <th>Nombre</th>
               <th>DNI</th>
-              <th>CUIL/CUIT</th>
-              <th>Localidad Vivienda</th>
-              <th>Dirección</th>
+              <th>Telefono</th>
               <th>Localidad Lote</th>
-              <th>Total Ingresos</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {registrosFiltrados?.map((registro) => (
-              <tr key={getSafeValue(registro, 'persona.idPersona', 'row-' + Math.random())}>
-                <td>{getSafeValue(registro, 'persona.numero_registro')}</td>
-                <td>{getSafeValue(registro, 'persona.apellido')}</td>
-                <td>{getSafeValue(registro, 'persona.nombre')}</td>
-                <td>{getSafeValue(registro, 'persona.dni')}</td>
-                <td>{getSafeValue(registro, 'persona.CUIL_CUIT')}</td>
-                <td>{getSafeValue(registro, 'vivienda.localidad')}</td>
-                <td>{`${getSafeValue(registro, 'vivienda.direccion')} ${getSafeValue(registro, 'vivienda.numero_direccion')}`}</td>
-                <td>{getSafeValue(registro, 'lote.localidad')}</td>
-                <td>
-                  ${calcularTotalIngresos(registro?.ingresos).toLocaleString('es-AR')}
-                </td>
-                <td>
-                 <div className={styles.containerButtonAccion}>
-                 <button
-                    className={styles.editButton}
-                    onClick={() => handleEdit(getSafeValue(registro, 'persona.idPersona'))}
-                  >
-                    Editar
-                  </button>
+            {registrosActuales
+              ?.filter(registro => getSafeValue(registro, 'persona.titular_cotitular') === 'Titular')
+              .map((registro) => (
+                <tr key={getSafeValue(registro, 'persona.idPersona', 'row-' + Math.random())}>
+                  <td>{getSafeValue(registro, 'persona.numero_registro')}</td>
+                  <td>{getSafeValue(registro, 'persona.apellido')}</td>
+                  <td>{getSafeValue(registro, 'persona.nombre')}</td>
+                  <td>{getSafeValue(registro, 'persona.dni')}</td>
+                  <td>{getSafeValue(registro, 'persona.telefono')}</td>
+                  <td>{getSafeValue(registro, 'lote.localidad')}</td>
+                  <td>
+                    <div className={styles.containerButtonAccion}>
+                      <button
+                        className={styles.editButton}
+                        onClick={() => handleEdit(getSafeValue(registro, 'persona.idPersona'))}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className={styles.viviendaButton}
+                        onClick={() => handleVivienda(getSafeValue(registro, 'vivienda.idVivienda'))}
+                      >
+                        Ver vivienda
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+        <div className={styles.pagination}>
+          <button
+            className={styles.paginationButton}
+            onClick={() => setPaginaActual(paginaActual - 1)}
+            disabled={paginaActual === 1}
+          >
+            Anterior
+          </button>
+          <span className={styles.paginationInfo}>
+            Página {paginaActual} de {totalPaginas}
+          </span>
+          <button
+            className={styles.paginationButton}
+            onClick={() => setPaginaActual(paginaActual + 1)}
+            disabled={paginaActual === totalPaginas}
+          >
+            Siguiente
+          </button>
+        </div>
 
-                  <button 
-                  className={styles.viviendaButton}
-                  onClick={()=> handleVivienda(getSafeValue(registro,'vivienda.idVivienda'))}
-                  >
-                  Ver vivienda
-                </button>
-                 </div>
-              </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
+      </div>
     </div>
-    </div >
   );
 };
-
 export default Dashboard;
