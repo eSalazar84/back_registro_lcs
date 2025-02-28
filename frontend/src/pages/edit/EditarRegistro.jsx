@@ -100,9 +100,10 @@ const EditarRegistro = () => {
       };
   
       console.log("Datos transformados a enviar:", datosParaEnviar);
+      const datosTranformadosEnviar = transformarDatos(datosParaEnviar)
   
       // Llama a la función updateRegistroById con los datos transformados
-      const response = await updateRegistroById(id, datosParaEnviar);
+      const response = await updateRegistroById(id, datosTranformadosEnviar);
       console.log("Respuesta de la actualización:", response);
   
       // Verifica si la respuesta es exitosa
