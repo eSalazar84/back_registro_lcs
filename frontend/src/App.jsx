@@ -9,8 +9,7 @@ import PrivateRoute from "./componentes/PrivateRouts";
 import Dashboard from "./pages/Dashboar";
 import Vivienda from "./pages/Vivienda/Vivienda";
 import RegistroExitoso from './pages/registro/RegistroExitoso';
-
-
+import BasesYcondiciones from './pages/Bases y condiciones/BasesYcondiciones';
 import { AuthProvider } from "./auth/AuthContext"; // Asegúrate de importar el AuthProvider
 import EditarRegistro from "./pages/edit/EditarRegistro";
 
@@ -22,6 +21,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/bases-y-condiciones" element={<BasesYcondiciones />} />
         <Route path="/registro" element={<Formulario />} />
         <Route path="/registro-exitoso" element={<RegistroExitoso />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
