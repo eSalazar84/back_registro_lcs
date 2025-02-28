@@ -41,7 +41,7 @@ export const fetchRegistroById = async (id) => {
 export const updateRegistroById = async (id, formData) => {
   try {
     console.log('Enviando datos a la API:', formData);  // Verifica qué datos estás enviando
-    const response = await fetch(`http://localhost:3000/registro/${id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -67,3 +67,27 @@ export const updateRegistroById = async (id, formData) => {
     throw error;  // Relanza el error para que lo maneje el código que llama a esta función
   }
 };
+
+export const fetchViviendaById = async (id) => {
+
+  try {
+    const response = await fetch(`${API_URL}/vivienda/${id}`);
+    if (!response.ok) {
+      throw new Error(`Error al obtener  la vivienda. Status ${response.status}`)
+    }
+    const data = await response.json();
+    console.log("data", data);
+    
+
+    // Ahora, directamente accedemos a data
+    if (!data || !data.data) {
+      throw new Error("La respuesta no contiene el campo 'data' esperado.");
+    }
+    return data; // Retorna el objeto data directamente
+  } catch (error) {
+    console.error("Error al obtener el registro:", error.message);
+    throw new Error(error.message); // Propagar el error para que lo maneje el componente
+  }
+
+}
+

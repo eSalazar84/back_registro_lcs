@@ -115,16 +115,23 @@
   background-color: #f8f9fa;
 }
 
-.editButton {
+.containerButtonAccion{
+  display: flex;
+}
+
+.editButton,
+.viviendaButton {
   padding: 6px 12px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin: 4px 4px;
 }
 
-.editButton:hover {
+.editButton:hover,
+.viviendaButton:hover {
   background-color: #0056b3;
 }
 
@@ -139,6 +146,8 @@
   text-align: center;
   padding: 20px;
 }
+
+
 
 /* Estilos responsivos */
 @media (max-width: 768px) {

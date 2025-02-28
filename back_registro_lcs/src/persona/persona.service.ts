@@ -213,4 +213,39 @@ export class PersonaService {
       }
     }
   }
+
+  async findByViviendaId(idVivienda: number) {
+    try {
+      const personas = await this.personaRepository.find({
+        where: {
+          vivienda: { idVivienda: idVivienda }
+        },
+        relations: [
+          'vivienda',
+          'ingresos',
+          'lote'
+        ],
+        order: {
+          apellido: 'ASC',
+          nombre: 'ASC'
+        }
+      });
+  
+      if (!personas || personas.length === 0) {
+        throw new NotFoundException(`No se encontraron personas para la vivienda con ID ${idVivienda}`);
+      }
+  
+      return personas;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'Error al buscar personas por vivienda',
+        message: error.message
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }

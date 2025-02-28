@@ -163,6 +163,18 @@ export class ViviendaService {
     await this.viviendaRepository.remove(vivienda);
   }
 
+async findOneWithRelations(id: number) {
+  const vivienda = await this.viviendaRepository.findOne({
+    where: { idVivienda: id },
+    relations: ['personas', 'personas.ingresos', 'personas.lote']
+  });
+
+  if (!vivienda) {
+    throw new NotFoundException(`Vivienda con ID ${id} no encontrada`);
+  }
+
+  return vivienda;
+}
   // Metodo para obtener la vivienda por id para usar en pdfService
   async getViviendaById(id: number): Promise<Vivienda> {
     const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
