@@ -6,7 +6,6 @@ import * as path from 'path';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
-import fetch from 'node-fetch'; // Si usas Node.js <18
 
 @Injectable()
 export class PdfService {
@@ -96,7 +95,8 @@ export class PdfService {
                     genero,
                     email,
                     telefono,
-                    nacionalidad
+                    nacionalidad,
+                    certificado_discapacidad
                 } = personaData;
 
                 const vivienda = await this.viviendaService.getViviendaById(idVivienda);
@@ -105,34 +105,42 @@ export class PdfService {
                 const edad = this.calcularEdad(new Date(fecha_nacimiento));
                 const esMenor = edad < 18;
 
+                // Verificar si hay suficiente espacio para la siguiente persona
+                if (yPosition > doc.page.height - 300) { // 300 es un margen estimado
+                    doc.addPage();
+                    yPosition = 50; // Reiniciar la posición Y en la nueva página
+                }
+
                 // --- DATOS PRINCIPALES ---
                 const boxWidth = doc.page.width - 2 * this.leftMargin; // Ancho de la caja
                 const halfWidth = boxWidth / 2; // Dividir en 2 partes iguales
 
-                // Fondo de la caja
-                doc.roundedRect(this.leftMargin, yPosition, boxWidth, 60, 5)
-                    .fill(this.colors.lightBg);
+                if (data.indexOf(personaData) === 0) {
+                    // Fondo de la caja
+                    doc.roundedRect(this.leftMargin, yPosition, boxWidth, 60, 5)
+                        .fill(this.colors.lightBg);
 
-                // Número de registro (primera mitad)
-                doc.font('Helvetica-Bold')
-                    .fontSize(12)
-                    .fillColor(this.colors.primary)
-                    .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 20, { width: halfWidth, align: 'center' })
-                    .fontSize(16)
-                    .fillColor(this.colors.secondary)
-                    .text(numero_registro || 'N/D', this.leftMargin, yPosition + 40, { width: halfWidth, align: 'center' });
+                    // Número de registro (primera mitad)
+                    doc.font('Helvetica-Bold')
+                        .fontSize(12)
+                        .fillColor(this.colors.primary)
+                        .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 20, { width: halfWidth, align: 'center' })
+                        .fontSize(16)
+                        .fillColor(this.colors.secondary)
+                        .text(numero_registro || 'N/D', this.leftMargin, yPosition + 40, { width: halfWidth, align: 'center' });
 
-                // Localidad del lote (segunda mitad)
-                doc.font('Helvetica-Bold')
-                    .fontSize(12)
-                    .fillColor(this.colors.primary)
-                    .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 20, { width: halfWidth, align: 'center' })
-                    .font('Helvetica')
-                    .fontSize(16)
-                    .fillColor(this.colors.secondary)
-                    .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 40, { width: halfWidth, align: 'center' });
+                    // Localidad del lote (segunda mitad)
+                    doc.font('Helvetica-Bold')
+                        .fontSize(12)
+                        .fillColor(this.colors.primary)
+                        .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 20, { width: halfWidth, align: 'center' })
+                        //.font('Helvetica')
+                        .fontSize(16)
+                        .fillColor(this.colors.secondary)
+                        .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 40, { width: halfWidth, align: 'center' });
 
-                yPosition += 90;
+                    yPosition += 90;
+                }
 
                 // Título sección
                 doc.font('Helvetica-Bold')
@@ -144,21 +152,24 @@ export class PdfService {
 
                 // Campos alineados
                 yPosition = this.addFieldAligned(doc, 'Nombre completo:', `${nombre} ${apellido}`, yPosition);
-                yPosition = this.addFieldAligned(doc, 'DNI:', dni, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Documento:', dni, yPosition);
                 yPosition = this.addFieldAligned(doc, 'CUIL/CUIT:', CUIL_CUIT, yPosition);
-                yPosition = this.addFieldAligned(doc, 'Fecha nacimiento:', new Date(fecha_nacimiento).toLocaleDateString('es-AR'), yPosition);
+                yPosition = this.addFieldAligned(doc, 'Fecha nacimiento:', new Date(fecha_nacimiento + 'T00:00:00').toLocaleDateString('es-AR'), yPosition);
                 yPosition = this.addFieldAligned(doc, 'Edad:', `${edad} años`, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Género:', genero, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Estado civil:', estado_civil, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Nacionalidad:', nacionalidad, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Email:', email, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Teléfono:', telefono, yPosition);
+                yPosition = this.addFieldAligned(doc, 'Posee cert. de discapacidad:', certificado_discapacidad ? 'Sí' : 'No', yPosition);
+
 
                 if (data.indexOf(personaData) > 0) {
                     yPosition = this.addFieldAligned(doc, 'Vínculo con titular:', vinculo, yPosition);
                 }
 
-                // Vivienda
+                yPosition += 10;
+                // --- DATOS DE LA VIVIENDA ---
                 if (vivienda) {
                     yPosition += 10;
                     doc.font('Helvetica-Bold')
@@ -173,12 +184,22 @@ export class PdfService {
                     yPosition = this.addFieldAligned(doc, 'Estado:', vivienda.estado_vivienda, yPosition);
 
                     if (vivienda.departamento) {
-                        yPosition = this.addFieldAligned(doc, 'Piso:', vivienda.piso_departamento, yPosition);
-                        yPosition = this.addFieldAligned(doc, 'N° Departamento:', vivienda.numero_departamento, yPosition);
+                        yPosition = this.addFieldAligned(doc, 'Piso - N° Depto.:', `${vivienda.piso_departamento} - ${vivienda.numero_departamento}`, yPosition);
+                    }
+
+                    if (vivienda.alquiler) {
+                        yPosition = this.addFieldAligned(doc, 'Alquiler mensual:', `$${vivienda.valor_alquiler?.toLocaleString('es-AR')}`, yPosition);
+                        yPosition = this.addFieldAligned(doc, 'Tipo de alquiler:', vivienda.tipo_alquiler, yPosition);
                     }
                 }
 
-                // Ingresos
+                // Verificar si hay suficiente espacio para "SITUACIÓN LABORAL"
+                if (yPosition > doc.page.height - 200) { // 200 es un margen estimado
+                    doc.addPage();
+                    yPosition = 50; // Reiniciar la posición Y en la nueva página
+                }
+
+                // --- SITUACIÓN LABORAL ---
                 if (!esMenor) {
                     yPosition += 10;
                     doc.font('Helvetica-Bold')

@@ -91,7 +91,7 @@ export class RegistroService {
                 }
 
                 const edad = this.calcularEdad(persona.fecha_nacimiento);
-                if (persona.titular_cotitular === 'Titular' && edad < 18) {
+                if (persona.titular_cotitular === 'Titular' && edad <= 18) {
                     console.error(`❌ ERROR: ${persona.nombre} es menor de edad y no puede ser titular.`);
                     throw new Error(`La persona ${persona.nombre} no puede registrarse como titular porque es menor de edad.`);
                 }
@@ -427,5 +427,94 @@ export class RegistroService {
               message: error.message
           }, HttpStatus.INTERNAL_SERVER_ERROR);
       }
+  }
+
+  async findByViviendaId(idVivienda: number) {
+    try {
+      // Obtener la vivienda con todas sus relaciones
+      const vivienda = await this.viviendaService.findOneWithRelations(idVivienda);
+  
+      if (!vivienda) {
+        throw new NotFoundException(`No se encontró la vivienda con ID ${idVivienda}`);
+      }
+  
+      // Obtener todas las personas que viven en esta vivienda con sus relaciones
+      const personas = await this.personaService.findByViviendaId(idVivienda);
+  
+      // Estructurar la respuesta
+      const registro = {
+        vivienda: {
+          idVivienda: vivienda.idVivienda,
+          direccion: vivienda.direccion,
+          numero_direccion: vivienda.numero_direccion,
+          departamento: vivienda.departamento,
+          piso_departamento: vivienda.piso_departamento,
+          numero_departamento: vivienda.numero_departamento,
+          alquiler: vivienda.alquiler,
+          valor_alquiler: vivienda.valor_alquiler,
+          localidad: vivienda.localidad,
+          cantidad_dormitorios: vivienda.cantidad_dormitorios,
+          estado_vivienda: vivienda.estado_vivienda,
+          tipo_alquiler: vivienda.tipo_alquiler
+        },
+        habitantes: personas.map(persona => ({
+          persona: {
+            idPersona: persona.idPersona,
+            numero_registro: persona.numero_registro,
+            nombre: persona.nombre,
+            apellido: persona.apellido,
+            tipo_dni: persona.tipo_dni,
+            dni: persona.dni,
+            CUIL_CUIT: persona.CUIL_CUIT,
+            genero: persona.genero,
+            fecha_nacimiento: persona.fecha_nacimiento,
+            email: persona.email,
+            telefono: persona.telefono,
+            estado_civil: persona.estado_civil,
+            nacionalidad: persona.nacionalidad,
+            certificado_discapacidad: persona.certificado_discapacidad,
+            rol: persona.rol,
+            vinculo: persona.vinculo,
+            titular_cotitular: persona.titular_cotitular
+          },
+          ingresos: persona.ingresos ? persona.ingresos.map(ingreso => ({
+            idIngreso: ingreso.idIngreso,
+            situacion_laboral: ingreso.situacion_laboral,
+            ocupacion: ingreso.ocupacion,
+            CUIT_empleador: ingreso.CUIT_empleador,
+            salario: ingreso.salario
+          })) : [],
+          lote: persona.lote ? {
+            idLote: persona.lote.idLote,
+            localidad: persona.lote.localidad
+          } : null,
+          totalIngresos: persona.ingresos
+            ? persona.ingresos.reduce((sum, ingreso) => sum + (ingreso.salario || 0), 0)
+            : 0
+        })),
+        totalIngresosVivienda: personas.reduce((total, persona) => {
+          const personaIngresos = persona.ingresos
+            ? persona.ingresos.reduce((sum, ingreso) => sum + (ingreso.salario || 0), 0)
+            : 0;
+          return total + personaIngresos;
+        }, 0)
+      };
+  
+      return {
+        status: HttpStatus.OK,
+        message: 'Registro de vivienda obtenido exitosamente',
+        data: registro
+      };
+  
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'Error al obtener el registro de la vivienda',
+        message: error.message
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
