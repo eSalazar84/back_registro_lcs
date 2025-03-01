@@ -53,6 +53,8 @@ const Formulario = ({ onSubmit }) => {
     }
   }]);
 
+  const [mismaVivienda, setMismaVivienda] = useState(false);
+
   const navigate = useNavigate();
 
   const handleInputChange = (index, path, value) => {
@@ -542,6 +544,25 @@ const Formulario = ({ onSubmit }) => {
     };
   };
 
+  const handleMismaVivienda = (index) => {
+    Swal.fire({
+      title: '¿Vive en la misma vivienda?',
+      text: "¿Desea usar los mismos datos de vivienda que el titular?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, usar mismos datos',
+      cancelButtonText: 'No, ingresar nuevos datos'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const updatedPersonas = [...personas];
+        updatedPersonas[index].vivienda = { ...personas[0].vivienda };
+        setPersonas(updatedPersonas);
+      }
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {personas.map((personaData, index) => (
@@ -818,8 +839,20 @@ const Formulario = ({ onSubmit }) => {
 
           <div className={`${styles.section} ${styles.housingData}`}>
             <h3 className={styles.sectionTitle}>Datos de la Vivienda</h3>
-            <div className={styles.inputGroup}>
+            
+            {index > 0 && (
+              <div className={styles.buttonGroup}>
+                <button
+                  type="button"
+                  onClick={() => handleMismaVivienda(index)}
+                  className={`${styles.button} ${styles.copyButton}`}
+                >
+                  Usar misma vivienda que el titular
+                </button>
+              </div>
+            )}
 
+            <div className={styles.inputGroup}>
               {/* Localidad - Nuevo orden */}
               <label className={styles.label}>
                 <span className={styles.labelText}>Localidad *</span>
