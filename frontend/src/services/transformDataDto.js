@@ -1,9 +1,14 @@
 export function transformarVivienda(data) {
+    console.log(data);
+    
     return {
         idVivienda: Number(data.idVivienda) || 0, // Asigna 0 si no hay ID
 
         direccion: String(data.direccion),
-        numero_direccion: Number(data.numero_direccion), // Convertir a número
+        numero_direccion: 
+            data.numero_direccion === "S/N" || data.numero_direccion?.trim() === "" 
+                ? 0 // Transformar a 0 si está vacío o es "S/N"
+                : Number(data.numero_direccion), // Convertir a número
         
         departamento: data.departamento === "true" || data.departamento === true, // Convertir a booleano
         piso_departamento: data.piso_departamento ? Number(data.piso_departamento) : null,
@@ -49,11 +54,52 @@ export function transformarIngresos(data) {
     }));
 }
 
-export function transformarDatos(data) {
+// Función para verificar si una persona es menor de edad
+export const esMenorDeEdad = (fechaNacimiento) => {
+    const hoy = new Date();
+    const fechaNac = new Date(fechaNacimiento);
+    const edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mes = hoy.getMonth() - fechaNac.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+        return edad - 1 < 18; // Ajustar la edad si no ha cumplido años aún
+    }
+    return edad < 18;
+};
+
+// Función para procesar los datos antes de transformarlos
+const transformarDatos = (persona) => {
+    const esPersonaMenor = esMenorDeEdad(persona.persona.fecha_nacimiento);
+
+    // Procesar ingresos para manejar CUIT_empleador vacío
+    const ingresosProcessed = persona.ingresos.map(ingreso => ({
+        ...ingreso,
+        CUIT_empleador: ingreso.CUIT_empleador || "0" // Si está vacío, usar "0"
+    }));
+
     return {
-        persona: transformarPersona(data.persona),
-        ingresos: transformarIngresos(data.ingresos),
-        lote: data.lote, // Mantener tal cual
-        vivienda: transformarVivienda(data.vivienda),
+        persona: {
+            ...persona.persona,
+            CUIL_CUIT: esPersonaMenor ? "0" : persona.persona.CUIL_CUIT,
+            email: esPersonaMenor ? "no@aplica.com" : persona.persona.email,
+            telefono: esPersonaMenor ? "0000000000" : persona.persona.telefono,
+            estado_civil: esPersonaMenor ? "Soltero/a" : persona.persona.estado_civil,
+        },
+        vivienda: persona.vivienda,
+        lote: persona.lote,
+        ingresos: esPersonaMenor ? [] : ingresosProcessed
+    };
+};
+
+// Función principal para transformar los datos antes de enviarlos al backend
+export function transformarDatosEnvioBackend(data) {
+    // Primero aplicamos transformarDatos para procesar los datos iniciales
+    const datosProcesados = transformarDatos(data);
+
+    // Luego aplicamos las transformaciones específicas
+    return {
+        persona: transformarPersona(datosProcesados.persona),
+        ingresos: transformarIngresos(datosProcesados.ingresos),
+        lote: datosProcesados.lote, // Mantener tal cual
+        vivienda: transformarVivienda(datosProcesados.vivienda),
     };
 }
