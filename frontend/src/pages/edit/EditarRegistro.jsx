@@ -4,7 +4,7 @@ import styles from './editarRegistro.module.css';
 import Swal from 'sweetalert2';
 import { fetchRegistroById } from '../../services/registroService';
 import { updateRegistroById } from '../../services/registroService';
-import { transformarDatos } from '../../services/transformDataDto';
+import { transformarDatosEnvioBackend } from '../../services/transformDataDto';
 
 const EditarRegistro = () => {
   const { id } = useParams();
@@ -100,7 +100,7 @@ const EditarRegistro = () => {
       };
   
       console.log("Datos transformados a enviar:", datosParaEnviar);
-      const datosTranformadosEnviar = transformarDatos(datosParaEnviar)
+      const datosTranformadosEnviar = transformarDatosEnvioBackend(datosParaEnviar)
   
       // Llama a la función updateRegistroById con los datos transformados
       const response = await updateRegistroById(id, datosTranformadosEnviar);

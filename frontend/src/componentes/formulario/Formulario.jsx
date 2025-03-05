@@ -3,6 +3,7 @@ import styles from "./Formulario.module.css";
 import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
+import { transformarDatosEnvioBackend, esMenorDeEdad } from '../../services/transformDataDto';
 
 const Formulario = ({ onSubmit }) => {
   useEffect(() => {
@@ -352,11 +353,16 @@ const Formulario = ({ onSubmit }) => {
       }
 
       // Validar datos de vivienda
-      if (!persona.vivienda.direccion || !persona.vivienda.numero_direccion ||
-        persona.vivienda.departamento === null || !persona.vivienda.localidad ||
-        !persona.vivienda.cantidad_dormitorios || !persona.vivienda.estado_vivienda ||
+      if (
+        !persona.vivienda.direccion ||
+        (callesPorLocalidad[persona.vivienda.localidad]?.length > 0 && !persona.vivienda.numero_direccion) ||
+        persona.vivienda.departamento === null ||
+        !persona.vivienda.localidad ||
+        !persona.vivienda.cantidad_dormitorios ||
+        !persona.vivienda.estado_vivienda ||
         persona.vivienda.alquiler === null ||
-        (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))) {
+        (persona.vivienda.alquiler && (!persona.vivienda.valor_alquiler || !persona.vivienda.tipo_alquiler))
+      ) {
         Swal.fire({
           icon: 'error',
           title: 'Campos incompletos',
@@ -364,7 +370,6 @@ const Formulario = ({ onSubmit }) => {
         });
         return;
       }
-
 
       // Validar datos de ingresos solo para mayores de edad
       if (!esPersonaMenor) {
@@ -394,7 +399,11 @@ const Formulario = ({ onSubmit }) => {
     setLoading(true);
 
     try {
-      const datosTransformados = personas.map(persona => transformarDatos(persona));
+      console.log(personas);
+      
+      const datosTransformados = personas.map(persona => transformarDatosEnvioBackend(persona));
+      console.log("datos trandformado", datosTransformados);
+      
 
       const response = await fetch("http://localhost:3000/registro", {
         method: "POST",
@@ -427,7 +436,7 @@ const Formulario = ({ onSubmit }) => {
 
       console.log('Registro exitoso, intentando redireccionar...');
 
-      
+
       console.log('Navegación ejecutada');
       // Si el registro fue exitoso
       await Swal.fire({
@@ -505,41 +514,6 @@ const Formulario = ({ onSubmit }) => {
         );
       }
     });
-  };
-
-  const esMenorDeEdad = (fechaNacimiento) => {
-    if (!fechaNacimiento) return false;
-    const hoy = new Date();
-    const fechaNac = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - fechaNac.getFullYear();
-    const mes = hoy.getMonth() - fechaNac.getMonth();
-    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-      edad--;
-    }
-    return edad <= 18;
-  };
-
-  const transformarDatos = (persona) => {
-    const esPersonaMenor = esMenorDeEdad(persona.persona.fecha_nacimiento);
-
-    // Procesar ingresos para manejar CUIT_empleador vacío
-    const ingresosProcessed = persona.ingresos.map(ingreso => ({
-      ...ingreso,
-      CUIT_empleador: ingreso.CUIT_empleador || "0" // Si está vacío, usar "0"
-    }));
-
-    return {
-      persona: {
-        ...persona.persona,
-        CUIL_CUIT: esPersonaMenor ? "0" : persona.persona.CUIL_CUIT,
-        email: esPersonaMenor ? "no@aplica.com" : persona.persona.email,
-        telefono: esPersonaMenor ? "0000000000" : persona.persona.telefono,
-        estado_civil: esPersonaMenor ? "Soltero/a" : persona.persona.estado_civil,
-      },
-      vivienda: persona.vivienda,
-      lote: persona.lote,
-      ingresos: esPersonaMenor ? [] : ingresosProcessed
-    };
   };
 
   return (
@@ -841,36 +815,72 @@ const Formulario = ({ onSubmit }) => {
                 </select>
               </label>
 
-              <label className={styles.label}>
-                <span className={styles.labelText}>Dirección *</span>
-                <select
-                  required
-                  value={personaData.vivienda.direccion}
-                  onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
-                  className={styles.select}
-                >
-                  <option value="" disabled>Seleccione una dirección</option>
-                  {personaData.vivienda.localidad &&
-                    callesPorLocalidad[personaData.vivienda.localidad]?.map((calle, i) => (
-                      <option key={i} value={calle}>
-                        {calle}
-                      </option>
-                    ))}
-                </select>
-              </label>
+{/* Selección de calle */}
+<label className={styles.label}>
+  <span className={styles.labelText}>Dirección *</span>
+  {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
+    <>
+      <select
+        required
+        value={personaData.vivienda.direccion}
+        onChange={(e) => {
+          const value = e.target.value;
+          handleInputChange(index, 'vivienda.direccion', value === "Otra" ? "" : value);
+          handleInputChange(index, 'vivienda.otra_calle', value === "Otra");
+        }}
+        className={styles.select}
+      >
+        <option value="" disabled>Seleccione una dirección</option>
+        {callesPorLocalidad[personaData.vivienda.localidad]?.map((calle, i) => (
+          <option key={i} value={calle}>{calle}</option>
+        ))}
+        <option value="Otra">Otra</option>
+      </select>
 
-              {/* Número - Se mantiene igual */}
-              <label className={styles.label}>
-                <span className={styles.labelText}>Número *</span>
-                <input
-                  required
-                  type="text"
-                  placeholder="Número"
-                  value={personaData.vivienda.numero_direccion}
-                  onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
-                  className={styles.input}
-                />
-              </label>
+      {personaData.vivienda.otra_calle && (
+        <input
+          type="text"
+          placeholder="Ingrese su calle"
+          value={personaData.vivienda.direccion}
+          onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
+          className={styles.input}
+        />
+      )}
+    </>
+  ) : (
+    <input
+      required
+      type="text"
+      placeholder="Ingrese referencia de ubicación"
+      value={personaData.vivienda.direccion || ""}
+      onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
+      className={styles.input}
+    />
+  )}
+</label>
+
+<label className={styles.label}>
+  <span className={styles.labelText}>Número</span>
+  {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
+    <input
+      required
+      type="number"
+      placeholder="Número"
+      value={personaData.vivienda.numero_direccion}
+      onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
+      className={styles.input}
+    />
+  ) : (
+    <input
+      type="number"
+      placeholder="S/N"
+      value={personaData.vivienda.numero_direccion || ""}
+      onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
+      className={styles.input}
+    />
+  )}
+</label>
+
 
               {/* Campos restantes del original */}
               <label className={styles.label}>
