@@ -6,7 +6,10 @@ import { useNavigate } from 'react-router-dom';
 
 const Formulario = ({ onSubmit }) => {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }, []);
   const agregarPersona = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -53,7 +56,7 @@ const Formulario = ({ onSubmit }) => {
     }
   }]);
 
-  const [mismaVivienda, setMismaVivienda] = useState(false);
+  const [showHousingData, setShowHousingData] = useState(Array(personas.length).fill(false));
 
   const navigate = useNavigate();
 
@@ -429,7 +432,7 @@ const Formulario = ({ onSubmit }) => {
 
       console.log('Registro exitoso, intentando redireccionar...');
 
-      
+
       console.log('Navegación ejecutada');
       // Si el registro fue exitoso
       await Swal.fire({
@@ -545,6 +548,16 @@ const Formulario = ({ onSubmit }) => {
   };
 
   const handleMismaVivienda = (index) => {
+    const updatedPersonas = [...personas];
+    updatedPersonas[index].vivienda = { ...personas[0].vivienda };
+    setPersonas(updatedPersonas);
+  
+    const updatedShowHousingData = [...showHousingData];
+    updatedShowHousingData[index] = true;
+    setShowHousingData(updatedShowHousingData);
+  };
+
+  const handleShowHousingData = (index) => {
     Swal.fire({
       title: '¿Vive en la misma vivienda?',
       text: "¿Desea usar los mismos datos de vivienda que el titular?",
@@ -560,6 +573,9 @@ const Formulario = ({ onSubmit }) => {
         updatedPersonas[index].vivienda = { ...personas[0].vivienda };
         setPersonas(updatedPersonas);
       }
+      const updatedShowHousingData = [...showHousingData];
+      updatedShowHousingData[index] = true;
+      setShowHousingData(updatedShowHousingData);
     });
   };
 
@@ -838,9 +854,9 @@ const Formulario = ({ onSubmit }) => {
           </div>
 
           <div className={`${styles.section} ${styles.housingData}`}>
-            <h3 className={styles.sectionTitle}>Datos de la Vivienda</h3>
-            
-            {index > 0 && (
+            <h3 className={styles.sectionTitle}>Datos del domicilio</h3>
+
+            {index > 0 && !showHousingData[index] && (
               <div className={styles.buttonGroup}>
                 <button
                   type="button"
@@ -849,10 +865,21 @@ const Formulario = ({ onSubmit }) => {
                 >
                   Usar misma vivienda que el titular
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowHousingData(prev => {
+                    const updated = [...prev];
+                    updated[index] = true;
+                    return updated;
+                  })}
+                  className={`${styles.button} ${styles.newAddressButton}`}
+                >
+                  Ingresar nuevo domicilio
+                </button>
               </div>
             )}
 
-            <div className={styles.inputGroup}>
+            <div className={`${styles.inputGroup} ${index === 0 || showHousingData[index] ? styles.visible : styles.hidden}`}>
               {/* Localidad - Nuevo orden */}
               <label className={styles.label}>
                 <span className={styles.labelText}>Localidad *</span>
@@ -1026,101 +1053,101 @@ const Formulario = ({ onSubmit }) => {
                   </label>
                 </div>
               )}
-
             </div>
           </div>
 
           <div className={styles.sectionDivider} />
 
           {/* Sección de Ingresos */}
-          {!esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
-            <div className={`${styles.section} ${styles.incomeData}`}>
-              <h3 className={styles.sectionTitle}>Ingresos</h3>
-              {personaData.ingresos.map((ingreso, ingresoIndex) => (
-                <div key={ingresoIndex} className={styles.inputGroup}>
-                  <label className={styles.label}>
-                    <span className={styles.labelText}>Situación laboral *</span>
-                    <select
-                      required
-                      name="situacion_laboral"
-                      value={ingreso.situacion_laboral || ""}
-                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
-                      className={styles.select}
-                    >
-                      <option value="" disabled>Situación laboral</option>
-                      <option value="Relación de dependencia">Relación de dependencia</option>
-                      <option value="Autónomo">Autónomo</option>
-                      <option value="Jubilado">Jubilado</option>
-                      <option value="Pensionado">Pensionado</option>
-                      <option value="Informal">Informal</option>
-                      <option value="Desempleado">Desempleado</option>
-                    </select>
-                  </label>
-
-                  <label className={styles.label}>
-                    <span className={styles.labelText}>Ocupación</span>
-                    <input
-
-                      type="text"
-                      placeholder="Ocupación"
-                      value={ingreso.ocupacion}
-                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
-                      className={styles.input}
-                    />
-                  </label>
-
-                  {/* CUIT del empleador condicionado */}
-                  {ingreso.situacion_laboral && (
+          {!esMenorDeEdad(personaData.persona.fecha_nacimiento) &&
+            (
+              <div className={`${styles.section} ${styles.incomeData}`}>
+                <h3 className={styles.sectionTitle}>Ingresos</h3>
+                {personaData.ingresos.map((ingreso, ingresoIndex) => (
+                  <div key={ingresoIndex} className={styles.inputGroup}>
                     <label className={styles.label}>
-                      <span className={styles.labelText}>
-                        {(ingreso.situacion_laboral === "Relación de dependencia")
-                          ? "CUIT del empleador *"
-                          : "CUIT del empleador (opcional)"}
-                      </span>
+                      <span className={styles.labelText}>Situación laboral *</span>
+                      <select
+                        required
+                        name="situacion_laboral"
+                        value={ingreso.situacion_laboral || ""}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
+                        className={styles.select}
+                      >
+                        <option value="" disabled>Situación laboral</option>
+                        <option value="Relación de dependencia">Relación de dependencia</option>
+                        <option value="Autónomo">Autónomo</option>
+                        <option value="Jubilado">Jubilado</option>
+                        <option value="Pensionado">Pensionado</option>
+                        <option value="Informal">Informal</option>
+                        <option value="Desempleado">Desempleado</option>
+                      </select>
+                    </label>
+
+                    <label className={styles.label}>
+                      <span className={styles.labelText}>Ocupación</span>
                       <input
+
                         type="text"
-                        placeholder="CUIT del empleador"
-                        value={ingreso.CUIT_empleador || ""}
-                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
+                        placeholder="Ocupación"
+                        value={ingreso.ocupacion}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
                         className={styles.input}
-                        required={ingreso.situacion_laboral === "Relación de dependencia"}
                       />
                     </label>
-                  )}
 
-                  <label className={styles.label}>
-                    <span className={styles.labelText}>Ingreso mensual</span>
-                    <input
+                    {/* CUIT del empleador condicionado */}
+                    {ingreso.situacion_laboral && (
+                      <label className={styles.label}>
+                        <span className={styles.labelText}>
+                          {(ingreso.situacion_laboral === "Relación de dependencia")
+                            ? "CUIT del empleador *"
+                            : "CUIT del empleador (opcional)"}
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="CUIT del empleador"
+                          value={ingreso.CUIT_empleador || ""}
+                          onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
+                          className={styles.input}
+                          required={ingreso.situacion_laboral === "Relación de dependencia"}
+                        />
+                      </label>
+                    )}
 
-                      type="number"
-                      placeholder="Ingreso mensual"
-                      value={ingreso.salario}
-                      onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
-                      className={styles.input}
-                    />
-                  </label>
-                </div>
-              ))}
-              <div className={styles.ingresoButtonGroup}>
-                <button
-                  type="button"
-                  onClick={() => addIngreso(index)}
-                  className={`${styles.button} ${styles.addButton}`}
-                >
-                  Añadir otro ingreso
-                </button>
-                {personaData.ingresos.length > 1 && (
+                    <label className={styles.label}>
+                      <span className={styles.labelText}>Ingreso mensual</span>
+                      <input
+
+                        type="number"
+                        placeholder="Ingreso mensual"
+                        value={ingreso.salario}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
+                        className={styles.input}
+                      />
+                    </label>
+                  </div>
+                ))}
+                <div className={styles.ingresoButtonGroup}>
                   <button
                     type="button"
-                    onClick={() => cancelarUltimoIngreso(index)}
-                    className={`${styles.button} ${styles.cancelButton}`}
+                    onClick={() => addIngreso(index)}
+                    className={`${styles.button} ${styles.addButton}`}
                   >
-                    Cancelar Último Ingreso
+                    Añadir otro ingreso
                   </button>
-                )}
+                  {personaData.ingresos.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => cancelarUltimoIngreso(index)}
+                      className={`${styles.button} ${styles.cancelButton}`}
+                    >
+                      Cancelar Último Ingreso
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className={styles.sectionDivider} />
 

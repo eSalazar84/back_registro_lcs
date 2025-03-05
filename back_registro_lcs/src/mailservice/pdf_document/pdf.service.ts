@@ -45,7 +45,7 @@ export class PdfService {
             doc.pipe(stream);
 
             // --- ENCABEZADO ---
-            doc.rect(0, 0, doc.page.width, 120).fill(this.colors.lightBg);
+            doc.rect(0, 0, doc.page.width, 120).fill(this.colors.lightBg); // Fondo claro original
 
             try {
                 const imageUrl = 'https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png';
@@ -53,23 +53,48 @@ export class PdfService {
                 if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
 
                 const imageBuffer = Buffer.from(await response.arrayBuffer());
-                doc.image(imageBuffer, this.leftMargin, 40, { width: 80 });
 
-                // Título
+                // --- Fondo azul para el logo con bordes redondeados ---
+                const logoContainerSize = 90; // Tamaño del contenedor (cuadrado azul)
+                const logoSize = 70; // Tamaño real del logo
+                const borderRadius = 8; // Radio para bordes redondeados
+
+                // Posición Y calculada para no superponer la línea decorativa (120px)
+                doc.roundedRect(
+                    this.leftMargin - 10, // X: 50px (leftMargin) - 10px = 40px
+                    35,                   // Y: 35px desde el borde superior
+                    logoContainerSize + 20, // Ancho: 90px + 20px de padding
+                    logoContainerSize,    // Alto: 90px
+                    borderRadius          // Radio de esquinas
+                )
+                    .fill('#002b5a');
+
+                // --- Logo centrado en el contenedor ---
+                doc.image(imageBuffer,
+                    this.leftMargin + 5,  // X: 50px + 5px de ajuste fino
+                    45,                   // Y: 45px para centrado vertical
+                    {
+                        width: logoSize,
+                        align: 'center',
+                        valign: 'center'
+                    }
+                );
+
+                // --- Títulos manteniendo colores originales ---
                 doc.font('Helvetica-Bold')
                     .fontSize(20)
-                    .fillColor(this.colors.primary)
+                    .fillColor(this.colors.primary) // Color original (#2c3e50)
                     .text('Comprobante de Registro', 150, 50)
                     .font('Helvetica')
                     .fontSize(14)
-                    .fillColor(this.colors.accent)
+                    .fillColor(this.colors.accent) // Color original (#34495e)
                     .text('Programa "Mi hábitat, mi hogar"', 150, 75);
 
             } catch (error) {
                 console.error('Error al cargar el logo:', error);
             }
 
-            // Línea decorativa
+            // Línea decorativa (manteniendo color original)
             doc.moveTo(this.leftMargin, 120)
                 .lineTo(doc.page.width - this.leftMargin, 120)
                 .lineWidth(2)
@@ -124,20 +149,20 @@ export class PdfService {
                     doc.font('Helvetica-Bold')
                         .fontSize(12)
                         .fillColor(this.colors.primary)
-                        .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 20, { width: halfWidth, align: 'center' })
+                        .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 15, { width: halfWidth, align: 'center' })
                         .fontSize(16)
                         .fillColor(this.colors.secondary)
-                        .text(numero_registro || 'N/D', this.leftMargin, yPosition + 40, { width: halfWidth, align: 'center' });
+                        .text(numero_registro || 'N/D', this.leftMargin, yPosition + 35, { width: halfWidth, align: 'center' });
 
                     // Localidad del lote (segunda mitad)
                     doc.font('Helvetica-Bold')
                         .fontSize(12)
                         .fillColor(this.colors.primary)
-                        .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 20, { width: halfWidth, align: 'center' })
+                        .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 15, { width: halfWidth, align: 'center' })
                         //.font('Helvetica')
                         .fontSize(16)
                         .fillColor(this.colors.secondary)
-                        .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 40, { width: halfWidth, align: 'center' });
+                        .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 35, { width: halfWidth, align: 'center' });
 
                     yPosition += 90;
                 }
@@ -175,7 +200,7 @@ export class PdfService {
                     doc.font('Helvetica-Bold')
                         .fontSize(14)
                         .fillColor(this.colors.accent)
-                        .text('DATOS DE LA VIVIENDA', this.leftMargin, yPosition, { underline: true });
+                        .text('DATOS DEL DOMICILIO', this.leftMargin, yPosition, { underline: true });
                     yPosition += this.lineHeight + 10;
 
                     yPosition = this.addFieldAligned(doc, 'Dirección:', `${vivienda.direccion} ${vivienda.numero_direccion}`, yPosition);
@@ -210,7 +235,7 @@ export class PdfService {
 
                     if (ingresos.length > 0) {
                         ingresos.forEach((ingreso, index) => {
-                            yPosition = this.addFieldAligned(doc, `Empleador ${index + 1}:`, ingreso.ocupacion, yPosition);
+                            yPosition = this.addFieldAligned(doc, `Ocupación ${index + 1}:`, ingreso.ocupacion, yPosition);
                             yPosition = this.addFieldAligned(doc, 'CUIT:', ingreso.CUIT_empleador, yPosition);
                             yPosition = this.addFieldAligned(doc, 'Salario:', `$${ingreso.salario?.toLocaleString('es-AR')}`, yPosition);
                             yPosition += 10;
