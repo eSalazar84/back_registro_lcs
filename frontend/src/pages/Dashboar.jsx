@@ -5,8 +5,7 @@ import styles from './dashboard.module.css';
 import { RegistroContext } from "../context/RegistroConext";
 import Swal from 'sweetalert2';
 import { jwtDecode } from "jwt-decode";
-import { CSVLink } from "react-csv";
-
+import * as XLSX from 'xlsx'; // Importar la librería xlsx
 
 const Dashboard = () => {
   const { registros, loading, error, getRegistros } = useContext(RegistroContext);
@@ -19,7 +18,8 @@ const Dashboard = () => {
     apellido: '',
     localidadVivienda: '',
     localidadLote: '',
-    numeroRegistro: ''
+    numeroRegistro: '',
+    tipoPersona: 'Todos' // Nuevo filtro
   });
 
   const [paginaActual, setPaginaActual] = useState(1);
@@ -27,6 +27,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     getRegistros();
+    console.log(registros); // Verifica la estructura de los datos
   }, []);
 
   const handleLogout = () => {
@@ -87,7 +88,8 @@ const Dashboard = () => {
       apellido: '',
       localidadVivienda: '',
       localidadLote: '',
-      numeroRegistro: ''
+      numeroRegistro: '',
+      tipoPersona: 'Todos' // Reiniciar el filtro de tipo de persona
     });
   };
 
@@ -99,9 +101,18 @@ const Dashboard = () => {
       return defaultValue;
     }
   };
-  // Filtrar primero los titulares y ordenarlos por número de registro
-  const registrosTitulares = registros
-    ?.filter(registro => getSafeValue(registro, 'persona.titular_cotitular') === 'Titular')
+
+  // Filtrar registros por tipo (titular, cotitular, conviviente) y ordenar por número de registro
+  const registrosFiltrados = registros
+    ?.filter(registro => {
+      const tipo = getSafeValue(registro, 'persona.titular_cotitular');
+      // Aplicar el filtro de tipo de persona
+      if (filtros.tipoPersona === 'Todos') {
+        return tipo === 'Titular' || tipo === 'Cotitular' || tipo === 'Conviviente';
+      } else {
+        return tipo === filtros.tipoPersona;
+      }
+    })
     .sort((a, b) => {
       const numRegA = parseInt(getSafeValue(a, 'persona.numero_registro')) || 0;
       const numRegB = parseInt(getSafeValue(b, 'persona.numero_registro')) || 0;
@@ -109,7 +120,7 @@ const Dashboard = () => {
     });
 
   // Aplicar los filtros de búsqueda a los registros ya ordenados
-  const registrosFiltrados = registrosTitulares?.filter(registro => {
+  const registrosFiltradosFinal = registrosFiltrados?.filter(registro => {
     return (
       (!filtros.dni || getSafeValue(registro, 'persona.dni').toLowerCase().includes(filtros.dni.toLowerCase())) &&
       (!filtros.apellido || getSafeValue(registro, 'persona.apellido').toLowerCase().includes(filtros.apellido.toLowerCase())) &&
@@ -118,7 +129,6 @@ const Dashboard = () => {
       (!filtros.numeroRegistro || getSafeValue(registro, 'persona.numero_registro').includes(filtros.numeroRegistro))
     );
   });
-
 
   const calcularTotalIngresos = (ingresos) => {
     if (!Array.isArray(ingresos)) return 0;
@@ -134,38 +144,44 @@ const Dashboard = () => {
   const handleVivienda = (id) => {
     navigate(`/vivienda/${id}`);
   };
+
   if (loading) return <div className={styles.loading}>Cargando...</div>;
   if (error) return <div className={styles.error}>Error: {error}</div>;
 
-
   const indexOfLastRegistro = paginaActual * registrosPorPagina;
   const indexOfFirstRegistro = indexOfLastRegistro - registrosPorPagina;
-  const registrosActuales = registrosFiltrados.slice(indexOfFirstRegistro, indexOfLastRegistro);
-  const totalPaginas = Math.ceil(registrosFiltrados.length / registrosPorPagina);
+  const registrosActuales = registrosFiltradosFinal.slice(indexOfFirstRegistro, indexOfLastRegistro);
+  const totalPaginas = Math.ceil(registrosFiltradosFinal.length / registrosPorPagina);
 
-
-  const generarCSV = (datos) => {
+  // Función para generar y descargar el archivo Excel
+  const descargarExcel = (datos, nombreArchivo) => {
     const encabezados = [
-      { label: "N° Registro", key: "numeroRegistro" },
-      { label: "Apellido", key: "apellido" },
-      { label: "Nombre", key: "nombre" },
-      { label: "DNI", key: "dni" },
-      { label: "Teléfono", key: "telefono" },
-      { label: "Localidad Lote", key: "localidadLote" },
+      "N° Registro",
+      "Apellido",
+      "Nombre",
+      "DNI",
+      "Teléfono",
+      "Localidad Lote",
+      "Tipo"
     ];
 
-    const datosCSV = datos.map((registro) => ({
-      numeroRegistro: getSafeValue(registro, "persona.numero_registro"),
-      apellido: getSafeValue(registro, "persona.apellido"),
-      nombre: getSafeValue(registro, "persona.nombre"),
-      dni: getSafeValue(registro, "persona.dni"),
-      telefono: getSafeValue(registro, "persona.telefono"),
-      localidadLote: getSafeValue(registro, "lote.localidad"),
-    }));
+    const datosExcel = datos.map((registro) => [
+      getSafeValue(registro, "persona.numero_registro"),
+      getSafeValue(registro, "persona.apellido"),
+      getSafeValue(registro, "persona.nombre"),
+      getSafeValue(registro, "persona.dni"),
+      getSafeValue(registro, "persona.telefono"),
+      getSafeValue(registro, "lote.localidad"),
+      getSafeValue(registro, "persona.titular_cotitular")
+    ]);
 
-    return { headers: encabezados, data: datosCSV };
+    const hoja = XLSX.utils.aoa_to_sheet([encabezados, ...datosExcel]);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, "Registros");
+
+    // Generar el archivo y descargarlo
+    XLSX.writeFile(libro, `${nombreArchivo}.xlsx`);
   };
-
 
   return (
     <div className={styles.container}>
@@ -183,13 +199,19 @@ const Dashboard = () => {
       <h1 className={styles.title}>Registros de Inscripción</h1>
 
       <div className={styles.downloadButtons}>
-        <CSVLink {...generarCSV(registros)} filename="todos_registros.csv" className={styles.downloadButton}>
-          Descargar Todos
-        </CSVLink>
+        <button
+          onClick={() => descargarExcel(registros, "todos_registros")}
+          className={styles.downloadButton}
+        >
+          Descargar Todos (Excel)
+        </button>
 
-        <CSVLink {...generarCSV(registrosFiltrados)} filename="registros_filtrados.csv" className={styles.downloadButton}>
-          Descargar Filtrados
-        </CSVLink>
+        <button
+          onClick={() => descargarExcel(registrosFiltradosFinal, "registros_filtrados")}
+          className={styles.downloadButton}
+        >
+          Descargar Filtrados (Excel)
+        </button>
       </div>
 
       <div className={styles.filtrosContainer}>
@@ -230,7 +252,6 @@ const Dashboard = () => {
             <option value="Villa Cacique">Villa Cacique</option>
             <option value="Tedín Uriburu">Tedín Uriburu</option>
             <option value="Estación López">Estación López</option>
-
             <option value="El Luchador">El Luchador</option>
             <option value="Coronel Rodolfo Bunge">Coronel Rodolfo Bunge</option>
           </select>
@@ -241,10 +262,22 @@ const Dashboard = () => {
             className={styles.filtroSelect}
           >
             <option value="">Localidad Lote</option>
-            <option value="Benito Juarez">Benito Juárez</option>
+            <option value="Benito Juárez">Benito Juárez</option>
             <option value="Barker">Barker</option>
             <option value="Tedín Uriburu">Tedín Uriburu</option>
             <option value="El Luchador">El Luchador</option>
+          </select>
+          {/* Nuevo filtro de tipo de persona */}
+          <select
+            name="tipoPersona"
+            value={filtros.tipoPersona}
+            onChange={handleFiltroChange}
+            className={styles.filtroSelect}
+          >
+            <option value="Todos">Todos</option>
+            <option value="Titular">Titular</option>
+            <option value="Cotitular">Cotitular</option>
+            <option value="Conviviente">Conviviente</option>
           </select>
           <button
             onClick={limpiarFiltros}
@@ -265,13 +298,13 @@ const Dashboard = () => {
               <th>DNI</th>
               <th>Telefono</th>
               <th>Localidad Lote</th>
+              <th>Tipo</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {registrosActuales
-              ?.filter(registro => getSafeValue(registro, 'persona.titular_cotitular') === 'Titular')
-              .map((registro) => (
+            {registrosActuales && registrosActuales.length > 0 ? (
+              registrosActuales.map((registro) => (
                 <tr key={getSafeValue(registro, 'persona.idPersona', 'row-' + Math.random())}>
                   <td>{getSafeValue(registro, 'persona.numero_registro')}</td>
                   <td>{getSafeValue(registro, 'persona.apellido')}</td>
@@ -279,6 +312,7 @@ const Dashboard = () => {
                   <td>{getSafeValue(registro, 'persona.dni')}</td>
                   <td>{getSafeValue(registro, 'persona.telefono')}</td>
                   <td>{getSafeValue(registro, 'lote.localidad')}</td>
+                  <td>{getSafeValue(registro, 'persona.titular_cotitular')}</td>
                   <td>
                     <div className={styles.containerButtonAccion}>
                       <button
@@ -296,7 +330,14 @@ const Dashboard = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" style={{ textAlign: "center", fontWeight: "bold" }}>
+                  No hay registros disponibles
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
         <div className={styles.pagination}>
@@ -318,9 +359,9 @@ const Dashboard = () => {
             Siguiente
           </button>
         </div>
-
       </div>
     </div>
   );
 };
+
 export default Dashboard;

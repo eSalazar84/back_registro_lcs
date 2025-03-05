@@ -13,7 +13,7 @@ export class CreateViviendaDto {
     direccion: string;
 
     @IsNumber()
-    @Min(1, { message: "El número de dirección debe ser mayor que 0" })
+    @Min(0, { message: "El número de dirección debe ser mayor que 0" })
     numero_direccion: number;
 
     @IsBoolean()
