@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
 import { transformarDatosEnvioBackend, esMenorDeEdad } from '../../services/transformDataDto';
+import { API_URL } from '../../services/registroService';
 
 const Formulario = ({ onSubmit }) => {
   useEffect(() => {
@@ -59,7 +60,6 @@ const Formulario = ({ onSubmit }) => {
   }]);
 
   const [showHousingData, setShowHousingData] = useState(Array(personas.length).fill(false));
-
 
   const handleInputChange = (index, path, value) => {
     const updatedPersonas = [...personas];
@@ -340,13 +340,6 @@ const Formulario = ({ onSubmit }) => {
         }
       }
 
-      const addressValidation = personas.map((persona, index) => {
-        const localidad = persona.vivienda.localidad;
-        const direccion = persona.vivienda.direccion.trim().toUpperCase();
-        const callesValidas = callesPorLocalidad[localidad]?.map(calle => calle.trim().toUpperCase()) || [];
-        return callesValidas.includes(direccion);
-      });
-
       const cantidadDormitorios = Number(persona.vivienda.cantidad_dormitorios);
       // Validar que la cantidad de dormitorios no sea negativa
       if (isNaN(cantidadDormitorios) || cantidadDormitorios < 0) {
@@ -396,7 +389,7 @@ const Formulario = ({ onSubmit }) => {
       console.log("datos trandformado", datosTransformados);
 
 
-      const response = await fetch("http://localhost:3000/registro", {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -516,28 +509,6 @@ const Formulario = ({ onSubmit }) => {
     setShowHousingData(updatedShowHousingData);
   };
 
-  const handleShowHousingData = (index) => {
-    Swal.fire({
-      title: '¿Vive en la misma vivienda?',
-      text: "¿Desea usar los mismos datos de vivienda que el titular?",
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, usar mismos datos',
-      cancelButtonText: 'No, ingresar nuevos datos'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const updatedPersonas = [...personas];
-        updatedPersonas[index].vivienda = { ...personas[0].vivienda };
-        setPersonas(updatedPersonas);
-      }
-      const updatedShowHousingData = [...showHousingData];
-      updatedShowHousingData[index] = true;
-      setShowHousingData(updatedShowHousingData);
-    });
-  };
-
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {personas.map((personaData, index) => (
@@ -592,9 +563,6 @@ const Formulario = ({ onSubmit }) => {
                   </select>
                 )}
               </label>
-
-
-
 
               <label className={styles.label}>
                 <span className={styles.labelText}>Nombres *</span>
