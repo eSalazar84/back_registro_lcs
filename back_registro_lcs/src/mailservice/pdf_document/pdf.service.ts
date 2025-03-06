@@ -45,63 +45,73 @@ export class PdfService {
             doc.pipe(stream);
 
             // --- ENCABEZADO ---
-            doc.rect(0, 0, doc.page.width, 120).fill(this.colors.lightBg); // Fondo claro original
-
             try {
                 const imageUrl = 'https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png';
                 const response = await fetch(imageUrl);
                 if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
                 const imageBuffer = Buffer.from(await response.arrayBuffer());
 
-                // --- Fondo azul para el logo con bordes redondeados ---
-                const logoContainerSize = 90; // Tamaño del contenedor (cuadrado azul)
-                const logoSize = 70; // Tamaño real del logo
-                const borderRadius = 8; // Radio para bordes redondeados
+                // Constantes para el encabezado
+                const headerHeight = 130; // Altura total del encabezado
+                const baseYPosition = 20; // Posición Y inicial
+                const logoContainerSize = 85; // Tamaño del contenedor azul
+                const logoSize = 65; // Tamaño del logo
+                const borderRadius = 8;
+                const titleStartX = 160; // Posición X donde empiezan los títulos
 
-                // Posición Y calculada para no superponer la línea decorativa (120px)
+                // Crear el fondo gris claro del encabezado
+                doc.rect(0, 0, doc.page.width, headerHeight)
+                   .fill(this.colors.lightBg);
+
+                // Contenedor azul del logo
                 doc.roundedRect(
-                    this.leftMargin - 10, // X: 50px (leftMargin) - 10px = 40px
-                    35,                   // Y: 35px desde el borde superior
-                    logoContainerSize + 20, // Ancho: 90px + 20px de padding
-                    logoContainerSize,    // Alto: 90px
-                    borderRadius          // Radio de esquinas
+                    this.leftMargin,
+                    baseYPosition,
+                    logoContainerSize,
+                    logoContainerSize,
+                    borderRadius
                 )
-                    .fill('#002b5a');
+                .fill('#002b5a');
 
-                // --- Logo centrado en el contenedor ---
+                // Centrar el logo en el contenedor azul
+                const logoOffset = (logoContainerSize - logoSize) / 2;
                 doc.image(imageBuffer,
-                    this.leftMargin + 5,  // X: 50px + 5px de ajuste fino
-                    45,                   // Y: 45px para centrado vertical
+                    this.leftMargin + logoOffset,
+                    baseYPosition + logoOffset,
                     {
-                        width: logoSize,
-                        align: 'center',
-                        valign: 'center'
+                        width: logoSize
                     }
                 );
 
-                // --- Títulos manteniendo colores originales ---
+                // Calcular posiciones Y para los títulos
+                const titleY = baseYPosition + 15;
+                const subtitleY = titleY + 25;
+
+                // Título principal
                 doc.font('Helvetica-Bold')
-                    .fontSize(20)
-                    .fillColor(this.colors.primary) // Color original (#2c3e50)
-                    .text('Comprobante de Registro', 150, 50)
-                    .font('Helvetica')
-                    .fontSize(14)
-                    .fillColor(this.colors.accent) // Color original (#34495e)
-                    .text('Programa "Mi hábitat, mi hogar"', 150, 75);
+                   .fontSize(20)
+                   .fillColor(this.colors.primary)
+                   .text('Comprobante de Registro', titleStartX, titleY);
+
+                // Subtítulo
+                doc.font('Helvetica')
+                   .fontSize(14)
+                   .fillColor(this.colors.accent)
+                   .text('Programa "Mi hábitat, mi hogar"', titleStartX, subtitleY);
+
+                // Línea divisoria
+                doc.moveTo(this.leftMargin, headerHeight)
+                   .lineTo(doc.page.width - this.leftMargin, headerHeight)
+                   .lineWidth(2)
+                   .strokeColor(this.colors.secondary)
+                   .stroke();
 
             } catch (error) {
                 console.error('Error al cargar el logo:', error);
             }
-
-            // Línea decorativa (manteniendo color original)
-            doc.moveTo(this.leftMargin, 120)
-                .lineTo(doc.page.width - this.leftMargin, 120)
-                .lineWidth(2)
-                .strokeColor(this.colors.secondary)
-                .stroke();
-
-            let yPosition = 140;
+            // Posición inicial para el contenido siguiente
+            const headerHeight = 150; // Definir altura del encabezado
+            let yPosition = headerHeight + 20;
 
             // --- CUERPO PRINCIPAL ---
             for (const personaData of data) {
