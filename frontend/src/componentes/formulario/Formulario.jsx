@@ -227,6 +227,18 @@ const Formulario = ({ onSubmit }) => {
       return;
     }
 
+    // Validar que se haya seleccionado una opción de vivienda para cada miembro del grupo familiar
+    for (let i = 1; i < personas.length; i++) {
+      if (!showHousingData[i]) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Datos de vivienda incompletos',
+          text: `Por favor, seleccione una opción de vivienda para el familiar #${i}`,
+        });
+        return;
+      }
+    }
+
     // Validar ingresos antes de enviar
     for (const persona of personas) {
       if (!esMenorDeEdad(persona.persona.fecha_nacimiento)) {
@@ -818,7 +830,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={styles.label}>
                 <span className={styles.labelText}>Localidad *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="localidad"
                   value={personaData.vivienda.localidad || ""}
                   onChange={(e) => handleInputChange(index, 'vivienda.localidad', e.target.value)}
@@ -841,7 +853,7 @@ const Formulario = ({ onSubmit }) => {
                 {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
                   <>
                     <select
-                      required
+                      required={index === 0 || showHousingData[index]}
                       value={personaData.vivienda.direccion}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -869,7 +881,7 @@ const Formulario = ({ onSubmit }) => {
                   </>
                 ) : (
                   <input
-                    required
+                    required={index === 0 || showHousingData[index]}
                     type="text"
                     placeholder="Ingrese referencia de ubicación"
                     value={personaData.vivienda.direccion || ""}
@@ -883,7 +895,7 @@ const Formulario = ({ onSubmit }) => {
                 <span className={styles.labelText}>Número</span>
                 {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
                   <input
-                    required
+                    required={index === 0 || showHousingData[index]}
                     type="number"
                     placeholder="Número"
                     value={personaData.vivienda.numero_direccion}
@@ -906,7 +918,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={styles.label}>
                 <span className={styles.labelText}>¿Es departamento? *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="departamento"
                   value={personaData.vivienda.departamento === null ? "" :
                     personaData.vivienda.departamento ? "Si" : "No"}
@@ -924,7 +936,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Piso *</span>
                     <input
-                      required
+                      required={index === 0 || showHousingData[index]}
                       type="text"
                       placeholder="Piso"
                       value={personaData.vivienda.piso_departamento}
@@ -936,7 +948,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Departamento *</span>
                     <input
-                      required
+                      required={index === 0 || showHousingData[index]}
                       type="text"
                       placeholder="Departamento"
                       value={personaData.vivienda.numero_departamento}
@@ -950,7 +962,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={styles.label}>
                 <span className={styles.labelText}>Cantidad de dormitorios *</span>
                 <input
-                  required
+                  required={index === 0 || showHousingData[index]}
                   type="number"
                   placeholder="Cantidad de dormitorios"
                   value={personaData.vivienda.cantidad_dormitorios}
@@ -962,7 +974,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={styles.label}>
                 <span className={styles.labelText}>Estado de la vivienda *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="estado_vivienda"
                   value={personaData.vivienda.estado_vivienda || ""}
                   onChange={(e) => handleInputChange(index, 'vivienda.estado_vivienda', e.target.value)}
@@ -980,7 +992,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={`${styles.label} ${styles.alquilerLabel}`}>
                 <span className={styles.labelText}>¿Alquila? *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="alquiler"
                   value={personaData.vivienda.alquiler === true ? "Si" :
                     personaData.vivienda.alquiler === false ? "No" : ""}
@@ -998,7 +1010,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Monto del alquiler *</span>
                     <input
-                      required
+                      required={index === 0 || showHousingData[index]}
                       type="number"
                       placeholder="Monto del alquiler"
                       value={personaData.vivienda.valor_alquiler}
@@ -1010,7 +1022,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Tipo de alquiler *</span>
                     <select
-                      required
+                      required={index === 0 || showHousingData[index]}
                       name="tipo_alquiler"
                       value={personaData.vivienda.tipo_alquiler || ""}
                       onChange={(e) => handleInputChange(index, 'vivienda.tipo_alquiler', e.target.value)}
@@ -1038,7 +1050,7 @@ const Formulario = ({ onSubmit }) => {
                     <label className={styles.label}>
                       <span className={styles.labelText}>Situación laboral *</span>
                       <select
-                        required
+                        required={index === 0 || showHousingData[index]}
                         name="situacion_laboral"
                         value={ingreso.situacion_laboral || ""}
                         onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
