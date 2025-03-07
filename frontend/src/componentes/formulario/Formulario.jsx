@@ -4,10 +4,14 @@ import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
 import { transformarDatosEnvioBackend, esMenorDeEdad } from '../../services/transformDataDto';
+import { API_URL } from '../../services/registroService';
 
 const Formulario = ({ onSubmit }) => {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   }, []);
   const navigate = useNavigate();
   const agregarPersona = useRef(null);
@@ -55,6 +59,7 @@ const Formulario = ({ onSubmit }) => {
     }
   }]);
 
+  const [showHousingData, setShowHousingData] = useState(Array(personas.length).fill(false));
 
   const handleInputChange = (index, path, value) => {
     const updatedPersonas = [...personas];
@@ -222,6 +227,18 @@ const Formulario = ({ onSubmit }) => {
       return;
     }
 
+    // Validar que se haya seleccionado una opción de vivienda para cada miembro del grupo familiar
+    for (let i = 1; i < personas.length; i++) {
+      if (!showHousingData[i]) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Datos de vivienda incompletos',
+          text: `Por favor, seleccione una opción de vivienda para el familiar #${i}`,
+        });
+        return;
+      }
+    }
+
     // Validar ingresos antes de enviar
     for (const persona of personas) {
       if (!esMenorDeEdad(persona.persona.fecha_nacimiento)) {
@@ -235,7 +252,7 @@ const Formulario = ({ onSubmit }) => {
             });
             return;
           }
-   
+
           // Validar CUIT del empleador si aplica
           if (ingreso.situacion_laboral === "Relación de dependencia") {
             if (!ingreso.CUIT_empleador) {
@@ -244,7 +261,7 @@ const Formulario = ({ onSubmit }) => {
                 title: 'Error en ingresos',
                 text: 'El CUIT del empleador es requerido para trabajos en relación de dependencia',
               });
-              
+
               return;
             }
           }
@@ -335,13 +352,6 @@ const Formulario = ({ onSubmit }) => {
         }
       }
 
-      const addressValidation = personas.map((persona, index) => {
-        const localidad = persona.vivienda.localidad;
-        const direccion = persona.vivienda.direccion.trim().toUpperCase();
-        const callesValidas = callesPorLocalidad[localidad]?.map(calle => calle.trim().toUpperCase()) || [];
-        return callesValidas.includes(direccion);
-      });
-
       const cantidadDormitorios = Number(persona.vivienda.cantidad_dormitorios);
       // Validar que la cantidad de dormitorios no sea negativa
       if (isNaN(cantidadDormitorios) || cantidadDormitorios < 0) {
@@ -386,12 +396,12 @@ const Formulario = ({ onSubmit }) => {
 
     try {
       console.log(personas);
-      
+
       const datosTransformados = personas.map(persona => transformarDatosEnvioBackend(persona));
       console.log("datos trandformado", datosTransformados);
-      
 
-      const response = await fetch("http://localhost:3000/registro", {
+
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -421,7 +431,6 @@ const Formulario = ({ onSubmit }) => {
       }
 
       console.log('Registro exitoso, intentando redireccionar...');
-
 
       console.log('Navegación ejecutada');
       // Si el registro fue exitoso
@@ -502,6 +511,15 @@ const Formulario = ({ onSubmit }) => {
     });
   };
 
+  const handleMismaVivienda = (index) => {
+    const updatedPersonas = [...personas];
+    updatedPersonas[index].vivienda = { ...personas[0].vivienda };
+    setPersonas(updatedPersonas);
+    const updatedShowHousingData = [...showHousingData];
+    updatedShowHousingData[index] = true;
+    setShowHousingData(updatedShowHousingData);
+  };
+
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {personas.map((personaData, index) => (
@@ -531,8 +549,8 @@ const Formulario = ({ onSubmit }) => {
               }
             </h3>
             <div className={styles.inputGroup}>
-              
-              
+
+
               <label className={styles.label}>
                 <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
                 {index === 0 ? (
@@ -556,9 +574,6 @@ const Formulario = ({ onSubmit }) => {
                   </select>
                 )}
               </label>
-           
-
-
 
               <label className={styles.label}>
                 <span className={styles.labelText}>Nombres *</span>
@@ -779,19 +794,42 @@ const Formulario = ({ onSubmit }) => {
                 )
               }
 
-             
+
             </div>
           </div>
 
           <div className={`${styles.section} ${styles.housingData}`}>
-            <h3 className={styles.sectionTitle}>Datos de la Vivienda</h3>
-            <div className={styles.inputGroup}>
+            <h3 className={styles.sectionTitle}>Datos del domicilio</h3>
 
+            {index > 0 && !showHousingData[index] && (
+              <div className={styles.buttonGroup}>
+                <button
+                  type="button"
+                  onClick={() => handleMismaVivienda(index)}
+                  className={`${styles.button} ${styles.copyButton}`}
+                >
+                  Usar misma vivienda que el titular
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowHousingData(prev => {
+                    const updated = [...prev];
+                    updated[index] = true;
+                    return updated;
+                  })}
+                  className={`${styles.button} ${styles.newAddressButton}`}
+                >
+                  Ingresar nuevo domicilio
+                </button>
+              </div>
+            )}
+
+            <div className={`${styles.inputGroup} ${index === 0 || showHousingData[index] ? styles.visible : styles.hidden}`}>
               {/* Localidad - Nuevo orden */}
               <label className={styles.label}>
                 <span className={styles.labelText}>Localidad *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="localidad"
                   value={personaData.vivienda.localidad || ""}
                   onChange={(e) => handleInputChange(index, 'vivienda.localidad', e.target.value)}
@@ -808,78 +846,78 @@ const Formulario = ({ onSubmit }) => {
                 </select>
               </label>
 
-{/* Selección de calle */}
-<label className={styles.label}>
-  <span className={styles.labelText}>Dirección *</span>
-  {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
-    <>
-      <select
-        required
-        value={personaData.vivienda.direccion}
-        onChange={(e) => {
-          const value = e.target.value;
-          handleInputChange(index, 'vivienda.direccion', value === "Otra" ? "" : value);
-          handleInputChange(index, 'vivienda.otra_calle', value === "Otra");
-        }}
-        className={styles.select}
-      >
-        <option value="" disabled>Seleccione una dirección</option>
-        {callesPorLocalidad[personaData.vivienda.localidad]?.map((calle, i) => (
-          <option key={i} value={calle}>{calle}</option>
-        ))}
-        <option value="Otra">Otra</option>
-      </select>
+              {/* Selección de calle */}
+              <label className={styles.label}>
+                <span className={styles.labelText}>Dirección *</span>
+                {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
+                  <>
+                    <select
+                      required={index === 0 || showHousingData[index]}
+                      value={personaData.vivienda.direccion}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        handleInputChange(index, 'vivienda.direccion', value === "Otra" ? "" : value);
+                        handleInputChange(index, 'vivienda.otra_calle', value === "Otra");
+                      }}
+                      className={styles.select}
+                    >
+                      <option value="" disabled>Seleccione una dirección</option>
+                      {callesPorLocalidad[personaData.vivienda.localidad]?.map((calle, i) => (
+                        <option key={i} value={calle}>{calle}</option>
+                      ))}
+                      <option value="Otra">Otra</option>
+                    </select>
 
-      {personaData.vivienda.otra_calle && (
-        <input
-          type="text"
-          placeholder="Ingrese su calle"
-          value={personaData.vivienda.direccion}
-          onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
-          className={styles.input}
-        />
-      )}
-    </>
-  ) : (
-    <input
-      required
-      type="text"
-      placeholder="Ingrese referencia de ubicación"
-      value={personaData.vivienda.direccion || ""}
-      onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
-      className={styles.input}
-    />
-  )}
-</label>
+                    {personaData.vivienda.otra_calle && (
+                      <input
+                        type="text"
+                        placeholder="Ingrese su calle"
+                        value={personaData.vivienda.direccion}
+                        onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
+                        className={styles.input}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <input
+                    required={index === 0 || showHousingData[index]}
+                    type="text"
+                    placeholder="Ingrese referencia de ubicación"
+                    value={personaData.vivienda.direccion || ""}
+                    onChange={(e) => handleInputChange(index, 'vivienda.direccion', e.target.value)}
+                    className={styles.input}
+                  />
+                )}
+              </label>
 
-<label className={styles.label}>
-  <span className={styles.labelText}>Número</span>
-  {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
-    <input
-      required
-      type="number"
-      placeholder="Número"
-      value={personaData.vivienda.numero_direccion}
-      onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
-      className={styles.input}
-    />
-  ) : (
-    <input
-      type="number"
-      placeholder="S/N"
-      value={personaData.vivienda.numero_direccion || ""}
-      onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
-      className={styles.input}
-    />
-  )}
-</label>
+              <label className={styles.label}>
+                <span className={styles.labelText}>Número</span>
+                {callesPorLocalidad[personaData.vivienda.localidad]?.length > 0 ? (
+                  <input
+                    required={index === 0 || showHousingData[index]}
+                    type="number"
+                    placeholder="Número"
+                    value={personaData.vivienda.numero_direccion}
+                    onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
+                    className={styles.input}
+                  />
+                ) : (
+                  <input
+                    type="number"
+                    placeholder="S/N"
+                    value={personaData.vivienda.numero_direccion || ""}
+                    onChange={(e) => handleInputChange(index, 'vivienda.numero_direccion', e.target.value)}
+                    className={styles.input}
+                  />
+                )}
+              </label>
 
 
               {/* Campos restantes del original */}
               <label className={styles.label}>
                 <span className={styles.labelText}>¿Es departamento? *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="departamento"
                   value={personaData.vivienda.departamento === null ? "" :
                     personaData.vivienda.departamento ? "Si" : "No"}
@@ -897,7 +935,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Piso *</span>
                     <input
-                      required
+                      required={index === 0 || showHousingData[index]}
                       type="text"
                       placeholder="Piso"
                       value={personaData.vivienda.piso_departamento}
@@ -909,7 +947,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Departamento *</span>
                     <input
-                      required
+                      required={index === 0 || showHousingData[index]}
                       type="text"
                       placeholder="Departamento"
                       value={personaData.vivienda.numero_departamento}
@@ -923,7 +961,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={styles.label}>
                 <span className={styles.labelText}>Cantidad de dormitorios *</span>
                 <input
-                  required
+                  required={index === 0 || showHousingData[index]}
                   type="number"
                   placeholder="Cantidad de dormitorios"
                   value={personaData.vivienda.cantidad_dormitorios}
@@ -935,7 +973,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={styles.label}>
                 <span className={styles.labelText}>Estado de la vivienda *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="estado_vivienda"
                   value={personaData.vivienda.estado_vivienda || ""}
                   onChange={(e) => handleInputChange(index, 'vivienda.estado_vivienda', e.target.value)}
@@ -953,7 +991,7 @@ const Formulario = ({ onSubmit }) => {
               <label className={`${styles.label} ${styles.alquilerLabel}`}>
                 <span className={styles.labelText}>¿Alquila? *</span>
                 <select
-                  required
+                  required={index === 0 || showHousingData[index]}
                   name="alquiler"
                   value={personaData.vivienda.alquiler === true ? "Si" :
                     personaData.vivienda.alquiler === false ? "No" : ""}
@@ -971,7 +1009,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Monto del alquiler *</span>
                     <input
-                      required
+                      required={index === 0 || showHousingData[index]}
                       type="number"
                       placeholder="Monto del alquiler"
                       value={personaData.vivienda.valor_alquiler}
@@ -983,7 +1021,7 @@ const Formulario = ({ onSubmit }) => {
                   <label className={styles.label}>
                     <span className={styles.labelText}>Tipo de alquiler *</span>
                     <select
-                      required
+                      required={index === 0 || showHousingData[index]}
                       name="tipo_alquiler"
                       value={personaData.vivienda.tipo_alquiler || ""}
                       onChange={(e) => handleInputChange(index, 'vivienda.tipo_alquiler', e.target.value)}
@@ -996,7 +1034,6 @@ const Formulario = ({ onSubmit }) => {
                   </label>
                 </div>
               )}
-
             </div>
           </div>
 
@@ -1004,96 +1041,96 @@ const Formulario = ({ onSubmit }) => {
 
           {/* Sección de Ingresos */}
           {
-  !esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
-    <div className={`${styles.section} ${styles.incomeData}`}>
-      <h3 className={styles.sectionTitle}>Ingresos</h3>
-      {personaData.ingresos.map((ingreso, ingresoIndex) => (
-        <div key={ingresoIndex} className={styles.inputGroup}>
-          <label className={styles.label}>
-            <span className={styles.labelText}>Situación laboral *</span>
-            <select
-              required
-              name="situacion_laboral"
-              value={ingreso.situacion_laboral || ""}
-              onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
-              className={styles.select}
-            >
-              <option value="" disabled>Situación laboral</option>
-              <option value="Relación de dependencia">Relación de dependencia</option>
-              <option value="Autónomo">Autónomo</option>
-              <option value="Jubilado">Jubilado</option>
-              <option value="Pensionado">Pensionado</option>
-              <option value="Informal">Informal</option>
-              {/* Mostrar "Desempleado" solo si no es titular */}
-              {personaData.persona.titular_cotitular === "Conviviente"  && (
-                <option value="Desempleado">Desempleado</option>
-              )}
-            </select>
-          </label>
+            !esMenorDeEdad(personaData.persona.fecha_nacimiento) && (
+              <div className={`${styles.section} ${styles.incomeData}`}>
+                <h3 className={styles.sectionTitle}>Ingresos</h3>
+                {personaData.ingresos.map((ingreso, ingresoIndex) => (
+                  <div key={ingresoIndex} className={styles.inputGroup}>
+                    <label className={styles.label}>
+                      <span className={styles.labelText}>Situación laboral *</span>
+                      <select
+                        required={index === 0 || showHousingData[index]}
+                        name="situacion_laboral"
+                        value={ingreso.situacion_laboral || ""}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
+                        className={styles.select}
+                      >
+                        <option value="" disabled>Situación laboral</option>
+                        <option value="Relación de dependencia">Relación de dependencia</option>
+                        <option value="Autónomo">Autónomo</option>
+                        <option value="Jubilado">Jubilado</option>
+                        <option value="Pensionado">Pensionado</option>
+                        <option value="Informal">Informal</option>
+                        {/* Mostrar "Desempleado" solo si no es titular */}
+                        {personaData.persona.titular_cotitular === "Conviviente" && (
+                          <option value="Desempleado">Desempleado</option>
+                        )}
+                      </select>
+                    </label>
 
-          {/* Resto de los campos de ingresos */}
-          <label className={styles.label}>
-            <span className={styles.labelText}>Ocupación</span>
-            <input
-              type="text"
-              placeholder="Ocupación"
-              value={ingreso.ocupacion || ""}
-              onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
-              className={styles.input}
-              required={ingreso.situacion_laboral === "Relación de dependencia" || ingreso.situacion_laboral === "Autónomo" || ingreso.situacion_laboral=== "Informal"}
-            />
-          </label>
+                    {/* Resto de los campos de ingresos */}
+                    <label className={styles.label}>
+                      <span className={styles.labelText}>Ocupación</span>
+                      <input
+                        type="text"
+                        placeholder="Ocupación"
+                        value={ingreso.ocupacion || ""}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
+                        className={styles.input}
+                        required={ingreso.situacion_laboral === "Relación de dependencia" || ingreso.situacion_laboral === "Autónomo" || ingreso.situacion_laboral === "Informal"}
+                      />
+                    </label>
 
-          {/* CUIT del empleador condicionado */}
-          {ingreso.situacion_laboral === "Relación de dependencia" && (
-            <label className={styles.label}>
-              <span className={styles.labelText}>CUIT del empleador *</span>
-              <input
-                type="text"
-                placeholder="CUIT del empleador"
-                value={ingreso.CUIT_empleador || ""}
-                onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
-                className={styles.input}
-                required
-                 maxLength="11"
-              />
-            </label>
-          )}
+                    {/* CUIT del empleador condicionado */}
+                    {ingreso.situacion_laboral === "Relación de dependencia" && (
+                      <label className={styles.label}>
+                        <span className={styles.labelText}>CUIT del empleador *</span>
+                        <input
+                          type="text"
+                          placeholder="CUIT del empleador"
+                          value={ingreso.CUIT_empleador || ""}
+                          onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
+                          className={styles.input}
+                          required
+                          maxLength="11"
+                        />
+                      </label>
+                    )}
 
-          <label className={styles.label}>
-            <span className={styles.labelText}>Ingreso mensual</span>
-            <input
-              type="number"
-              placeholder="Ingreso mensual"
-              value={ingreso.salario}
-              onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
-              className={styles.input}
-              required={ingreso.situacion_laboral !== "Desempleado"}
-            />
-          </label>
-        </div>
-      ))}
-      <div className={styles.ingresoButtonGroup}>
-        <button
-          type="button"
-          onClick={() => addIngreso(index)}
-          className={`${styles.button} ${styles.addButton}`}
-        >
-          Añadir otro ingreso
-        </button>
-        {personaData.ingresos.length > 1 && (
-          <button
-            type="button"
-            onClick={() => cancelarUltimoIngreso(index)}
-            className={`${styles.button} ${styles.cancelButton}`}
-          >
-            Cancelar Último Ingreso
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
+                    <label className={styles.label}>
+                      <span className={styles.labelText}>Ingreso mensual</span>
+                      <input
+                        type="number"
+                        placeholder="Ingreso mensual"
+                        value={ingreso.salario}
+                        onChange={(e) => handleInputChange(index, `ingresos.${ingresoIndex}.salario`, e.target.value)}
+                        className={styles.input}
+                        required={ingreso.situacion_laboral !== "Desempleado"}
+                      />
+                    </label>
+                  </div>
+                ))}
+                <div className={styles.ingresoButtonGroup}>
+                  <button
+                    type="button"
+                    onClick={() => addIngreso(index)}
+                    className={`${styles.button} ${styles.addButton}`}
+                  >
+                    Añadir otro ingreso
+                  </button>
+                  {personaData.ingresos.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => cancelarUltimoIngreso(index)}
+                      className={`${styles.button} ${styles.cancelButton}`}
+                    >
+                      Cancelar Último Ingreso
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          }
           <div className={styles.sectionDivider} />
 
           {/* Sección de Lote */}
