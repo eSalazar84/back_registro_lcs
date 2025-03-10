@@ -196,7 +196,7 @@ export class PdfService {
                 yPosition = this.addFieldAligned(doc, 'Nacionalidad:', nacionalidad, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Email:', email, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Teléfono:', telefono, yPosition);
-                yPosition = this.addFieldAligned(doc, 'Posee cert. de discapacidad:', certificado_discapacidad ? 'Sí' : 'No', yPosition);
+                yPosition = this.addFieldAligned(doc, 'Posee cert. disc.:', certificado_discapacidad ? 'Sí' : 'No', yPosition);
 
 
                 if (data.indexOf(personaData) > 0) {
