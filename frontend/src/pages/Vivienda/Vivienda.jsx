@@ -3,6 +3,9 @@ import { useParams } from 'react-router-dom';
 import styles from './vivienda.module.css';
 import Swal from 'sweetalert2';
 import { fetchViviendaById, getRegistroDeudorBcra } from '../../services/registroService';
+import { formatPeriodo } from '../../services/transformDataDto';
+import ClasificacionDeudor from '../../componentes/clasificacionDeudor/ClasificacionDeudor';
+
 const Vivienda = () => {
   const { id } = useParams();
   const [viviendaData, setViviendaData] = useState(null);
@@ -21,7 +24,7 @@ const Vivienda = () => {
           console.log('Datos deudor bcra:', deudorBcra);
           // Extraer solo los campos necesarios
           const morosidadInfo = deudorBcra.results.periodos.map((periodo) => ({
-            deuda: periodo.entidades[0].deudaTotal,
+            deuda: periodo.entidades[0].monto,
             entidad: periodo.entidades[0].entidad,
             periodo: periodo.periodo,
             situacion: periodo.entidades[0].situacion,
@@ -123,10 +126,10 @@ const Vivienda = () => {
                     <div>
                       {morosidadData[habitante.persona.idPersona].map((info, index) => (
                         <div key={index}>
-                          <p><strong>Ultimo Período Informado:</strong> {info.periodo}</p>
-                          <p><strong>Entidad:</strong> BCRA</p>
-                          <p><strong>Deuda:</strong> ${formatMoney(info.deuda)}</p>
-                          <p><strong>Clasificacion Deudor:</strong> {info.situacion}</p>
+                          <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
+                          <p><strong>Entidad:</strong> {info.entidad}</p>
+                          <p><strong>Deuda:</strong> ${formatMoney(info.deuda) + '.000'}</p>
+                          <ClasificacionDeudor situacion={info.situacion} />
                           <p><strong>En Proceso Judicial:</strong> {info.procesoJud ? 'Sí' : 'No'}</p>
                           <hr /> {/* Separador entre períodos */}
                         </div>

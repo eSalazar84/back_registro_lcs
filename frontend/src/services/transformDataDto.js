@@ -103,3 +103,9 @@ export function transformarDatosEnvioBackend(data) {
         vivienda: transformarVivienda(datosProcesados.vivienda),
     };
 }
+
+export const formatPeriodo = (periodo) => {
+    const year = periodo.substring(0, 4);
+    const month = periodo.substring(4, 6);
+    return `${month}/${year}`;
+}
