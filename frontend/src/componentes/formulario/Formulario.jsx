@@ -432,7 +432,6 @@ const Formulario = ({ onSubmit }) => {
 
       console.log('Registro exitoso, intentando redireccionar...');
 
-
       console.log('Navegación ejecutada');
       // Si el registro fue exitoso
       await Swal.fire({
