@@ -57,7 +57,7 @@ export class RegistroService {
   
               console.log(`🔍 Verificando vivienda: ${viviendaKey}`);
               // Verificar solo si la localidad no es "El Luchador"
-              if (vivienda.localidad !== 'El Luchador' && !viviendasVerificadas[viviendaKey]) {
+              if (vivienda.localidad !== 'El Luchador' && vivienda.localidad !== 'Coronel Rodolfo Bunge' && !viviendasVerificadas[viviendaKey]) {
                   const viviendaFound = await queryRunner.manager.findOne(Vivienda, { 
                       where: { 
                           direccion: vivienda.direccion,
