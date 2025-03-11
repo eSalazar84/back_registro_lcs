@@ -263,6 +263,14 @@ const Formulario = ({ onSubmit }) => {
               });
 
               return;
+              return;
+            } else if (!/^\d{11}$/.test(ingreso.CUIT_empleador)) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error en ingresos',
+                text: 'El CUIT del empleador debe tener 11 dígitos numéricos.',
+              });
+              return;
             }
           }
         }
