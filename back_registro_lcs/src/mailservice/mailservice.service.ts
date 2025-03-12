@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import * as fs from 'fs';
 import { PdfService } from './pdf_document/pdf.service';
-import { template } from 'handlebars';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
 
@@ -13,8 +12,8 @@ export class MailserviceService {
     private transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: 'somos.agrotech@gmail.com',
-            pass: 'qeez xykd olcr gscn'
+            user: 'no-responder@benitojuarez.gov.ar',
+            pass: 'hgme mjqn igos kywi'
         },
         secure: false,
     });

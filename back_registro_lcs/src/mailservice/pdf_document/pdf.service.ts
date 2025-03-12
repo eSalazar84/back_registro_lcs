@@ -54,8 +54,8 @@ export class PdfService {
                 // Constantes para el encabezado
                 const headerHeight = 130; // Altura total del encabezado
                 const baseYPosition = 20; // Posición Y inicial
-                const logoContainerSize = 85; // Tamaño del contenedor azul
-                const logoSize = 65; // Tamaño del logo
+                const logoContainerSize = 80; // Tamaño del contenedor azul
+                const logoSize = 75; // Tamaño del logo
                 const borderRadius = 8;
                 const titleStartX = 160; // Posición X donde empiezan los títulos
 
