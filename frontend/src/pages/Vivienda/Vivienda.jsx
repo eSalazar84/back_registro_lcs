@@ -128,7 +128,7 @@ const Vivienda = () => {
                         <div key={index}>
                           <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
                           <p><strong>Entidad:</strong> {info.entidad}</p>
-                          <p><strong>Deuda:</strong> ${formatMoney(info.deuda) + '.000'}</p>
+                          {/* <p><strong>Deuda:</strong> ${formatMoney(info.deuda) + '.000'}</p> */}
                           <ClasificacionDeudor situacion={info.situacion} />
                           <p><strong>En Proceso Judicial:</strong> {info.procesoJud ? 'Sí' : 'No'}</p>
                           <hr /> {/* Separador entre períodos */}
