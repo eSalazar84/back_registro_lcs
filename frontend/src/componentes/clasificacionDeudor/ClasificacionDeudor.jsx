@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './clasificacionDeudor.module.css';
 import { clasificacionesDeudor } from '../../services/clasificacionDeudor';
 
 const ClasificacionDeudor = ({ situacion }) => {
@@ -8,15 +9,11 @@ const ClasificacionDeudor = ({ situacion }) => {
     };
 
     return (
-        <div>
-            <p>
-                <strong>Clasificación Deudor:</strong>{' '}
-                <span style={{ color: clasificacion.color, fontWeight: 'bold' }}>
-                    {situacion}
-                </span>{' '}
-                - {clasificacion.descripcion}
-            </p>
-        </div>
+        <p style={{ color: clasificacion.color }}>
+            <strong className={styles.titleDeudor}>Clasificación Deudor:</strong>{' '}
+            <span className={styles.numeroClasificacion}>{situacion}</span>{' '}
+            <span className={styles.textoClasificacion}>- {clasificacion.descripcion}</span>
+        </p>
     );
 };
 
