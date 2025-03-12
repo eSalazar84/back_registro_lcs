@@ -246,7 +246,7 @@ const Dashboard = () => {
             onChange={handleFiltroChange}
             className={styles.filtroSelect}
           >
-            <option value="">Localidad Vivienda</option>
+            <option value="">Localidad Hogar</option>
             <option value="Benito Juarez">Benito Juárez</option>
             <option value="Barker">Barker</option>
             <option value="Villa Cacique">Villa Cacique</option>
@@ -325,7 +325,7 @@ const Dashboard = () => {
                         className={styles.viviendaButton}
                         onClick={() => handleVivienda(getSafeValue(registro, 'vivienda.idVivienda'))}
                       >
-                        Ver vivienda
+                        Ver hogar
                       </button>
                     </div>
                   </td>

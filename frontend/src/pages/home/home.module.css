@@ -266,6 +266,20 @@
     color: #991b1b;
 }
 
+.modern_button_secondary{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: #f8fafc;
+    color: #2563eb;
+    border: 2px solid #2563eb;
+}
+
 /* Buttons */
 .container_buttons_home {
     display: flex;

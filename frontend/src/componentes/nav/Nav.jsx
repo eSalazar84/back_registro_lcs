@@ -22,7 +22,7 @@ function Nav() {
                 </div>
 
                 <div className={styles.container_h2_nav}>
-                    <h2>LOTES CON SERVICIOS</h2>
+                    <h2>Programa Mi Hábitat, mi Hogar</h2>
                 </div>
 
                 <div className={styles.container_redes}>
