@@ -77,7 +77,7 @@ export const fetchViviendaById = async (id) => {
     }
     const data = await response.json();
     console.log("data", data);
-    
+
 
     // Ahora, directamente accedemos a data
     if (!data || !data.data) {
@@ -91,3 +91,29 @@ export const fetchViviendaById = async (id) => {
 
 }
 
+export const getRegistroDeudorBcra = async (cuilCuit) => {
+  try {
+    // URL de la API de BCRA
+    const url = `https://api.bcra.gob.ar/CentralDeDeudores/v1.0/Deudas/${cuilCuit}`;
+    console.log('Realizando solicitud a la API de BCRA:', url);
+    // Realizar la solicitud fetch
+    const res = await fetch(url);
+    // Verificar si la respuesta es exitosa
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error('Error en la respuesta de la API de BCRA:', {
+        status: res.status,
+        statusText: res.statusText,
+        errorData,
+      });
+      throw new Error("Error al obtener el registro de deudor en BCRA");
+    }
+    // Procesar la respuesta JSON
+    const data = await res.json();
+    console.log('Datos recibidos de la API de BCRA:', data);
+    return data;
+  } catch (error) {
+    console.error('Error en la solicitud fetch:', error);
+    throw new Error(error.message);
+  }
+};

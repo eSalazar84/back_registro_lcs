@@ -54,14 +54,14 @@ export class PdfService {
                 // Constantes para el encabezado
                 const headerHeight = 130; // Altura total del encabezado
                 const baseYPosition = 20; // Posición Y inicial
-                const logoContainerSize = 85; // Tamaño del contenedor azul
-                const logoSize = 65; // Tamaño del logo
+                const logoContainerSize = 80; // Tamaño del contenedor azul
+                const logoSize = 75; // Tamaño del logo
                 const borderRadius = 8;
                 const titleStartX = 160; // Posición X donde empiezan los títulos
 
-                // Crear el fondo gris claro del encabezado
+                // Crear el fondo azul del encabezado
                 doc.rect(0, 0, doc.page.width, headerHeight)
-                   .fill(this.colors.lightBg);
+                   .fill('#002b5a'); // Color de fondo azul
 
                 // Contenedor azul del logo
                 doc.roundedRect(
@@ -84,19 +84,19 @@ export class PdfService {
                 );
 
                 // Calcular posiciones Y para los títulos
-                const titleY = baseYPosition + 15;
-                const subtitleY = titleY + 25;
+                const titleY = baseYPosition + 15; // Posición Y para el título
+                const subtitleY = titleY + 25; // Posición Y para el subtítulo
 
                 // Título principal
                 doc.font('Helvetica-Bold')
                    .fontSize(20)
-                   .fillColor(this.colors.primary)
+                   .fillColor('#ffffff') // Color del texto en blanco
                    .text('Comprobante de Registro', titleStartX, titleY);
 
                 // Subtítulo
                 doc.font('Helvetica')
                    .fontSize(14)
-                   .fillColor(this.colors.accent)
+                   .fillColor('#ffffff') // Color del texto en blanco
                    .text('Programa "Mi hábitat, mi hogar"', titleStartX, subtitleY);
 
                 // Línea divisoria
