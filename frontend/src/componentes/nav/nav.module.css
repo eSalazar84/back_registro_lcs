@@ -2,7 +2,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100vw; /* Ocupa el ancho completo de la pantalla */
     height: 92px; /* Altura de la barra */
     padding: 0 20px; /* Espaciado interno */
     box-sizing: border-box; /* Incluye el padding en el ancho y alto */
