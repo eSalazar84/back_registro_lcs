@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3000/auth"; // URL del backend
+const API_URL = import.meta.env.VITE_API_AUTH // URL del backend
+console.log("api_url_auth", API_URL);
+
 
 export const loginUser = async (email, password) => {
   const response = await fetch(`${API_URL}/login`, {
