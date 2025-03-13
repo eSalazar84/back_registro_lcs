@@ -27,7 +27,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     getRegistros();
-    console.log(registros); // Verifica la estructura de los datos
+    console.log("registros en el dashboar",registros); // Verifica la estructura de los datos
   }, []);
 
   const handleLogout = () => {
