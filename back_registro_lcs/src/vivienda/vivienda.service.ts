@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
 import { FindOneOptions, Not, Repository } from 'typeorm';
 import { Localidad } from './enum/localidad.enum';
-import { log } from 'console';
+
 
 
 @Injectable()
