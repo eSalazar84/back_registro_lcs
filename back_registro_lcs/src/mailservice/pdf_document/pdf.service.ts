@@ -45,38 +45,73 @@ export class PdfService {
             doc.pipe(stream);
 
             // --- ENCABEZADO ---
-            doc.rect(0, 0, doc.page.width, 120).fill(this.colors.lightBg);
-
             try {
                 const imageUrl = 'https://res.cloudinary.com/dnzpobyip/image/upload/v1739280883/logo_muni_2024.png';
                 const response = await fetch(imageUrl);
                 if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-
                 const imageBuffer = Buffer.from(await response.arrayBuffer());
-                doc.image(imageBuffer, this.leftMargin, 40, { width: 80 });
 
-                // Título
+                // Constantes para el encabezado
+                const headerHeight = 130; // Altura total del encabezado
+                const baseYPosition = 20; // Posición Y inicial
+                const logoContainerSize = 80; // Tamaño del contenedor azul
+                const logoSize = 75; // Tamaño del logo
+                const borderRadius = 8;
+                const titleStartX = 160; // Posición X donde empiezan los títulos
+
+                // Crear el fondo azul del encabezado
+                doc.rect(0, 0, doc.page.width, headerHeight)
+                   .fill('#002b5a'); // Color de fondo azul
+
+                // Contenedor azul del logo
+                doc.roundedRect(
+                    this.leftMargin,
+                    baseYPosition,
+                    logoContainerSize,
+                    logoContainerSize,
+                    borderRadius
+                )
+                .fill('#002b5a');
+
+                // Centrar el logo en el contenedor azul
+                const logoOffset = (logoContainerSize - logoSize) / 2;
+                doc.image(imageBuffer,
+                    this.leftMargin + logoOffset,
+                    baseYPosition + logoOffset,
+                    {
+                        width: logoSize
+                    }
+                );
+
+                // Calcular posiciones Y para los títulos
+                const titleY = baseYPosition + 15; // Posición Y para el título
+                const subtitleY = titleY + 25; // Posición Y para el subtítulo
+
+                // Título principal
                 doc.font('Helvetica-Bold')
-                    .fontSize(20)
-                    .fillColor(this.colors.primary)
-                    .text('Comprobante de Registro', 150, 50)
-                    .font('Helvetica')
-                    .fontSize(14)
-                    .fillColor(this.colors.accent)
-                    .text('Programa "Mi hábitat, mi hogar"', 150, 75);
+                   .fontSize(20)
+                   .fillColor('#ffffff') // Color del texto en blanco
+                   .text('Comprobante de Registro', titleStartX, titleY);
+
+                // Subtítulo
+                doc.font('Helvetica')
+                   .fontSize(14)
+                   .fillColor('#ffffff') // Color del texto en blanco
+                   .text('Programa "Mi hábitat, mi hogar"', titleStartX, subtitleY);
+
+                // Línea divisoria
+                doc.moveTo(this.leftMargin, headerHeight)
+                   .lineTo(doc.page.width - this.leftMargin, headerHeight)
+                   .lineWidth(2)
+                   .strokeColor(this.colors.secondary)
+                   .stroke();
 
             } catch (error) {
                 console.error('Error al cargar el logo:', error);
             }
-
-            // Línea decorativa
-            doc.moveTo(this.leftMargin, 120)
-                .lineTo(doc.page.width - this.leftMargin, 120)
-                .lineWidth(2)
-                .strokeColor(this.colors.secondary)
-                .stroke();
-
-            let yPosition = 140;
+            // Posición inicial para el contenido siguiente
+            const headerHeight = 150; // Definir altura del encabezado
+            let yPosition = headerHeight + 20;
 
             // --- CUERPO PRINCIPAL ---
             for (const personaData of data) {
@@ -124,20 +159,20 @@ export class PdfService {
                     doc.font('Helvetica-Bold')
                         .fontSize(12)
                         .fillColor(this.colors.primary)
-                        .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 20, { width: halfWidth, align: 'center' })
+                        .text('NÚMERO DE REGISTRO:', this.leftMargin, yPosition + 15, { width: halfWidth, align: 'center' })
                         .fontSize(16)
                         .fillColor(this.colors.secondary)
-                        .text(numero_registro || 'N/D', this.leftMargin, yPosition + 40, { width: halfWidth, align: 'center' });
+                        .text(numero_registro || 'N/D', this.leftMargin, yPosition + 35, { width: halfWidth, align: 'center' });
 
                     // Localidad del lote (segunda mitad)
                     doc.font('Helvetica-Bold')
                         .fontSize(12)
                         .fillColor(this.colors.primary)
-                        .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 20, { width: halfWidth, align: 'center' })
+                        .text('LOCALIDAD DEL LOTE:', this.leftMargin + halfWidth, yPosition + 15, { width: halfWidth, align: 'center' })
                         //.font('Helvetica')
                         .fontSize(16)
                         .fillColor(this.colors.secondary)
-                        .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 40, { width: halfWidth, align: 'center' });
+                        .text(lote?.localidad || 'N/D', this.leftMargin + halfWidth, yPosition + 35, { width: halfWidth, align: 'center' });
 
                     yPosition += 90;
                 }
@@ -161,7 +196,7 @@ export class PdfService {
                 yPosition = this.addFieldAligned(doc, 'Nacionalidad:', nacionalidad, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Email:', email, yPosition);
                 yPosition = this.addFieldAligned(doc, 'Teléfono:', telefono, yPosition);
-                yPosition = this.addFieldAligned(doc, 'Posee cert. de discapacidad:', certificado_discapacidad ? 'Sí' : 'No', yPosition);
+                yPosition = this.addFieldAligned(doc, 'Posee cert. disc.:', certificado_discapacidad ? 'Sí' : 'No', yPosition);
 
 
                 if (data.indexOf(personaData) > 0) {
@@ -175,7 +210,7 @@ export class PdfService {
                     doc.font('Helvetica-Bold')
                         .fontSize(14)
                         .fillColor(this.colors.accent)
-                        .text('DATOS DE LA VIVIENDA', this.leftMargin, yPosition, { underline: true });
+                        .text('DATOS DEL DOMICILIO', this.leftMargin, yPosition, { underline: true });
                     yPosition += this.lineHeight + 10;
 
                     yPosition = this.addFieldAligned(doc, 'Dirección:', `${vivienda.direccion} ${vivienda.numero_direccion}`, yPosition);
@@ -210,7 +245,7 @@ export class PdfService {
 
                     if (ingresos.length > 0) {
                         ingresos.forEach((ingreso, index) => {
-                            yPosition = this.addFieldAligned(doc, `Empleador ${index + 1}:`, ingreso.ocupacion, yPosition);
+                            yPosition = this.addFieldAligned(doc, `Ocupación ${index + 1}:`, ingreso.ocupacion, yPosition);
                             yPosition = this.addFieldAligned(doc, 'CUIT:', ingreso.CUIT_empleador, yPosition);
                             yPosition = this.addFieldAligned(doc, 'Salario:', `$${ingreso.salario?.toLocaleString('es-AR')}`, yPosition);
                             yPosition += 10;
