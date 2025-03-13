@@ -5,20 +5,23 @@ import * as fs from 'fs';
 import { PdfService } from './pdf_document/pdf.service';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
+import { ConfigService } from '@nestjs/config';
+
 
 
 @Injectable()
 export class MailserviceService {
     private transporter = nodemailer.createTransport({
-        service: 'gmail',
+
+        service:  this.configService.get<string>('EMAIL_SERVICE'),
         auth: {
-            user: 'no-responder@benitojuarez.gov.ar',
-            pass: 'hgme mjqn igos kywi'
+            user: this.configService.get<string>('EMAIL_USER'),
+            pass: this.configService.get<string>('EMAIL_PASSWORD')
         },
         secure: false,
     });
 
-    constructor(private readonly pdfService: PdfService) { }
+    constructor(private readonly pdfService: PdfService,  private readonly configService: ConfigService) { }
 
     async sendRegisterEmail(to: string, nombreTitular: string, numero_registro: number, data: any[]) {
         try {
@@ -31,7 +34,7 @@ export class MailserviceService {
             const pdfPath = await this.pdfService.generateRegistrationPDF(data);
 
             const mailOptions = {
-                from: '"no-responder" <somos.agrotech@gmail.com>',
+                from: '"no-responder" <no-responder@benitojuarez.gov.ar>',
                 to,
                 subject: `🏠 Registro al Programa 'Mi Hábitat, Mi Hogar'`,
                 html: template({ nombreTitular, numero_registro }),

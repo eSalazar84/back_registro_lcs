@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
 import { transformarDatosEnvioBackend, esMenorDeEdad } from '../../services/transformDataDto';
-import { API_URL } from '../../services/registroService';
+const API_URL = import.meta.env.VITE_API_REGISTRO;
+
 
 const Formulario = ({ onSubmit }) => {
   useEffect(() => {
