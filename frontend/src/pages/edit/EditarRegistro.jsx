@@ -92,20 +92,20 @@ const EditarRegistro = () => {
         ...ingreso, // Mantener todos los datos del ingreso
         idIngreso: ingreso.idIngreso // Asegurarse de que el idIngreso se incluya
       }));
-  
+
       // Agregar otros datos si es necesario
       const datosParaEnviar = {
         ...formData, // Los demás datos del formulario
         ingresos: datosTransformados, // Los ingresos con el idIngreso intacto
       };
-  
+
       console.log("Datos transformados a enviar:", datosParaEnviar);
       const datosTranformadosEnviar = transformarDatosEnvioBackend(datosParaEnviar)
-  
+
       // Llama a la función updateRegistroById con los datos transformados
       const response = await updateRegistroById(id, datosTranformadosEnviar);
       console.log("Respuesta de la actualización:", response);
-  
+
       // Verifica si la respuesta es exitosa
       if (response && response.status === 200) {
         Swal.fire({
@@ -119,7 +119,7 @@ const EditarRegistro = () => {
       }
     } catch (error) {
       console.error('Error al actualizar:', error);
-  
+
       // Verifica si el error es de tipo "Conflict" o "InternalServerError"
       if (error.response && error.response.status === 409) {
         Swal.fire({
@@ -143,7 +143,7 @@ const EditarRegistro = () => {
       }
     }
   };
-  
+
 
   // Mientras cargamos los datos
   // if (loading) {
@@ -256,14 +256,19 @@ const EditarRegistro = () => {
               onChange={(e) => handleChange('persona', e)}
               className={styles.select}
             >
-              <option value="">Seleccione nacionalidad</option>
+              <option value="" disabled>Seleccione nacionalidad</option>
               <option value="Argentina">Argentina</option>
+              <option value="Bolivia">Bolivia</option>
               <option value="Chilena">Chilena</option>
-              <option value="Uruguaya">Uruguaya</option>
               <option value="Paraguaya">Paraguaya</option>
-              <option value="Boliviana">Boliviana</option>
+              <option value="Uruguaya">Uruguaya</option>
+              <option value="Peruana">Peruana</option>
               <option value="Brasileña">Brasileña</option>
-              <option value="Otra">Otra</option>
+              <option value="Venezolana">Venezolana</option>
+              <option value="Colombiana">Colombiana</option>
+              <option value="Española">Española</option>
+              <option value="Italiana">Italiana</option>
+              <option value="Otro">Otro</option>
             </select>
           </label>
         </div>
@@ -398,6 +403,7 @@ const EditarRegistro = () => {
                 value={ingreso.CUIT_empleador ?? ""}
                 onChange={(e) => handleIngresoChange(index, e)}
                 className={styles.input}
+                maxLength="11"
               />
             </label>
 
@@ -428,14 +434,14 @@ const EditarRegistro = () => {
         >
           Agregar Ingreso
         </button>
-        
+
         <button type="submit" className={styles.submitButton}>
-        Guardar Cambios
-      </button>
+          Guardar Cambios
+        </button>
       </div>
 
       {/* Botón de envío */}
-      
+
     </form>
   );
 };

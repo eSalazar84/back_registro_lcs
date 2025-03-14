@@ -6,7 +6,7 @@ export function transformarVivienda(data) {
 
         direccion: String(data.direccion),
         numero_direccion: 
-            data.numero_direccion === "S/N" || data.numero_direccion?.trim() === "" 
+            data.numero_direccion === "S/N" || data.numero_direccion === "" 
                 ? 0 // Transformar a 0 si está vacío o es "S/N"
                 : Number(data.numero_direccion), // Convertir a número
         

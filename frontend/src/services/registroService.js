@@ -1,4 +1,9 @@
-export const API_URL = "http://localhost:3000/registro"; // Ajusta la URL según tu backend
+
+const API_URL = import.meta.env.VITE_API_REGISTRO;
+
+console.log("API_URL", API_URL);
+
+
 
 export const fetchRegistros = async () => {
   try {
