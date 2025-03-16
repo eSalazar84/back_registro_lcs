@@ -282,7 +282,8 @@
 }
 
 .modern_button,
-.modern_button_primary {
+.modern_button_primary,
+.modern_button_location {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -303,8 +304,14 @@
     color: white;
 }
 
+.modern_button_location {
+    background-color: #162230;
+    color: white;
+}
+
 .modern_button:hover,
-.modern_button_primary:hover {
+.modern_button_primary:hover,
+.modern_button_location:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }

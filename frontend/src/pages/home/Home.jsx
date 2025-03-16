@@ -1,6 +1,6 @@
 import styles from "./home.module.css"
 import { Link } from "react-router-dom"
-import { ArrowRight, CheckCircle, Info, Users, FileText, Leaf } from "lucide-react"
+import { ArrowRight, CheckCircle, Info, Users, FileText, Leaf, MapPin } from "lucide-react"
 
 function Home() {
   return (
@@ -8,7 +8,7 @@ function Home() {
       <div className={styles.container_general_home}>
         <div className={styles.hero_section}>
           <div className={styles.h2_home}>
-            <h2>Programa Mi Hábitat, mi Hogar</h2>
+            <h2>Registro de demanda socio habitacional</h2>
             <p className={styles.hero_subtitle}>Construyendo el futuro de nuestra comunidad</p>
           </div>
         </div>
@@ -132,15 +132,21 @@ function Home() {
         </div>
 
         <div className={styles.container_buttons_home}>
+          <a href="/" className={styles.button_link}>
+            <div className={styles.modern_button_location}>
+              <span>Ubicación de los Lotes</span>
+              <MapPin className={styles.button_icon} />
+            </div>
+          </a>
           <Link to={"/bases-y-condiciones"} className={styles.button_link}>
             <div className={styles.modern_button}>
-              <span>Bases y condiciones</span>
+              <span>Requisitos Generales</span>
               <FileText className={styles.button_icon} />
             </div>
           </Link>
           <Link to={"/registro"} className={styles.button_link}>
             <div className={styles.modern_button_primary}>
-              <span>Ingreso al Registro</span>
+              <span>Ingreso al Registro Lotes</span>
               <ArrowRight className={styles.button_icon} />
             </div>
           </Link>
