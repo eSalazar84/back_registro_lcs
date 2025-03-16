@@ -132,12 +132,12 @@ function Home() {
         </div>
 
         <div className={styles.container_buttons_home}>
-        <Link to={"/bases-y-condiciones"} className={styles.button_link}>
-            <div className={styles.modern_button_secondary}>
+          <a href="/" className={styles.button_link}>
+            <div className={styles.modern_button_location}>
               <span>Ubicación de los Lotes</span>
               <MapPin className={styles.button_icon} />
             </div>
-          </Link>
+          </a>
           <Link to={"/bases-y-condiciones"} className={styles.button_link}>
             <div className={styles.modern_button}>
               <span>Requisitos Generales</span>

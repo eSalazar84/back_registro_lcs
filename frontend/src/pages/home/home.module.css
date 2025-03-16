@@ -266,20 +266,6 @@
     color: #991b1b;
 }
 
-.modern_button_secondary{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    border-radius: var(--border-radius-md);
-    font-weight: 500;
-    transition: transform 0.2s, box-shadow 0.2s;
-    background: #f8fafc;
-    color: #2563eb;
-    border: 2px solid #2563eb;
-}
-
 /* Buttons */
 .container_buttons_home {
     display: flex;
@@ -296,7 +282,8 @@
 }
 
 .modern_button,
-.modern_button_primary {
+.modern_button_primary,
+.modern_button_location {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -317,8 +304,14 @@
     color: white;
 }
 
+.modern_button_location {
+    background-color: #162230;
+    color: white;
+}
+
 .modern_button:hover,
-.modern_button_primary:hover {
+.modern_button_primary:hover,
+.modern_button_location:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }

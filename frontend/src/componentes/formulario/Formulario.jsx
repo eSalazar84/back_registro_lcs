@@ -836,7 +836,7 @@ const Formulario = ({ onSubmit }) => {
             <div className={`${styles.inputGroup} ${index === 0 || showHousingData[index] ? styles.visible : styles.hidden}`}>
               {/* Localidad - Nuevo orden */}
               <label className={styles.label}>
-                <span className={styles.labelText}>Localidad *</span>
+                <span className={styles.labelText}>Localidad donde residís *</span>
                 <select
                   required={index === 0 || showHousingData[index]}
                   name="localidad"
