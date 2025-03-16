@@ -115,6 +115,10 @@
   border-top: 1px solid #DEE2E6;
 }
 
+.morosidadSection_italic{
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 10px;
