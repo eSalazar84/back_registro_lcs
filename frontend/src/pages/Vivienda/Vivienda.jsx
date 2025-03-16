@@ -23,13 +23,15 @@ const Vivienda = () => {
           const deudorBcra = await getRegistroDeudorBcra(habitante.persona.CUIL_CUIT);
           console.log('Datos deudor bcra:', deudorBcra);
           // Extraer solo los campos necesarios
-          const morosidadInfo = deudorBcra.results.periodos.map((periodo) => ({
-            deuda: periodo.entidades[0].monto,
-            entidad: periodo.entidades[0].entidad,
-            periodo: periodo.periodo,
-            situacion: periodo.entidades[0].situacion,
-            procesoJud: periodo.entidades[0].procesoJud,
-          }));
+          const morosidadInfo = deudorBcra.results.periodos.flatMap((periodo) => 
+            periodo.entidades.map((entidad) => ({
+              deuda: entidad.monto,
+              entidad: entidad.entidad,
+              periodo: periodo.periodo,
+              situacion: entidad.situacion,
+              procesoJud: entidad.procesoJud,
+            }))
+          );
           return { idPersona: habitante.persona.idPersona, morosidad: morosidadInfo };
         } catch (error) {
           console.error(`Error al obtener morosidad para ${habitante.persona.CUIL_CUIT}:`, error);
@@ -60,7 +62,7 @@ const Vivienda = () => {
     return <div className={styles.loading}>Cargando...</div>;
   }
   if (!viviendaData) {
-    return <div className={styles.error}>No se encontraron datos de la vivienda</div>;
+    return <div className={styles.error}>No se encontraron datos del hogar</div>;
   }
   const formatMoney = (amount) => {
     return amount?.toLocaleString('es-AR', {
@@ -70,10 +72,10 @@ const Vivienda = () => {
   };
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Datos de la Vivienda</h2>
+      <h2 className={styles.title}>Datos del hogar</h2>
       {/* Información de la Vivienda */}
       <div className={styles.section}>
-        <h3>Detalles de la Vivienda</h3>
+        <h3>Detalles del hogar</h3>
         <div className={styles.viviendaInfo}>
           <p><strong>Dirección:</strong> {viviendaData.vivienda.direccion} {viviendaData.vivienda.numero_direccion}</p>
           <p><strong>Localidad:</strong> {viviendaData.vivienda.localidad}</p>
@@ -121,17 +123,17 @@ const Vivienda = () => {
                 </div>
                 {/* Morosidad */}
                 <div className={styles.morosidadSection}>
-                  <h5>Morosidad</h5>
+                  <h5>Morosidad <span className={styles.morosidadSection_italic}>(información extraída del Banco Central)</span></h5>
                   {morosidadData[habitante.persona.idPersona] ? (
                     <div>
-                      {morosidadData[habitante.persona.idPersona].map((info, index) => (
+                      {morosidadData[habitante.persona.idPersona].map((info, index, array) => (
                         <div key={index}>
-                          <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
                           <p><strong>Entidad:</strong> {info.entidad}</p>
-                          {/* <p><strong>Deuda:</strong> ${formatMoney(info.deuda) + '.000'}</p> */}
+                          <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
+                          {/* <p><strong>Deuda:</strong> ${formatMoney(info.deuda)}</p> */}
                           <ClasificacionDeudor situacion={info.situacion} />
                           <p><strong>En Proceso Judicial:</strong> {info.procesoJud ? 'Sí' : 'No'}</p>
-                          <hr /> {/* Separador entre períodos */}
+                          {array.length > 1 && index < array.length - 1 && <hr />} {/* Separador entre períodos */}
                         </div>
                       ))}
                     </div>
@@ -142,7 +144,7 @@ const Vivienda = () => {
                 {/* Lote (si es titular) */}
                 {habitante.lote && (
                   <div className={styles.loteInfo}>
-                    <h5>Información del Lote</h5>
+                    <h5>Información del Lote elegido para el sorteo</h5>
                     <p><strong>Localidad:</strong> {habitante.lote.localidad}</p>
                   </div>
                 )}
