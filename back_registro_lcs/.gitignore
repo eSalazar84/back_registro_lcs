@@ -1,7 +1,3 @@
-# Excluir archivos .env
-.env*
-!.env.example  # Opcional: si quieres incluir un ejemplo sin valores reales
-
 # Logs
 logs
 *.log
@@ -78,9 +74,9 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.development
-.env.test
-.env.production
+.env.development.local
+.env.test.local
+.env.production.local
 .env.local
 
 
