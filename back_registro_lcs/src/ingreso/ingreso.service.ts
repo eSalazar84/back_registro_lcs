@@ -4,7 +4,7 @@ import { UpdateIngresoDto } from './dto/update-ingreso.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ingreso } from './entities/ingreso.entity';
 import { FindOneOptions, Repository } from 'typeorm';
-import { Persona } from 'src/persona/entities/persona.entity';
+import { Persona } from '../persona/entities/persona.entity';
 import { EntityManager } from 'typeorm';
 
 @Injectable()

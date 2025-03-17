@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGene
 import { Localidad } from "../enum/localidad.enum";
 import { Alquiler } from "../enum/alquiler.enum";
 import { Estado_vivienda } from "../enum/estado_vivienda.enum";
-import { Persona } from "src/persona/entities/persona.entity";
+import { Persona } from "../../persona/entities/persona.entity";
 
 @Entity()
 export class Vivienda {

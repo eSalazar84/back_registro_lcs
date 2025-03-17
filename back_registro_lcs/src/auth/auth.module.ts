@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { Admin } from 'src/admin/entities/admin.entity';
+import { Admin } from '../admin/entities/admin.entity';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({

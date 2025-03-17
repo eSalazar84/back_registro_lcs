@@ -18,7 +18,7 @@ import { AdminModule } from './admin/admin.module';
       isGlobal: true,
       envFilePath: [
         '.env', // Variables comunes
-        `.env.${process.env.NODE_ENV || 'development'}`, // Variables según el entorno
+        `.env.${process.env.NODE_ENV || 'development'}.local`, // Variables según el entorno
       ],
     }),
 
