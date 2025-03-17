@@ -1,3 +1,7 @@
+# Excluir archivos .env
+.env*
+!.env.example  # Opcional: si quieres incluir un ejemplo sin valores reales
+
 # Logs
 logs
 *.log
