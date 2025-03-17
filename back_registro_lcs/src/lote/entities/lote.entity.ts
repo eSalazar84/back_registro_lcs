@@ -1,6 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Localidad } from "../enum/localidad.enum";
-import { Persona } from "src/persona/entities/persona.entity";
+import { Persona } from "../../persona/entities/persona.entity";
 
 @Entity()
 export class Lote {

@@ -1,13 +1,9 @@
-import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException, Put, Query } from '@nestjs/common';
+import { CreateViviendaDto } from '../vivienda/dto/create-vivienda.dto';
+import { Controller, Get, Post, Body, Patch, Param, HttpStatus, HttpException, BadRequestException, Put, Query } from '@nestjs/common';
 import { RegistroService } from './registro.service';
-
-import { UpdateRegistroDto } from './dto/update-registro.dto';
-import { CreateLoteDto } from 'src/lote/dto/create-lote.dto';
-import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
-import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
-import { CreateRegistroDto } from './dto/create-registro.dto';
-import { Persona } from 'src/persona/entities/persona.entity';
+import { CreateLoteDto } from '../lote/dto/create-lote.dto';
+import { CreateIngresoDto } from '../ingreso/dto/create-ingreso.dto';
+import { CreatePersonaDto } from '../persona/dto/create-persona.dto';
 
 @Controller('registro')
 export class RegistroController {

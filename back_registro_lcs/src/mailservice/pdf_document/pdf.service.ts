@@ -3,9 +3,9 @@ import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ViviendaService } from 'src/vivienda/vivienda.service';
-import { LoteService } from 'src/lote/lote.service';
-import { IngresoService } from 'src/ingreso/ingreso.service';
+import { ViviendaService } from '../../vivienda/vivienda.service';
+import { LoteService } from '../../lote/lote.service';
+import { IngresoService } from '../../ingreso/ingreso.service';
 
 @Injectable()
 export class PdfService {

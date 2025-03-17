@@ -6,9 +6,9 @@ import { Nacionalidad } from "../enum/nacionalidad.enum";
 import { Vinculo } from "../enum/vinculo.enum";
 import { Rol } from "../enum/rol.enum";
 import { Titular_Cotitular } from "../enum/titular_cotitular.enum";
-import { Vivienda } from "src/vivienda/entities/vivienda.entity";
-import { Ingreso } from "src/ingreso/entities/ingreso.entity";
-import { Lote } from "src/lote/entities/lote.entity";
+import { Vivienda } from "../../vivienda/entities/vivienda.entity";
+import { Ingreso } from "../../ingreso/entities/ingreso.entity";
+import { Lote } from "../../lote/entities/lote.entity";
 
 @Entity()
 export class Persona {

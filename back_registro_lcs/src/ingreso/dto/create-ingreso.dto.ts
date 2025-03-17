@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsString, ValidateNested } from "class-validator"
 import { Relacion } from "../enum/relacion.enum"
 import { Type } from "class-transformer"
-import { Persona } from "src/persona/entities/persona.entity"
+import { Persona } from "../../persona/entities/persona.entity"
 
 export class CreateIngresoDto{  
 

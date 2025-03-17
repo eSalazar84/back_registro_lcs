@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PdfService } from './pdf.service';
-import { ViviendaModule } from 'src/vivienda/vivienda.module';
-import { LoteModule } from 'src/lote/lote.module';
-import { IngresoModule } from 'src/ingreso/ingreso.module';
+import { ViviendaModule } from '../../vivienda/vivienda.module';
+import { LoteModule } from '../../lote/lote.module';
+import { IngresoModule } from '../../ingreso/ingreso.module';
 
 @Module({
   imports: [

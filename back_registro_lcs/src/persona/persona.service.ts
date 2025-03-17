@@ -3,9 +3,9 @@ import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Persona } from './entities/persona.entity';
-import { FindOneOptions, In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Titular_Cotitular } from './enum/titular_cotitular.enum';
-import { ViviendaService } from 'src/vivienda/vivienda.service';
+import { ViviendaService } from '../vivienda/vivienda.service';
 
 
 @Injectable()
