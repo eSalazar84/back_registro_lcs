@@ -1,6 +1,6 @@
 # Ignorar archivos de entorno
-.env.development.local
-.env.production.local
+.env.development
+.env.production
 
 # Logs
 logs
