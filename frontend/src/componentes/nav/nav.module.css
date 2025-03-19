@@ -85,8 +85,8 @@
 
     .numero_texto {
         font-size: 16px;
-        padding-left: 50px;
-        padding-right: 40px;
+        padding-left: 20px;
+        padding-right: 30px;
     }
 
 }
@@ -132,6 +132,7 @@
 
     .logo img {
         height: 40px;
+        padding-left: 17px;
     }
 
     .container_h2_nav h2 {

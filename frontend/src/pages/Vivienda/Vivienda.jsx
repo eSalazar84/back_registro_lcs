@@ -15,13 +15,11 @@ const Vivienda = () => {
     try {
       setLoading(true);
       const data = await fetchViviendaById(id); // Obtener datos de la vivienda
-      console.log('Datos cargados:', data);
       setViviendaData(data.data);
       // Obtener la morosidad de cada habitante
       const morosidadPromises = data.data.habitantes.map(async (habitante) => {
         try {
           const deudorBcra = await getRegistroDeudorBcra(habitante.persona.CUIL_CUIT);
-          console.log('Datos deudor bcra:', deudorBcra);
           // Extraer solo los campos necesarios
           const morosidadInfo = deudorBcra.results.periodos.flatMap((periodo) => 
             periodo.entidades.map((entidad) => ({
@@ -34,7 +32,6 @@ const Vivienda = () => {
           );
           return { idPersona: habitante.persona.idPersona, morosidad: morosidadInfo };
         } catch (error) {
-          console.error(`Error al obtener morosidad para ${habitante.persona.CUIL_CUIT}:`, error);
           return { idPersona: habitante.persona.idPersona, morosidad: null };
         }
       });
@@ -45,7 +42,6 @@ const Vivienda = () => {
       }, {});
       setMorosidadData(morosidadMap); // Almacenar la morosidad en el estado
     } catch (error) {
-      console.error('Error al cargar los datos:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',

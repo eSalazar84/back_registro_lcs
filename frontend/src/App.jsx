@@ -10,12 +10,11 @@ import Dashboard from "./pages/Dashboar";
 import Vivienda from "./pages/Vivienda/Vivienda";
 import RegistroExitoso from './pages/registro/RegistroExitoso';
 import BasesYcondiciones from './pages/Bases y condiciones/BasesYcondiciones';
-import { AuthProvider } from "./auth/AuthContext"; // Asegúrate de importar el AuthProvider
 import EditarRegistro from "./pages/edit/EditarRegistro";
 
 function App() {
   return (
-    <AuthProvider>  {/* Envuelve toda la app con AuthProvider */}
+    <>
       <Nav />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -29,7 +28,7 @@ function App() {
         <Route path="/vivienda/:id" element={<PrivateRoute><Vivienda /></PrivateRoute>} />
       </Routes>
       <Footer />
-    </AuthProvider>
+    </>
   );
 }
 

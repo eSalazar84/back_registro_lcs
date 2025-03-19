@@ -1,10 +1,6 @@
 
 const API_URL = import.meta.env.VITE_API_REGISTRO;
 
-console.log("API_URL", API_URL);
-
-
-
 export const fetchRegistros = async () => {
   try {
     const response = await fetch(API_URL);
@@ -16,12 +12,9 @@ export const fetchRegistros = async () => {
   }
 };
 export const fetchRegistroById = async (id) => {
-  console.log("registroService: ID solicitado", id);
 
   try {
     const response = await fetch(`${API_URL}/${id}`);
-    console.log("response status", response.status); // Ver el estado de la respuesta
-    console.log("response headers", response.headers); // Ver los encabezados de la respuesta
 
     if (!response.ok) {
       // Lanzar error detallado
@@ -29,7 +22,6 @@ export const fetchRegistroById = async (id) => {
     }
 
     const data = await response.json();
-    console.log("data recibida:", data);
 
     // Ahora, directamente accedemos a data
     if (!data || !data.data) {
@@ -38,14 +30,12 @@ export const fetchRegistroById = async (id) => {
 
     return data; // Retorna el objeto data directamente
   } catch (error) {
-    console.error("Error al obtener el registro:", error.message);
     throw new Error(error.message); // Propagar el error para que lo maneje el componente
   }
 };
 
 export const updateRegistroById = async (id, formData) => {
   try {
-    console.log('Enviando datos a la API:', formData);  // Verifica qué datos estás enviando
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PATCH',
       headers: {
@@ -64,10 +54,8 @@ export const updateRegistroById = async (id, formData) => {
     }
 
     const responseData = await response.json();
-    console.log('Datos de respuesta:', responseData);
     return responseData;  // Devuelve los datos de respuesta
   } catch (error) {
-    console.error('Error en la actualización:', error.message);
     // Aquí puedes manejar el error y relanzarlo o pasarlo a otro lugar según lo necesites
     throw error;  // Relanza el error para que lo maneje el código que llama a esta función
   }
@@ -81,8 +69,6 @@ export const fetchViviendaById = async (id) => {
       throw new Error(`Error al obtener  la vivienda. Status ${response.status}`)
     }
     const data = await response.json();
-    console.log("data", data);
-
 
     // Ahora, directamente accedemos a data
     if (!data || !data.data) {
@@ -90,7 +76,6 @@ export const fetchViviendaById = async (id) => {
     }
     return data; // Retorna el objeto data directamente
   } catch (error) {
-    console.error("Error al obtener el registro:", error.message);
     throw new Error(error.message); // Propagar el error para que lo maneje el componente
   }
 
@@ -100,25 +85,16 @@ export const getRegistroDeudorBcra = async (cuilCuit) => {
   try {
     // URL de la API de BCRA
     const url = `https://api.bcra.gob.ar/CentralDeDeudores/v1.0/Deudas/${cuilCuit}`;
-    console.log('Realizando solicitud a la API de BCRA:', url);
     // Realizar la solicitud fetch
     const res = await fetch(url);
     // Verificar si la respuesta es exitosa
     if (!res.ok) {
-      const errorData = await res.json();
-      console.error('Error en la respuesta de la API de BCRA:', {
-        status: res.status,
-        statusText: res.statusText,
-        errorData,
-      });
       throw new Error("Error al obtener el registro de deudor en BCRA");
     }
     // Procesar la respuesta JSON
     const data = await res.json();
-    console.log('Datos recibidos de la API de BCRA:', data);
     return data;
   } catch (error) {
-    console.error('Error en la solicitud fetch:', error);
     throw new Error(error.message);
   }
 };

@@ -27,7 +27,6 @@ const Dashboard = () => {
 
   useEffect(() => {
     getRegistros();
-    console.log("registros en el dashboar",registros); // Verifica la estructura de los datos
   }, []);
 
   const handleLogout = () => {
@@ -40,7 +39,6 @@ const Dashboard = () => {
       if (token) {
         const decoded = jwtDecode(token);
         setUserData(decoded);
-        console.log('Token decodificado:', decoded);
 
         const currentTime = Date.now() / 1000;
         if (decoded.exp < currentTime) {
@@ -54,7 +52,6 @@ const Dashboard = () => {
         return decoded;
       }
     } catch (error) {
-      console.error('Error al decodificar el token:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
