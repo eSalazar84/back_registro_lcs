@@ -27,10 +27,9 @@ export const RegistroProvider = ({ children }) => {
     try {
       const data = await fetchRegistroById(id);
       setRegistro(data);
-     
+
     } catch (err) {
       setError(err.message);
-    console.error('Error:', err.message);
 
     } finally {
       setLoading(false);

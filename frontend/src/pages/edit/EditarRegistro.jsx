@@ -12,17 +12,13 @@ const EditarRegistro = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState(null);
 
-  console.log("id", id);
-
   // Función para cargar los datos del registro
   const cargarDatos = async () => {
     try {
       setLoading(true);
       const data = await fetchRegistroById(id); // Llama a fetchRegistroById directamente
-      console.log('Datos cargados:', data);
       setFormData(data.data); // Se pasa directamente el objeto 'data'
     } catch (error) {
-      console.error('Error al cargar los datos:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -99,12 +95,10 @@ const EditarRegistro = () => {
         ingresos: datosTransformados, // Los ingresos con el idIngreso intacto
       };
 
-      console.log("Datos transformados a enviar:", datosParaEnviar);
       const datosTranformadosEnviar = transformarDatosEnvioBackend(datosParaEnviar)
 
       // Llama a la función updateRegistroById con los datos transformados
       const response = await updateRegistroById(id, datosTranformadosEnviar);
-      console.log("Respuesta de la actualización:", response);
 
       // Verifica si la respuesta es exitosa
       if (response && response.status === 200) {
@@ -118,7 +112,6 @@ const EditarRegistro = () => {
         throw new Error(response.message || 'Error desconocido');
       }
     } catch (error) {
-      console.error('Error al actualizar:', error);
 
       // Verifica si el error es de tipo "Conflict" o "InternalServerError"
       if (error.response && error.response.status === 409) {
