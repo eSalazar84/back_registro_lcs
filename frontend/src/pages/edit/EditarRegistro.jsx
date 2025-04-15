@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './editarRegistro.module.css';
 import Swal from 'sweetalert2';
-import { fetchRegistroById } from '../../services/registroService';
-import { updateRegistroById } from '../../services/registroService';
+import { fetchRegistroById, updateRegistroById } from '../../services/registroService';
 import { transformarDatosEnvioBackend } from '../../services/transformDataDto';
 
 const EditarRegistro = () => {
@@ -146,9 +145,9 @@ const EditarRegistro = () => {
 
 
   // Mientras cargamos los datos
-  // if (loading) {
-  //   return <div className={styles.loading}>Cargando datos...</div>;
-  // }
+  if (loading) {
+    return <div className={styles.loading}>Cargando datos...</div>;
+  }
 
   // Si no se encontraron datos
   if (!formData) {

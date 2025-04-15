@@ -44,4 +44,6 @@ export class Vivienda {
 
     @OneToMany(() => Persona, persona => persona.vivienda)
     personas: Persona[];
+
+    
 }

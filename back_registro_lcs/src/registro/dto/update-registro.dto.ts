@@ -8,11 +8,6 @@ import { Type } from 'class-transformer';
 export class UpdateRegistroDto {
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdatePersonaDto)
-  persona?: UpdatePersonaDto;
-
-  @IsOptional()
-  @ValidateNested()
   @Type(() => UpdateViviendaDto)
   vivienda?: UpdateViviendaDto;
 
@@ -20,6 +15,11 @@ export class UpdateRegistroDto {
   @ValidateNested()
   @Type(() => UpdateLoteDto)
   lote?: UpdateLoteDto;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => UpdatePersonaDto)
+  personas?: UpdatePersonaDto[];
 
   @IsOptional()
   @ValidateNested({ each: true })

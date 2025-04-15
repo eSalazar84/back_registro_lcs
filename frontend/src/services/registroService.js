@@ -1,5 +1,9 @@
 
-const API_URL = import.meta.env.VITE_API_REGISTRO;
+// const API_URL = import.meta.env.VITE_API_REGISTRO;
+const API_URL = 'http://localhost:3000/registro'; // 
+
+const API_BASE = 'http://localhost:3000';
+
 
 console.log("API_URL", API_URL);
 
@@ -15,33 +19,33 @@ export const fetchRegistros = async () => {
     throw new Error(error.message);
   }
 };
-export const fetchRegistroById = async (id) => {
-  console.log("registroService: ID solicitado", id);
+// export const fetchRegistroById = async (id) => {
+//   console.log("registroService: ID solicitado", id);
 
-  try {
-    const response = await fetch(`${API_URL}/${id}`);
-    console.log("response status", response.status); // Ver el estado de la respuesta
-    console.log("response headers", response.headers); // Ver los encabezados de la respuesta
+//   try {
+//     const response = await fetch(`${API_URL}/${id}`);
+//     console.log("response status", response.status); // Ver el estado de la respuesta
+//     console.log("response headers", response.headers); // Ver los encabezados de la respuesta
 
-    if (!response.ok) {
-      // Lanzar error detallado
-      throw new Error(`Error al obtener el registro. Status: ${response.status}`);
-    }
+//     if (!response.ok) {
+//       // Lanzar error detallado
+//       throw new Error(`Error al obtener el registro. Status: ${response.status}`);
+//     }
 
-    const data = await response.json();
-    console.log("data recibida:", data);
+//     const data = await response.json();
+//     console.log("data recibida:", data);
 
-    // Ahora, directamente accedemos a data
-    if (!data || !data.data) {
-      throw new Error("La respuesta no contiene el campo 'data' esperado.");
-    }
+//     // Ahora, directamente accedemos a data
+//     if (!data || !data.data) {
+//       throw new Error("La respuesta no contiene el campo 'data' esperado.");
+//     }
 
-    return data; // Retorna el objeto data directamente
-  } catch (error) {
-    console.error("Error al obtener el registro:", error.message);
-    throw new Error(error.message); // Propagar el error para que lo maneje el componente
-  }
-};
+//     return data; // Retorna el objeto data directamente
+//   } catch (error) {
+//     console.error("Error al obtener el registro:", error.message);
+//     throw new Error(error.message); // Propagar el error para que lo maneje el componente
+//   }
+// };
 
 export const updateRegistroById = async (id, formData) => {
   try {
@@ -73,6 +77,35 @@ export const updateRegistroById = async (id, formData) => {
   }
 };
 
+
+// src/services/registroService.js
+
+
+
+
+export async function fetchRegistroById(registroId) {
+  const res = await fetch(`${API_BASE}/registro/${registroId}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Error al obtener el registro');
+  }
+  return res.json(); // { status, data: {...} }
+}
+
+export async function updateRegistro(registroId, payload) {
+  const res = await fetch(`${API_BASE}/registro/${registroId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Error al actualizar el registro');
+  }
+  return res.json();
+}
+
+
 export const fetchViviendaById = async (id) => {
 
   try {
@@ -95,6 +128,27 @@ export const fetchViviendaById = async (id) => {
   }
 
 }
+
+export const updateVivienda = async (id, data) => {
+  try {
+    const response = await fetch(`${API_URL}/vivienda/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Error al actualizar la vivienda');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en updateVivienda:', error);
+    throw error;
+  }
+};
 
 export const getRegistroDeudorBcra = async (cuilCuit) => {
   try {

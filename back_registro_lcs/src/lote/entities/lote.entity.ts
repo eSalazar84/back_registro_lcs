@@ -12,6 +12,4 @@ export class Lote {
 
     @OneToOne(() => Persona, persona => persona.lote, { nullable: true })
     persona: Persona;
-    
-
 }

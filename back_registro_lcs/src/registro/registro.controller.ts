@@ -1,5 +1,5 @@
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException, Put, Query, ParseIntPipe } from '@nestjs/common';
 import { RegistroService } from './registro.service';
 
 import { UpdateRegistroDto } from './dto/update-registro.dto';
@@ -70,7 +70,7 @@ export class RegistroController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
-    return await this.registroService.findOneById(id);
+    return await this.registroService.findOneByIdRegistro(id);
   }
 
   @Patch(':id')
@@ -100,5 +100,15 @@ export class RegistroController {
   }
 
 
+// registro.controller.ts
+
+@Get('by-persona/:idPersona')
+async findByPersona(
+  @Param('idPersona', ParseIntPipe) idPersona: number
+) {
+  // En tu servicio, implementa findOneByPersonaId
+  const registro = await this.registroService.findOneByPersonaId(idPersona);
+  return { status: HttpStatus.OK, data: registro };
+}
 
 }

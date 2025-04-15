@@ -18,7 +18,7 @@ import { AdminModule } from './admin/admin.module';
       isGlobal: true,
       envFilePath: [
         '.env', // Variables comunes
-        `.env.${process.env.NODE_ENV || 'development'}`, // Variables según el entorno
+        `.env.${process.env.NODE_ENV || 'development'}`, // Variables por entorno
       ],
     }),
 
@@ -28,11 +28,11 @@ import { AdminModule } from './admin/admin.module';
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
-        db_port: parseInt(configService.get<string>('DB_PORT'), 10),  // Convertir a número
-        username: configService.get<string>('DB_USERNAME'),  // Corregido
-        password: configService.get<string>('DB_PASSWORD'),  // Corregido
-        database: configService.get<string>('DB_DATABASE'),  // Corregido
-        entities: [join(__dirname, '/**/*.entity{.js,.ts}')],
+        port: parseInt(configService.get<string>('DB_PORT'), 10), // ✅ CORREGIDO
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
+        entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
         synchronize: configService.get<boolean>('DB_SYNC', false),
       }),
     }),

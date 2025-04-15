@@ -3,7 +3,7 @@ import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Persona } from './entities/persona.entity';
-import { FindOneOptions, In, Repository } from 'typeorm';
+import { EntityManager, FindOneOptions, In, Repository } from 'typeorm';
 import { Titular_Cotitular } from './enum/titular_cotitular.enum';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
 
@@ -19,29 +19,49 @@ export class PersonaService {
 
   ) { }
 
-  async createPersona(createPersonaDto: CreatePersonaDto, idVivienda: number, idLote: number): Promise<Persona> {
-    console.log("personaS", idLote);
-
+  async createPersona(
+    createPersonaDto: CreatePersonaDto,
+    idVivienda: number,
+    idLote: number | null,
+    idRegistro: number,
+    manager?: EntityManager
+  ): Promise<Persona> {
+    const personaRepo = manager ? manager.getRepository(Persona) : this.personaRepository;
+  
+    console.log("🔹 ID del lote recibido:", idLote);
+    console.log("🔹 ID del registro recibido:", idRegistro);
+  
     // Verificar si el DNI ya existe
-    const personaFound = await this.personaRepository.findOne({ where: { dni: createPersonaDto.dni } });
+    const personaFound = await personaRepo.findOne({
+      where: { dni: createPersonaDto.dni },
+    });
     if (personaFound) {
-      throw new HttpException({
-        status: HttpStatus.BAD_REQUEST,
-        error: `DNI ya registrado`
-      }, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: `DNI ya registrado`,
+        },
+        HttpStatus.BAD_REQUEST
+      );
     }
-
+  
+    // Si NO es Titular, anular el lote
+    const loteAsignado =
+      createPersonaDto.titular_cotitular === Titular_Cotitular.Titular
+        ? idLote
+        : null;
+  
     let personaData = {
       ...createPersonaDto,
       idVivienda,
-      idLote,
+      idLote: loteAsignado,
+      registro: { idRegistro },
     };
-
+  
     // Asignar el número de registro si es titular
     if (createPersonaDto.titular_cotitular === Titular_Cotitular.Titular) {
-      // Buscar el último número de registro entre los titulares
-      const lastPersona = await this.personaRepository.findOne({
-        order: { numero_registro: 'DESC' },
+      const lastPersona = await personaRepo.findOne({
+        order: { numero_registro: "DESC" },
         where: { titular_cotitular: Titular_Cotitular.Titular },
       });
       personaData.numero_registro = (lastPersona?.numero_registro ?? 0) + 1;
@@ -49,20 +69,16 @@ export class PersonaService {
     } else {
       personaData.numero_registro = null;
     }
-
-    // 🔹 Limpiar espacios antes y después de cada string en personaData
+  
+    // Limpiar strings
     personaData = this.trimStrings(personaData);
-
-    // Crear instancia de Persona
-    const persona = this.personaRepository.create(personaData);
-
-    // Guardar en la base de datos
-    return await this.personaRepository.save(persona);
+  
+    // Crear y guardar
+    const persona = personaRepo.create(personaData);
+    return await personaRepo.save(persona);
   }
-
-  /**
-   * 🔥 Función que recorre un objeto y aplica `.trim()` a todas sus propiedades tipo `string`
-   */
+  
+  
   private trimStrings<T>(obj: T): T {
     return Object.keys(obj).reduce((acc, key) => {
       const value = obj[key];
@@ -70,8 +86,7 @@ export class PersonaService {
       return acc;
     }, {} as T);
   }
-
-
+  
   async findAll(): Promise<Persona[]> {
     try {
       // Encuentra todas las personas con las relaciones necesarias
@@ -98,31 +113,27 @@ export class PersonaService {
 
 
   async findOneById(id: number): Promise<Persona & { totalSalario: number }> {
-    try {
-      // Buscar la persona por id con las relaciones necesarias
-      const persona = await this.personaRepository.findOne({
-        where: { idPersona: id },
-        relations: ['vivienda', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
-      });
-
-      if (!persona) {
-        throw new HttpException('Persona no encontrada', HttpStatus.NOT_FOUND);
-      }
-
-      // Calcular el total de salario
-      const totalSalario = persona.ingresos
-        ? persona.ingresos.reduce((acc, ingreso) => acc + (ingreso.salario || 0), 0)
-        : 0;
-
-      // Retornar el objeto persona con el totalSalario agregado
-      return {
-        ...persona,
-        totalSalario, // Agregar el totalSalario al objeto persona
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(`Error al obtener la persona: ${error.message}`);
+    // Buscar la persona por id con las relaciones necesarias
+    const persona = await this.personaRepository.findOne({
+      where: { idPersona: id },
+      relations: ['vivienda', 'lote', 'ingresos'],
+    });
+  
+    if (!persona) {
+      throw new NotFoundException('Persona no encontrada');
     }
+  
+    // Calcular el total de salario
+    const totalSalario = persona.ingresos
+      ? persona.ingresos.reduce((acc, ingreso) => acc + (ingreso.salario || 0), 0)
+      : 0;
+  
+    return {
+      ...persona,
+      totalSalario,
+    };
   }
+  
 
   async findOneByDniRegistro(dni: number): Promise<Persona | null> {
     const persona = await this.personaRepository.findOne({ where: { dni } });
@@ -162,28 +173,35 @@ export class PersonaService {
   }
 
 
-  async updatePersona(id: number, updatePersonaDto: UpdatePersonaDto): Promise<Persona> {
+  async updatePersona(
+    id: number,
+    updatePersonaDto: UpdatePersonaDto,
+    manager?: EntityManager
+  ): Promise<Persona> {
+    const repo = manager || this.personaRepository;
+  
     // Buscar la persona por su ID
     const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
+    console.log("Buscando persona con ID:", id);
 
+  
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
-
-    // Asegúrate de que hay valores a actualizar (no esté vacío)
+  
+    // Validar que haya campos para actualizar
     if (Object.keys(updatePersonaDto).length === 0) {
       throw new Error('No hay valores para actualizar');
     }
-
-    // 🔹 Limpiar espacios antes y después de cada string en updatePersonaDto
+  
+    // Limpiar strings
     const trimmedDto = this.trimStrings(updatePersonaDto);
-
-    // Actualizar los campos de la persona con los valores del DTO
+  
+    // Actualizar y guardar
     Object.assign(persona, trimmedDto);
-
-    // Guardar la persona actualizada
     return await this.personaRepository.save(persona);
   }
+  
 
   async remove(id: number): Promise<void> {
     // Buscar la persona por su ID

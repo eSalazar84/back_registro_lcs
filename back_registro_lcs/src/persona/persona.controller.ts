@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, ParseIntPipe, Query } from '@nestjs/common';
 import { PersonaService } from './persona.service';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
@@ -9,21 +9,30 @@ export class PersonaController {
   constructor(private readonly personaService: PersonaService) {}
 
   @Post()
-  async createPersona(@Body() createPersonaDto: CreatePersonaDto,idVivienda: number,idLote: number): Promise<Persona> {
-    try{
-      return await this.personaService.createPersona(createPersonaDto,  idVivienda,idLote);
-    }
-    catch (error){
+  async createPersona(
+    @Body() createPersonaDto: CreatePersonaDto,
+    @Query('idVivienda') idVivienda: number,
+    @Query('idLote') idLote: number,
+    @Query('idRegistro') idRegistro: number // 👈 Agregado
+  ): Promise<Persona> {
+    try {
+      return await this.personaService.createPersona(
+        createPersonaDto,
+        idVivienda,
+        idLote,
+        idRegistro
+      );
+    } catch (error) {
       if (error instanceof HttpException) {
-        throw error;  // Lanza el error tal cual si ya es una HttpException
+        throw error;
       }
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: `Ocurrio un error al crear la nueva dependencia`
-      }, HttpStatus.INTERNAL_SERVER_ERROR)
+        error: `Ocurrió un error al crear la nueva persona`,
+      }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+  
 
   @Get()
   findAll() {

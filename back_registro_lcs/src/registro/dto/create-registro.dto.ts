@@ -6,11 +6,11 @@ import { CreatePersonaDto } from "src/persona/dto/create-persona.dto";
 
 export class CreateRegistroDto {
  
-
+idRegistro: number;
   vivienda?: CreateViviendaDto;   // DTO para Vivienda
   lote?: CreateLoteDto;           // DTO para Lote
   ingreso?: CreateIngresoDto[];  // DTO para Ingresos
-  persona?: CreatePersonaDto;
+  persona?: CreatePersonaDto[];
 }
 
   

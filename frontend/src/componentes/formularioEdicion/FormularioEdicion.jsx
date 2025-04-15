@@ -1,0 +1,937 @@
+import React, { useState, useRef } from 'react';
+import styles from './formularioEdicion.module.css';
+import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
+import { esMenorDeEdad } from '../../services/transformDataDto';
+import Swal from 'sweetalert2';
+
+const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
+    const agregarPersonaRef = useRef(null);
+
+    // Plantillas para nuevos registros
+    const nuevaVivienda = {
+        localidad: "",
+        direccion: "",
+        otra_calle: false,
+        numero_direccion: "",
+        departamento: null,
+        piso_departamento: "",
+        numero_departamento: "",
+        cantidad_dormitorios: "",
+        estado_vivienda: "",
+        alquiler: null,
+        valor_alquiler: "",
+        tipo_alquiler: ""
+    };
+
+    const nuevaPersona = {
+        nombre: "",
+        apellido: "",
+        tipo_dni: "Documento único",
+        dni: "",
+        CUIL_CUIT: "",
+        genero: "",
+        fecha_nacimiento: "",
+        email: "",
+        telefono: "",
+        estado_civil: "",
+        nacionalidad: "",
+        certificado_discapacidad: false,
+        rol: "User",
+        vinculo: "",
+        titular_cotitular: "Conviviente",
+        idVivienda: null,
+        vivienda: null,
+        idLote: null,
+        idRegistro: formData.idRegistro,
+        ingresos: [],
+        comparteVivienda: null
+    };
+
+    const nuevoIngreso = {
+        situacion_laboral: "",
+        ocupacion: "",
+        CUIT_empleador: "",
+        salario: "",
+        idPersona: null,
+        idRegistro: formData.idRegistro
+    };
+
+    // Formatear fecha para input type="date"
+    const formatearFechaInput = (fecha) => {
+        if (!fecha) return '';
+        try {
+            return new Date(fecha).toISOString().split('T')[0];
+        } catch {
+            return '';
+        }
+    };
+
+    // Agregar nueva persona con selección de vivienda
+    const agregarPersona = () => {
+        Swal.fire({
+            title: '¿Vive con el titular?',
+            text: "Seleccione si la persona vive en la misma vivienda que el titular",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, misma vivienda',
+            cancelButtonText: 'No, diferente vivienda',
+            reverseButtons: true
+        }).then((result) => {
+            const comparteVivienda = result.isConfirmed;
+            
+            const persona = {
+                ...nuevaPersona,
+                comparteVivienda,
+                vivienda: comparteVivienda ? null : { ...nuevaVivienda },
+                idVivienda: comparteVivienda ? formData.vivienda.id : null
+            };
+
+            onChange('personas', [...formData.personas, persona]);
+
+            // Scroll al nuevo elemento
+            setTimeout(() => {
+                agregarPersonaRef.current?.scrollIntoView({ 
+                    behavior: "smooth", 
+                    block: "start" 
+                });
+            }, 300);
+        });
+    };
+
+    // Cambiar a vivienda diferente
+    const cambiarVivienda = (index) => {
+        const updatedPersonas = [...formData.personas];
+        updatedPersonas[index] = {
+            ...updatedPersonas[index],
+            comparteVivienda: false,
+            vivienda: { ...nuevaVivienda },
+            idVivienda: null
+        };
+        onChange('personas', updatedPersonas);
+    };
+
+    // Compartir vivienda con titular
+    const compartirVivienda = (index) => {
+        const updatedPersonas = [...formData.personas];
+        updatedPersonas[index] = {
+            ...updatedPersonas[index],
+            comparteVivienda: true,
+            vivienda: null,
+            idVivienda: formData.vivienda.id
+        };
+        onChange('personas', updatedPersonas);
+    };
+
+    // Eliminar persona con confirmación
+    const eliminarPersona = (index) => {
+        Swal.fire({
+            title: '¿Eliminar Persona?',
+            text: "¿Está seguro que desea eliminar esta persona del registro?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const updatedPersonas = formData.personas.filter((_, i) => i !== index);
+                onChange('personas', updatedPersonas);
+                Swal.fire(
+                    'Eliminada',
+                    'La persona ha sido eliminada del registro',
+                    'success'
+                );
+            }
+        });
+    };
+
+    // Agregar ingreso a una persona específica
+    const agregarIngreso = (personaIndex) => {
+        const updatedPersonas = [...formData.personas];
+        updatedPersonas[personaIndex].ingresos.push({ ...nuevoIngreso });
+        onChange('personas', updatedPersonas);
+    };
+
+    // Eliminar ingreso
+    const eliminarIngreso = (personaIndex, ingresoIndex) => {
+        const updatedPersonas = [...formData.personas];
+        updatedPersonas[personaIndex].ingresos = updatedPersonas[personaIndex].ingresos.filter((_, i) => i !== ingresoIndex);
+        onChange('personas', updatedPersonas);
+    };
+
+    // Renderizar select de calles según localidad
+    const renderSelectCalles = (localidad, value, onChangeFn) => {
+        if (!callesPorLocalidad[localidad]?.length) {
+            return (
+                <input
+                    type="text"
+                    placeholder="Ingrese referencia de ubicación"
+                    value={value || ""}
+                    onChange={(e) => onChangeFn('direccion', e.target.value)}
+                    className={styles.input}
+                />
+            );
+        }
+
+        return (
+            <>
+                <select
+                    value={value || ""}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        onChangeFn('direccion', val === "Otra" ? "" : val);
+                        onChangeFn('otra_calle', val === "Otra");
+                    }}
+                    className={styles.select}
+                >
+                    <option value="" disabled>Seleccione una dirección</option>
+                    {callesPorLocalidad[localidad].map((calle, i) => (
+                        <option key={i} value={calle}>{calle}</option>
+                    ))}
+                    <option value="Otra">Otra</option>
+                </select>
+
+                {formData.vivienda.otra_calle && (
+                    <input
+                        type="text"
+                        placeholder="Ingrese su calle"
+                        value={value || ""}
+                        onChange={(e) => onChangeFn('direccion', e.target.value)}
+                        className={styles.input}
+                    />
+                )}
+            </>
+        );
+    };
+
+    // Renderizar sección de vivienda según corresponda
+    const renderVivienda = (persona, index) => {
+        if (index === 0) {
+            return (
+                <div className={styles.viviendaInfo}>
+                    <p>Esta persona usa la vivienda principal registrada.</p>
+                </div>
+            );
+        }
+
+        if (persona.comparteVivienda) {
+            return (
+                <div className={styles.viviendaCompartida}>
+                    <h5>Vivienda (compartida con titular)</h5>
+                    <div className={styles.datosVivienda}>
+                        <p><strong>Localidad:</strong> {formData.vivienda.localidad}</p>
+                        <p><strong>Dirección:</strong> {formData.vivienda.direccion} {formData.vivienda.numero_direccion}</p>
+                        {formData.vivienda.departamento && (
+                            <p><strong>Departamento:</strong> {formData.vivienda.piso_departamento} {formData.vivienda.numero_departamento}</p>
+                        )}
+                        <button 
+                            type="button"
+                            onClick={() => cambiarVivienda(index)}
+                            className={styles.cambiarViviendaButton}
+                        >
+                            Cambiar a vivienda diferente
+                        </button>
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className={styles.viviendaSection}>
+                    <h5>Datos de Vivienda</h5>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>Localidad *</span>
+                            <select
+                                name="localidad"
+                                value={persona.vivienda?.localidad || ""}
+                                onChange={(e) => onChange(`personas.${index}.vivienda.localidad`, e.target.value)}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="" disabled>Seleccione localidad</option>
+                                {Object.keys(callesPorLocalidad).map(localidad => (
+                                    <option key={localidad} value={localidad}>{localidad}</option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>Dirección *</span>
+                            {renderSelectCalles(
+                                persona.vivienda?.localidad,
+                                persona.vivienda?.direccion,
+                                (field, value) => onChange(`personas.${index}.vivienda.${field}`, value)
+                            )}
+                        </label>
+
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>Número</span>
+                            <input
+                                type="number"
+                                placeholder={callesPorLocalidad[persona.vivienda?.localidad]?.length ? "Número" : "S/N"}
+                                value={persona.vivienda?.numero_direccion || ""}
+                                onChange={(e) => onChange(`personas.${index}.vivienda.numero_direccion`, e.target.value)}
+                                className={styles.input}
+                            />
+                        </label>
+
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>¿Es departamento? *</span>
+                            <select
+                                name="departamento"
+                                value={persona.vivienda?.departamento === null ? "" : persona.vivienda?.departamento ? "Si" : "No"}
+                                onChange={(e) => onChange(`personas.${index}.vivienda.departamento`, e.target.value === 'Si')}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="" disabled>¿Es departamento?</option>
+                                <option value="Si">Sí</option>
+                                <option value="No">No</option>
+                            </select>
+                        </label>
+
+                        {persona.vivienda?.departamento && (
+                            <>
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Piso *</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Piso"
+                                        value={persona.vivienda?.piso_departamento || ""}
+                                        onChange={(e) => onChange(`personas.${index}.vivienda.piso_departamento`, e.target.value)}
+                                        className={styles.input}
+                                        required
+                                    />
+                                </label>
+
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Departamento *</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Departamento"
+                                        value={persona.vivienda?.numero_departamento || ""}
+                                        onChange={(e) => onChange(`personas.${index}.vivienda.numero_departamento`, e.target.value)}
+                                        className={styles.input}
+                                        required
+                                    />
+                                </label>
+                            </>
+                        )}
+
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>Cantidad de dormitorios *</span>
+                            <input
+                                type="number"
+                                min="1"
+                                placeholder="Cantidad de dormitorios"
+                                value={persona.vivienda?.cantidad_dormitorios || ""}
+                                onChange={(e) => onChange(`personas.${index}.vivienda.cantidad_dormitorios`, e.target.value)}
+                                className={styles.input}
+                                required
+                            />
+                        </label>
+
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>Estado de la vivienda *</span>
+                            <select
+                                name="estado_vivienda"
+                                value={persona.vivienda?.estado_vivienda || ""}
+                                onChange={(e) => onChange(`personas.${index}.vivienda.estado_vivienda`, e.target.value)}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="" disabled>¿Estado de la Vivienda?</option>
+                                <option value="Muy bueno">Muy bueno</option>
+                                <option value="Bueno">Bueno</option>
+                                <option value="Regular">Regular</option>
+                                <option value="Malo">Malo</option>
+                                <option value="Muy malo">Muy malo</option>
+                            </select>
+                        </label>
+
+                        <label className={styles.label}>
+                            <span className={styles.labelText}>¿Alquila? *</span>
+                            <select
+                                name="alquiler"
+                                value={persona.vivienda?.alquiler === true ? "Si" : persona.vivienda?.alquiler === false ? "No" : ""}
+                                onChange={(e) => onChange(`personas.${index}.vivienda.alquiler`, e.target.value === 'Si')}
+                                className={styles.select}
+                                required
+                            >
+                                <option value="" disabled>¿Alquila la vivienda?</option>
+                                <option value="Si">Sí</option>
+                                <option value="No">No</option>
+                            </select>
+                        </label>
+
+                        {persona.vivienda?.alquiler && (
+                            <div className={styles.alquilerGroup}>
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Monto del alquiler *</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="Monto del alquiler"
+                                        value={persona.vivienda?.valor_alquiler || ""}
+                                        onChange={(e) => onChange(`personas.${index}.vivienda.valor_alquiler`, e.target.value)}
+                                        className={styles.input}
+                                        required
+                                    />
+                                </label>
+
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Tipo de alquiler *</span>
+                                    <select
+                                        name="tipo_alquiler"
+                                        value={persona.vivienda?.tipo_alquiler || ""}
+                                        onChange={(e) => onChange(`personas.${index}.vivienda.tipo_alquiler`, e.target.value)}
+                                        className={styles.select}
+                                        required
+                                    >
+                                        <option value="" disabled>Seleccione tipo de alquiler</option>
+                                        <option value="Particular">Particular</option>
+                                        <option value="Inmobiliaria">Inmobiliaria</option>
+                                    </select>
+                                </label>
+                            </div>
+                        )}
+
+                        <button 
+                            type="button"
+                            onClick={() => compartirVivienda(index)}
+                            className={styles.compartirViviendaButton}
+                        >
+                            Usar misma vivienda que el titular
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+    };
+
+    return (
+        <div className={styles.editForm}>
+            {/* SECCIÓN VIVIENDA PRINCIPAL */}
+            <div className={styles.section}>
+                <h3>Vivienda Principal</h3>
+
+                <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>Localidad *</span>
+                        <select
+                            name="localidad"
+                            value={formData.vivienda.localidad || ""}
+                            onChange={(e) => onChange('vivienda.localidad', e.target.value)}
+                            className={styles.select}
+                            required
+                        >
+                            <option value="" disabled>Seleccione localidad</option>
+                            {Object.keys(callesPorLocalidad).map(localidad => (
+                                <option key={localidad} value={localidad}>{localidad}</option>
+                            ))}
+                        </select>
+                    </label>
+
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>Dirección *</span>
+                        {renderSelectCalles(
+                            formData.vivienda.localidad,
+                            formData.vivienda.direccion,
+                            (field, value) => onChange(`vivienda.${field}`, value)
+                        )}
+                    </label>
+
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>Número</span>
+                        <input
+                            type="number"
+                            placeholder={callesPorLocalidad[formData.vivienda.localidad]?.length ? "Número" : "S/N"}
+                            value={formData.vivienda.numero_direccion || ""}
+                            onChange={(e) => onChange('vivienda.numero_direccion', e.target.value)}
+                            className={styles.input}
+                        />
+                    </label>
+
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>¿Es departamento? *</span>
+                        <select
+                            name="departamento"
+                            value={formData.vivienda.departamento === null ? "" : formData.vivienda.departamento ? "Si" : "No"}
+                            onChange={(e) => onChange('vivienda.departamento', e.target.value === 'Si')}
+                            className={styles.select}
+                            required
+                        >
+                            <option value="" disabled>¿Es departamento?</option>
+                            <option value="Si">Sí</option>
+                            <option value="No">No</option>
+                        </select>
+                    </label>
+
+                    {formData.vivienda.departamento && (
+                        <>
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Piso *</span>
+                                <input
+                                    type="text"
+                                    placeholder="Piso"
+                                    value={formData.vivienda.piso_departamento || ""}
+                                    onChange={(e) => onChange('vivienda.piso_departamento', e.target.value)}
+                                    className={styles.input}
+                                    required
+                                />
+                            </label>
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Departamento *</span>
+                                <input
+                                    type="text"
+                                    placeholder="Departamento"
+                                    value={formData.vivienda.numero_departamento || ""}
+                                    onChange={(e) => onChange('vivienda.numero_departamento', e.target.value)}
+                                    className={styles.input}
+                                    required
+                                />
+                            </label>
+                        </>
+                    )}
+
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>Cantidad de dormitorios *</span>
+                        <input
+                            type="number"
+                            min="1"
+                            placeholder="Cantidad de dormitorios"
+                            value={formData.vivienda.cantidad_dormitorios || ""}
+                            onChange={(e) => onChange('vivienda.cantidad_dormitorios', e.target.value)}
+                            className={styles.input}
+                            required
+                        />
+                    </label>
+
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>Estado de la vivienda *</span>
+                        <select
+                            name="estado_vivienda"
+                            value={formData.vivienda.estado_vivienda || ""}
+                            onChange={(e) => onChange('vivienda.estado_vivienda', e.target.value)}
+                            className={styles.select}
+                            required
+                        >
+                            <option value="" disabled>¿Estado de la Vivienda?</option>
+                            <option value="Muy bueno">Muy bueno</option>
+                            <option value="Bueno">Bueno</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Malo">Malo</option>
+                            <option value="Muy malo">Muy malo</option>
+                        </select>
+                    </label>
+
+                    <label className={styles.label}>
+                        <span className={styles.labelText}>¿Alquila? *</span>
+                        <select
+                            name="alquiler"
+                            value={formData.vivienda.alquiler === true ? "Si" : formData.vivienda.alquiler === false ? "No" : ""}
+                            onChange={(e) => onChange('vivienda.alquiler', e.target.value === 'Si')}
+                            className={styles.select}
+                            required
+                        >
+                            <option value="" disabled>¿Alquila la vivienda?</option>
+                            <option value="Si">Sí</option>
+                            <option value="No">No</option>
+                        </select>
+                    </label>
+
+                    {formData.vivienda.alquiler && (
+                        <div className={styles.alquilerGroup}>
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Monto del alquiler *</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Monto del alquiler"
+                                    value={formData.vivienda.valor_alquiler || ""}
+                                    onChange={(e) => onChange('vivienda.valor_alquiler', e.target.value)}
+                                    className={styles.input}
+                                    required
+                                />
+                            </label>
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Tipo de alquiler *</span>
+                                <select
+                                    name="tipo_alquiler"
+                                    value={formData.vivienda.tipo_alquiler || ""}
+                                    onChange={(e) => onChange('vivienda.tipo_alquiler', e.target.value)}
+                                    className={styles.select}
+                                    required
+                                >
+                                    <option value="" disabled>Seleccione tipo de alquiler</option>
+                                    <option value="Particular">Particular</option>
+                                    <option value="Inmobiliaria">Inmobiliaria</option>
+                                </select>
+                            </label>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* SECCIÓN HABITANTES */}
+            <div className={styles.section}>
+                <h3>Habitantes</h3>
+
+                {formData.personas.map((habitante, index) => (
+                    <div 
+                        key={index} 
+                        className={styles.habitanteCard}
+                        ref={index === formData.personas.length - 1 ? agregarPersonaRef : null}
+                    >
+                        <div className={styles.habitanteHeader}>
+                            <h4>
+                                {`${[habitante.nombre, habitante.apellido, habitante.titular_cotitular]}`}
+                                {index > 0 && ` (${habitante.vinculo})`}
+                            </h4>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <div className={styles.row}>
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Nombre *</span>
+                                    <input
+                                        type="text"
+                                        value={habitante.nombre}
+                                        onChange={(e) => onChange(`personas.${index}.nombre`, e.target.value)}
+                                        className={styles.input}
+                                        required
+                                    />
+                                </label>
+
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Apellido *</span>
+                                    <input
+                                        type="text"
+                                        value={habitante.apellido}
+                                        onChange={(e) => onChange(`personas.${index}.apellido`, e.target.value)}
+                                        className={styles.input}
+                                        required
+                                    />
+                                </label>
+                            </div>
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Fecha de Nacimiento *</span>
+                                <input
+                                    type="date"
+                                    value={formatearFechaInput(habitante.fecha_nacimiento)}
+                                    onChange={(e) => onChange(`personas.${index}.fecha_nacimiento`, e.target.value)}
+                                    className={styles.input}
+                                    required
+                                />
+                            </label>
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Tipo de Documento *</span>
+                                <select
+                                    required
+                                    name="tipo_dni"
+                                    value={habitante.tipo_dni || ""}
+                                    onChange={(e) => onChange(`personas.${index}.tipo_dni`, e.target.value)}
+                                    className={styles.select}
+                                >
+                                    <option value="" disabled>Seleccione Tipo de Documento</option>
+                                    <option value="Documento unico">DNI</option>
+                                    <option value="Libreta enrolamiento">Libreta de enrolamiento</option>
+                                    <option value="Libreta civica">Libreta cívica</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </label>
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>DNI *</span>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="DNI"
+                                    value={habitante.dni}
+                                    onChange={(e) => onChange(`personas.${index}.dni`, e.target.value)}
+                                    className={styles.input}
+                                    maxLength="8"
+                                />
+                            </label>
+
+                            {!esMenorDeEdad(habitante.fecha_nacimiento) && (
+                                <>
+                                    <div className={styles.row}>
+                                        <label className={styles.label}>
+                                            <span className={styles.labelText}>CUIL/CUIT *</span>
+                                            <input
+                                                type="text"
+                                                value={habitante.CUIL_CUIT || ""}
+                                                onChange={(e) => onChange(`personas.${index}.CUIL_CUIT`, e.target.value)}
+                                                className={styles.input}
+                                                maxLength="11"
+                                                required
+                                            />
+                                        </label>
+
+                                        <label className={styles.label}>
+                                            <span className={styles.labelText}>Género *</span>
+                                            <select
+                                                value={habitante.genero || ""}
+                                                onChange={(e) => onChange(`personas.${index}.genero`, e.target.value)}
+                                                className={styles.select}
+                                                required
+                                            >
+                                                <option value="" disabled>Seleccione género</option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Femenino">Femenino</option>
+                                                <option value="Otro">Otro</option>
+                                                <option value="No especifica">No especifica</option>
+                                            </select>
+                                        </label>
+                                    </div>
+
+                                    <div className={styles.row}>
+                                        <label className={styles.label}>
+                                            <span className={styles.labelText}>Email *</span>
+                                            <input
+                                                type="email"
+                                                value={habitante.email || ""}
+                                                onChange={(e) => onChange(`personas.${index}.email`, e.target.value)}
+                                                className={styles.input}
+                                                required
+                                            />
+                                        </label>
+
+                                        <label className={styles.label}>
+                                            <span className={styles.labelText}>Teléfono *</span>
+                                            <input
+                                                type="tel"
+                                                value={habitante.telefono || ""}
+                                                onChange={(e) => onChange(`personas.${index}.telefono`, e.target.value)}
+                                                className={styles.input}
+                                                required
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <div className={styles.row}>
+                                        <label className={styles.label}>
+                                            <span className={styles.labelText}>Estado Civil *</span>
+                                            <select
+                                                value={habitante.estado_civil || ""}
+                                                onChange={(e) => onChange(`personas.${index}.estado_civil`, e.target.value)}
+                                                className={styles.select}
+                                                required
+                                            >
+                                                <option value="" disabled>Seleccione estado civil</option>
+                                                <option value="Soltero/a">Soltero/a</option>
+                                                <option value="Casado/a">Casado/a</option>
+                                                <option value="Divorciado/a">Divorciado/a</option>
+                                                <option value="Viudo/a">Viudo/a</option>
+                                                <option value="Concubinato">Concubinato</option>
+                                            </select>
+                                        </label>
+
+                                        <label className={styles.label}>
+                                            <span className={styles.labelText}>Nacionalidad *</span>
+                                            <select
+                                                value={habitante.nacionalidad || ""}
+                                                onChange={(e) => onChange(`personas.${index}.nacionalidad`, e.target.value)}
+                                                className={styles.select}
+                                                required
+                                            >
+                                                <option value="" disabled>Seleccione nacionalidad</option>
+                                                <option value="Argentina">Argentina</option>
+                                                <option value="Boliviana">Boliviana</option>
+                                                <option value="Chilena">Chilena</option>
+                                                <option value="Paraguaya">Paraguaya</option>
+                                                <option value="Uruguaya">Uruguaya</option>
+                                                <option value="Peruana">Peruana</option>
+                                                <option value="Brasileña">Brasileña</option>
+                                                <option value="Venezolana">Venezolana</option>
+                                                <option value="Colombiana">Colombiana</option>
+                                                <option value="Española">Española</option>
+                                                <option value="Italiana">Italiana</option>
+                                                <option value="Otro">Otro</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </>
+                            )}
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Certificado de discapacidad *</span>
+                                <select
+                                    value={habitante.certificado_discapacidad === true ? "Si" : "No"}
+                                    onChange={(e) => onChange(`personas.${index}.certificado_discapacidad`, e.target.value === "Si")}
+                                    className={styles.select}
+                                    required
+                                >
+                                    <option value="" disabled>¿Posee certificado de discapacidad?</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </label>
+
+                            {index > 0 && (
+                                <label className={styles.label}>
+                                    <span className={styles.labelText}>Vínculo con el titular *</span>
+                                    <select
+                                        value={habitante.vinculo || ""}
+                                        onChange={(e) => onChange(`personas.${index}.vinculo`, e.target.value)}
+                                        className={styles.select}
+                                        required
+                                    >
+                                        <option value="" disabled>Seleccione vínculo</option>
+                                        <option value="Esposo/a">Esposo/a</option>
+                                        <option value="Concubino/a">Concubino/a</option>
+                                        <option value="Conyuge">Cónyuge</option>
+                                        <option value="Hermano/a">Hermano/a</option>
+                                        <option value="Hijo/a">Hijo/a</option>
+                                        <option value="Madre">Madre</option>
+                                        <option value="Padre">Padre</option>
+                                        <option value="Primo/a">Primo/a</option>
+                                        <option value="Nieto/a">Nieto/a</option>
+                                        <option value="Tio/a">Tío/a</option>
+                                        <option value="Sobrino/a">Sobrino/a</option>
+                                        <option value="Suegro/a">Suegro/a</option>
+                                        <option value="Abuelo/a">Abuelo/a</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </label>
+                            )}
+                        </div>
+
+                        {renderVivienda(habitante, index)}
+
+                        {!esMenorDeEdad(habitante.fecha_nacimiento) && (
+                            <div className={styles.ingresosSection}>
+                                <h5>Ingresos</h5>
+
+                                {habitante.ingresos.map((ingreso, ingresoIndex) => (
+                                    <div key={ingresoIndex} className={styles.ingresoCard}>
+                                        <div className={styles.ingresoHeader}>
+                                            <h6>Ingreso #{ingresoIndex + 1}</h6>
+                                        </div>
+
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.label}>
+                                                <span className={styles.labelText}>Situación laboral *</span>
+                                                <select
+                                                    value={ingreso.situacion_laboral || ""}
+                                                    onChange={(e) => onChange(`personas.${index}.ingresos.${ingresoIndex}.situacion_laboral`, e.target.value)}
+                                                    className={styles.select}
+                                                    required
+                                                >
+                                                    <option value="" disabled>Seleccione situación</option>
+                                                    <option value="Relación de dependencia">Relación de dependencia</option>
+                                                    <option value="Autónomo">Autónomo</option>
+                                                    <option value="Jubilado">Jubilado</option>
+                                                    <option value="Pensionado">Pensionado</option>
+                                                    <option value="Informal">Informal</option>
+                                                    <option value="Desempleado">Desempleado</option>
+                                                </select>
+                                            </label>
+
+                                            <label className={styles.label}>
+                                                <span className={styles.labelText}>Ocupación *</span>
+                                                <input
+                                                    type="text"
+                                                    value={ingreso.ocupacion || ""}
+                                                    onChange={(e) => onChange(`personas.${index}.ingresos.${ingresoIndex}.ocupacion`, e.target.value)}
+                                                    className={styles.input}
+                                                    required
+                                                />
+                                            </label>
+
+                                            {ingreso.situacion_laboral === "Relación de dependencia" && (
+                                                <label className={styles.label}>
+                                                    <span className={styles.labelText}>CUIT Empleador *</span>
+                                                    <input
+                                                        type="text"
+                                                        value={ingreso.CUIT_empleador || ""}
+                                                        onChange={(e) => onChange(`personas.${index}.ingresos.${ingresoIndex}.CUIT_empleador`, e.target.value)}
+                                                        className={styles.input}
+                                                        maxLength="11"
+                                                        required
+                                                    />
+                                                </label>
+                                            )}
+
+                                            <label className={styles.label}>
+                                                <span className={styles.labelText}>Salario/Monto *</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={ingreso.salario || ""}
+                                                    onChange={(e) => onChange(`personas.${index}.ingresos.${ingresoIndex}.salario`, e.target.value)}
+                                                    className={styles.input}
+                                                    required
+                                                />
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => eliminarIngreso(index, ingresoIndex)}
+                                                className={styles.deleteSmallButton}
+                                            >
+                                                Eliminar Ingreso
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => agregarIngreso(index)}
+                                    className={styles.addSmallButton}
+                                >
+                                    + Agregar Ingreso
+                                </button>
+                            </div>
+                        )}
+
+                        {index > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => eliminarPersona(index)}
+                                className={styles.deleteButton}
+                            >
+                                Eliminar Persona
+                            </button>
+                        )}
+                    </div>
+                ))}
+
+                <button
+                    type="button"
+                    onClick={agregarPersona}
+                    className={styles.addButton}
+                >
+                    + Agregar Persona
+                </button>
+            </div>
+
+            {/* BOTONES DE ACCIÓN */}
+            <div className={styles.formActions}>
+                <button
+                    type="button"
+                    onClick={onSave}
+                    className={styles.primaryButton}
+                >
+                    Guardar Registro
+                </button>
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className={styles.secondaryButton}
+                >
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default FormularioRegistro;

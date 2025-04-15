@@ -7,7 +7,7 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import PrivateRoute from "./componentes/PrivateRouts";
 import Dashboard from "./pages/Dashboar";
-import Vivienda from "./pages/Vivienda/Vivienda";
+import VistaRegistro from "./pages/ver registro/VistaRegistro";
 import RegistroExitoso from './pages/registro/RegistroExitoso';
 import BasesYcondiciones from './pages/Bases y condiciones/BasesYcondiciones';
 import { AuthProvider } from "./auth/AuthContext"; // Asegúrate de importar el AuthProvider
@@ -26,7 +26,9 @@ function App() {
         <Route path="/registro-exitoso" element={<RegistroExitoso />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/editar-registro/:id" element={<PrivateRoute><EditarRegistro /></PrivateRoute>} />
-        <Route path="/vivienda/:id" element={<PrivateRoute><Vivienda /></PrivateRoute>} />
+       
+        <Route path="/ver-registro/:registroId" element={<VistaRegistro />} />
+
       </Routes>
       <Footer />
     </AuthProvider>

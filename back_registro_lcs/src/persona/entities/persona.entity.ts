@@ -9,6 +9,7 @@ import { Titular_Cotitular } from "../enum/titular_cotitular.enum";
 import { Vivienda } from "src/vivienda/entities/vivienda.entity";
 import { Ingreso } from "src/ingreso/entities/ingreso.entity";
 import { Lote } from "src/lote/entities/lote.entity";
+import { Registro } from "src/registro/entities/registro.entity";
 
 @Entity()
 export class Persona {
@@ -69,6 +70,14 @@ export class Persona {
   @Column({type: "int", nullable: true})
   idLote: number
 
+  @Column({ nullable: true })
+idRegistro: number;
+
+@ManyToOne(() => Registro, registro => registro.personas, { onDelete: 'CASCADE' })
+@JoinColumn({ name: 'idRegistro' })
+registro: Registro;
+
+
   // Guardar solo el ID de vivienda
   @ManyToOne(() => Vivienda, (vivienda) => vivienda.personas, { cascade: true })
   @JoinColumn({ name: "idVivienda" }) // Asegúrate de que el nombre de la columna sea correcto
@@ -80,6 +89,5 @@ export class Persona {
   lote: Lote;
   
   @OneToMany(() => Ingreso, ingreso => ingreso.persona)  // Relación inversa
-  ingresos: Ingreso[];
-  
+  ingresos: Ingreso[];  
 }
