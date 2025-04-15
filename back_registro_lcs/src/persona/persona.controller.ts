@@ -9,6 +9,7 @@ export class PersonaController {
   constructor(private readonly personaService: PersonaService) {}
 
   @Post()
+
   async createPersona(
     @Body() createPersonaDto: CreatePersonaDto,
     @Query('idVivienda') idVivienda: number,
@@ -33,6 +34,7 @@ export class PersonaController {
     }
   }
   
+
 
   @Get()
   findAll() {

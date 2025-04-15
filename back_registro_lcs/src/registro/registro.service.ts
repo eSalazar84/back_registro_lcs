@@ -1,4 +1,6 @@
+
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+
 import { Persona } from 'src/persona/entities/persona.entity';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
@@ -10,6 +12,7 @@ import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 import { MailserviceService } from 'src/mailservice/mailservice.service';
 import { Vivienda } from 'src/vivienda/entities/vivienda.entity'
+
 import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
 import { Titular_Cotitular } from 'src/persona/enum/titular_cotitular.enum';
 import { Registro } from './entities/registro.entity';
@@ -559,6 +562,7 @@ export class RegistroService {
         message: error.message
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
   }
 
   async findByViviendaId(idVivienda: number) {
@@ -566,12 +570,14 @@ export class RegistroService {
       // Obtener la vivienda con todas sus relaciones
       const vivienda = await this.viviendaService.findOneWithRelations(idVivienda);
 
+
       if (!vivienda) {
         throw new NotFoundException(`No se encontró la vivienda con ID ${idVivienda}`);
       }
 
       // Obtener todas las personas que viven en esta vivienda con sus relaciones
       const personas = await this.personaService.findByViviendaId(idVivienda);
+
 
       // Estructurar la respuesta
       const registro = {
@@ -650,6 +656,7 @@ export class RegistroService {
     }
   }
 
+
   // registro.service.ts
 
 async findOneByPersonaId(idPersona: number): Promise<Registro> {
@@ -660,5 +667,6 @@ async findOneByPersonaId(idPersona: number): Promise<Registro> {
 }
 
 }
+
 
 

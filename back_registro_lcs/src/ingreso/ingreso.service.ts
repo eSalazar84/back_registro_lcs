@@ -4,9 +4,11 @@ import { UpdateIngresoDto } from './dto/update-ingreso.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Ingreso } from './entities/ingreso.entity';
 import { FindOneOptions, Repository } from 'typeorm';
+
 import { Persona } from 'src/persona/entities/persona.entity';
 import { EntityManager } from 'typeorm';
 import { Registro } from 'src/registro/entities/registro.entity';
+
 
 @Injectable()
 export class IngresoService {
@@ -14,13 +16,16 @@ export class IngresoService {
     @InjectRepository(Ingreso)
     private readonly ingresoRepository: Repository<Ingreso>, // Corregido a Repository<Ingreso>
 
+
     @InjectRepository(Registro)
     private readonly registroRepository: Repository<Registro>, // Corregido a Repository<Ingreso>
+
 
 
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
   ) { }
+
 
   async createIngreso(
     ingresos: CreateIngresoDto | CreateIngresoDto[], // Acepta tanto array como objeto individual
@@ -63,6 +68,8 @@ export class IngresoService {
     } catch (error) {
       console.error("❌ Error al crear ingresos:", error);
       throw new InternalServerErrorException('Error al crear ingresos: ' + error.message);
+
+ 
     }
   }
 
@@ -77,6 +84,7 @@ export class IngresoService {
   }
   
 
+
   async findOneById(id: number): Promise<Ingreso> {
     const ingreso = await this.ingresoRepository.findOne({
       where: { idIngreso: id },
@@ -89,6 +97,7 @@ export class IngresoService {
 
     return ingreso;
   }
+
 
   async updateIngreso(
     idIngreso: number,
@@ -119,6 +128,7 @@ export class IngresoService {
     await this.ingresoRepository.remove(ingreso);
   }
   
+
 
   // Metodo para buscar los ingresos de las personas por id (se usa en PdfService)
 

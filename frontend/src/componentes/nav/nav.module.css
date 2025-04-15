@@ -2,10 +2,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+<<<<<<< HEAD
     height: 92px; /* Altura de la barra */
     padding: 0 20px; /* Espaciado interno */
     box-sizing: border-box; /* Incluye el padding en el ancho y alto */
     background-color: #002b5a;   
+=======
+    height: 92px;
+    /* Altura de la barra */
+    padding-left: 3rem;
+    /* Espaciado interno */
+    padding-right: 3rem;
+    /* Espaciado interno */
+    box-sizing: border-box;
+    /* Incluye el padding en el ancho y alto */
+    background-color: #002b5a;
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
     color: #ffffff;
 }
 
@@ -22,7 +34,11 @@
 }
 
 .container_h2_nav h2 {
+<<<<<<< HEAD
     font-size: 24px;
+=======
+    font-size: 20px;
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
     font-weight: bold;
 }
 
@@ -33,8 +49,15 @@
     font-size: 20px;
     padding-right: 40px;
     padding-left: 40px;
+<<<<<<< HEAD
     border-left: #ffffff solid 1px;
     border-right: #ffffff solid 1px;
+=======
+    border-left: rgba(224, 224, 224, 0.5) solid 1px;
+    /* 50% de transparencia */
+    border-right: rgba(224, 224, 224, 0.5) solid 1px;
+    /* 50% de transparencia */
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 }
 
 /* Fecha */
@@ -44,14 +67,29 @@
     padding-right: 40px;
 }
 
+<<<<<<< HEAD
 /* Para pantallas menores a 768px */
 @media (max-width: 768px) {
     .container_general_nav {
         height: 80px; /* Altura fija */
+=======
+@media screen and (min-width: 1025px) {
+    .numero_texto {
+        display: none;
+        /* Oculta el enlace en pantallas grandes */
+    }
+}
+
+@media (max-width: 1024px) {
+    .container_general_nav {
+        height: 60px;
+        /* Altura fija */
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
         padding: 5px 10px;
     }
 
     .logo img {
+<<<<<<< HEAD
         height: 45px; /* Reduzco el logo */
     }
 
@@ -61,6 +99,54 @@
 
     .container_redes {
         font-size: 18px; /* Iconos más chicos */
+=======
+        height: 50px;
+        /* Reduzco el logo */
+    }
+
+    .container_h2_nav h2 {
+        font-size: 20px;
+        /* Texto más pequeño pero visible */
+    }
+
+    .container_redes {
+        display: none;
+    }
+
+    .container_fecha {
+        display: none;
+    }
+
+    .numero_texto {
+        font-size: 16px;
+        padding-left: 20px;
+        padding-right: 30px;
+    }
+
+}
+
+/* Para pantallas menores a 768px */
+@media (max-width: 768px) {
+    .container_general_nav {
+        height: 80px;
+        /* Altura fija */
+        padding: 5px 10px;
+    }
+
+    .logo img {
+        height: 45px;
+        /* Reduzco el logo */
+    }
+
+    .container_h2_nav h2 {
+        font-size: 18px;
+        /* Texto más pequeño pero visible */
+    }
+
+    .container_redes {
+        font-size: 18px;
+        /* Iconos más chicos */
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
         gap: 10px;
         padding: 0 20px;
     }
@@ -74,12 +160,21 @@
 /* Para pantallas menores a 480px (muy pequeñas) */
 @media (max-width: 480px) {
     .container_general_nav {
+<<<<<<< HEAD
         height: 80px; /* Mantengo la altura */
+=======
+        height: 80px;
+        /* Mantengo la altura */
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
         padding: 5px;
     }
 
     .logo img {
         height: 40px;
+<<<<<<< HEAD
+=======
+        padding-left: 17px;
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
     }
 
     .container_h2_nav h2 {
@@ -95,4 +190,8 @@
     .container_fecha {
         font-size: 12px;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad

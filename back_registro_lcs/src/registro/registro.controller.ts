@@ -9,6 +9,7 @@ import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { CreateRegistroDto } from './dto/create-registro.dto';
 import { Persona } from 'src/persona/entities/persona.entity';
 
+
 @Controller('registro')
 export class RegistroController {
   constructor(private readonly registroService: RegistroService) { }
@@ -70,7 +71,9 @@ export class RegistroController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
+
     return await this.registroService.findOneByIdRegistro(id);
+
   }
 
   @Patch(':id')
@@ -110,5 +113,6 @@ async findByPersona(
   const registro = await this.registroService.findOneByPersonaId(idPersona);
   return { status: HttpStatus.OK, data: registro };
 }
+
 
 }

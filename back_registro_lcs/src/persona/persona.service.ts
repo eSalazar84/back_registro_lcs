@@ -8,6 +8,7 @@ import { Titular_Cotitular } from './enum/titular_cotitular.enum';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
 
 
+
 @Injectable()
 export class PersonaService {
 
@@ -62,6 +63,7 @@ export class PersonaService {
     if (createPersonaDto.titular_cotitular === Titular_Cotitular.Titular) {
       const lastPersona = await personaRepo.findOne({
         order: { numero_registro: "DESC" },
+
         where: { titular_cotitular: Titular_Cotitular.Titular },
       });
       personaData.numero_registro = (lastPersona?.numero_registro ?? 0) + 1;
@@ -69,6 +71,7 @@ export class PersonaService {
     } else {
       personaData.numero_registro = null;
     }
+
   
     // Limpiar strings
     personaData = this.trimStrings(personaData);
@@ -78,7 +81,7 @@ export class PersonaService {
     return await personaRepo.save(persona);
   }
   
-  
+
   private trimStrings<T>(obj: T): T {
     return Object.keys(obj).reduce((acc, key) => {
       const value = obj[key];
@@ -86,7 +89,7 @@ export class PersonaService {
       return acc;
     }, {} as T);
   }
-  
+
   async findAll(): Promise<Persona[]> {
     try {
       // Encuentra todas las personas con las relaciones necesarias
@@ -113,6 +116,7 @@ export class PersonaService {
 
 
   async findOneById(id: number): Promise<Persona & { totalSalario: number }> {
+
     // Buscar la persona por id con las relaciones necesarias
     const persona = await this.personaRepository.findOne({
       where: { idPersona: id },
@@ -134,6 +138,7 @@ export class PersonaService {
     };
   }
   
+
 
   async findOneByDniRegistro(dni: number): Promise<Persona | null> {
     const persona = await this.personaRepository.findOne({ where: { dni } });
@@ -173,6 +178,7 @@ export class PersonaService {
   }
 
 
+
   async updatePersona(
     id: number,
     updatePersonaDto: UpdatePersonaDto,
@@ -202,6 +208,7 @@ export class PersonaService {
     return await this.personaRepository.save(persona);
   }
   
+
 
   async remove(id: number): Promise<void> {
     // Buscar la persona por su ID

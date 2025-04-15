@@ -3,6 +3,10 @@ import { FaFacebookF } from "react-icons/fa";
 import { FaYoutube } from "react-icons/fa";
 import { FaLinkedin } from "react-icons/fa";
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
+=======
+import { FaPhoneAlt } from "react-icons/fa";
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 
 
 
@@ -18,11 +22,21 @@ function Nav() {
         <>
             <div className={styles.container_general_nav}>
                 <div className={styles.logo}>
+<<<<<<< HEAD
                     <img src="/Logo_Muni2024.png" alt="logo" />
                 </div>
 
                 <div className={styles.container_h2_nav}>
                     <h2>LOTES CON SERVICIOS</h2>
+=======
+                    <Link to={"/"} >
+                        <img src="/Logo_Muni2024.png" alt="logo" />
+                    </Link>
+                </div>
+
+                <div className={styles.container_h2_nav}>
+                    <h2>Programa Mi Hábitat, mi Hogar</h2>
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
                 </div>
 
                 <div className={styles.container_redes}>
@@ -43,6 +57,12 @@ function Nav() {
                     </a>
                 </div>
 
+<<<<<<< HEAD
+=======
+                <a href="https://benitojuarez.gov.ar/telefonos-utiles/" className={styles.numero_texto}>
+                    <FaPhoneAlt className={styles.icon_emergencias} />
+                </a>
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
                 <div className={styles.container_fecha}>
                     <p>{fechaActual}</p>
                 </div>

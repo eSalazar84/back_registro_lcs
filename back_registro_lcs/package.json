@@ -6,7 +6,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+<<<<<<< HEAD
     "build": "nest build && copyfiles -u 1 \"src/**/*.hbs\" dist",
+=======
+    "build": "nest build && copyfiles -u 1 \"src/**/*.hbs\" \"src/migrations/**/*\" dist",
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "cross-env NODE_ENV=development nest start --watch",
@@ -19,7 +23,14 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+<<<<<<< HEAD
     "typeorm": "typeorm-ts-node-esm"
+=======
+    "typeorm": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli",
+    "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/InitialMigration -d ./data-source.ts",
+    "migration:run": "npm run typeorm -- migration:run -d ./data-source.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d ./data-source.ts"
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",

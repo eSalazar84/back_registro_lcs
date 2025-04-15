@@ -7,6 +7,7 @@ import { FindOneOptions, Repository } from 'typeorm';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 import { Titular_Cotitular } from 'src/persona/enum/titular_cotitular.enum';
 
+
 @Injectable()
 export class LoteService {
 

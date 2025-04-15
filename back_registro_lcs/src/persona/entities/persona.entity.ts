@@ -11,6 +11,7 @@ import { Ingreso } from "src/ingreso/entities/ingreso.entity";
 import { Lote } from "src/lote/entities/lote.entity";
 import { Registro } from "src/registro/entities/registro.entity";
 
+
 @Entity()
 export class Persona {
   @PrimaryGeneratedColumn()
@@ -78,6 +79,7 @@ idRegistro: number;
 registro: Registro;
 
 
+
   // Guardar solo el ID de vivienda
   @ManyToOne(() => Vivienda, (vivienda) => vivienda.personas, { cascade: true })
   @JoinColumn({ name: "idVivienda" }) // Asegúrate de que el nombre de la columna sea correcto
@@ -89,5 +91,7 @@ registro: Registro;
   lote: Lote;
   
   @OneToMany(() => Ingreso, ingreso => ingreso.persona)  // Relación inversa
+
   ingresos: Ingreso[];  
+
 }

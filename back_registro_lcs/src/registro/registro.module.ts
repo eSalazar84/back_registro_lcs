@@ -23,3 +23,4 @@ import { Registro } from './entities/registro.entity';
 })
 export class RegistroModule {}
 
+

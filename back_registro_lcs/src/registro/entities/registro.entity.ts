@@ -1,3 +1,4 @@
+
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -33,3 +34,6 @@ personas: Persona[];
 
   }
   
+
+
+

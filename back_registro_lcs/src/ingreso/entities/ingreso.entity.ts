@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Relacion } from "../enum/relacion.enum";
+
 import { Persona } from "src/persona/entities/persona.entity";
 import { Registro } from "src/registro/entities/registro.entity";
 
@@ -16,6 +17,7 @@ export class Ingreso {
 
     @Column({ type: 'bigint', nullable: true })
     CUIT_empleador?: number | null;
+
 
     @Column({ type: 'int', nullable: true })
     salario?: number | null;
@@ -35,5 +37,6 @@ export class Ingreso {
     @JoinColumn({ name: "idPersona" })
     persona: Persona;
   newIngreso: { idRegistro: number; };
+
 
 }

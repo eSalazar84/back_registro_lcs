@@ -1,6 +1,10 @@
 import styles from "./home.module.css"
 import { Link } from "react-router-dom"
+<<<<<<< HEAD
 import { ArrowRight, CheckCircle, Info, Users, FileText, Leaf } from "lucide-react"
+=======
+import { ArrowRight, CheckCircle, Info, Users, FileText, Leaf, MapPin } from "lucide-react"
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 
 function Home() {
   return (
@@ -8,7 +12,11 @@ function Home() {
       <div className={styles.container_general_home}>
         <div className={styles.hero_section}>
           <div className={styles.h2_home}>
+<<<<<<< HEAD
             <h2>Programa Mi Hábitat, mi Hogar</h2>
+=======
+            <h2>Registro de demanda socio habitacional</h2>
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
             <p className={styles.hero_subtitle}>Construyendo el futuro de nuestra comunidad</p>
           </div>
         </div>
@@ -132,15 +140,31 @@ function Home() {
         </div>
 
         <div className={styles.container_buttons_home}>
+<<<<<<< HEAD
           <Link to={"/bases-y-condiciones"} className={styles.button_link}>
             <div className={styles.modern_button}>
               <span>Bases y condiciones</span>
+=======
+          <a href="/" className={styles.button_link}>
+            <div className={styles.modern_button_location}>
+              <span>Ubicación de los Lotes</span>
+              <MapPin className={styles.button_icon} />
+            </div>
+          </a>
+          <Link to={"/bases-y-condiciones"} className={styles.button_link}>
+            <div className={styles.modern_button}>
+              <span>Requisitos Generales</span>
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
               <FileText className={styles.button_icon} />
             </div>
           </Link>
           <Link to={"/registro"} className={styles.button_link}>
             <div className={styles.modern_button_primary}>
+<<<<<<< HEAD
               <span>Ingreso al Registro</span>
+=======
+              <span>Ingreso al Registro Lotes</span>
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
               <ArrowRight className={styles.button_icon} />
             </div>
           </Link>

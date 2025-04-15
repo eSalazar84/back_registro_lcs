@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "ty
 import { Localidad } from "../enum/localidad.enum";
 import { Persona } from "src/persona/entities/persona.entity";
 
+
 @Entity()
 export class Lote {
     @PrimaryGeneratedColumn()
@@ -12,4 +13,5 @@ export class Lote {
 
     @OneToOne(() => Persona, persona => persona.lote, { nullable: true })
     persona: Persona;
+
 }

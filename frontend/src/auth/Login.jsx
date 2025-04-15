@@ -13,10 +13,15 @@ const Login = () => {
     e.preventDefault();
     try {
       await login(email, password);
+<<<<<<< HEAD
       console.log("Redirigiendo a /dashboard");
       navigate("/dashboard");
     } catch (error) {
       console.error("Error de inicio de sesión:", error);
+=======
+      navigate("/dashboard");
+    } catch (error) {
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
       alert(error.message);
     }
   };

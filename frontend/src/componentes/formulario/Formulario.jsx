@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+<<<<<<< HEAD
 import styles from "./Formulario.module.css";
+=======
+import styles from "./formulario.module.css";
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
@@ -404,10 +408,15 @@ const Formulario = ({ onSubmit }) => {
     setLoading(true);
 
     try {
+<<<<<<< HEAD
       console.log(personas);
 
       const datosTransformados = personas.map(persona => transformarDatosEnvioBackend(persona));
       console.log("datos trandformado", datosTransformados);
+=======
+
+      const datosTransformados = personas.map(persona => transformarDatosEnvioBackend(persona));
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 
 
       const response = await fetch(API_URL, {
@@ -439,9 +448,13 @@ const Formulario = ({ onSubmit }) => {
         return;
       }
 
+<<<<<<< HEAD
       console.log('Registro exitoso, intentando redireccionar...');
 
       console.log('Navegación ejecutada');
+=======
+
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
       // Si el registro fue exitoso
       await Swal.fire({
         icon: 'success',
@@ -463,7 +476,10 @@ const Formulario = ({ onSubmit }) => {
       }, 200);
 
     } catch (error) {
+<<<<<<< HEAD
       console.error('Error en el frontend:', error);
+=======
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
       Swal.fire({
         icon: 'error',
         title: 'Error en el registro',
@@ -836,7 +852,11 @@ const Formulario = ({ onSubmit }) => {
             <div className={`${styles.inputGroup} ${index === 0 || showHousingData[index] ? styles.visible : styles.hidden}`}>
               {/* Localidad - Nuevo orden */}
               <label className={styles.label}>
+<<<<<<< HEAD
                 <span className={styles.labelText}>Localidad *</span>
+=======
+                <span className={styles.labelText}>Localidad donde residís *</span>
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
                 <select
                   required={index === 0 || showHousingData[index]}
                   name="localidad"
@@ -1210,9 +1230,15 @@ const Formulario = ({ onSubmit }) => {
         <button
           type="submit"
           disabled={loading || !aceptaDeclaracion}
+<<<<<<< HEAD
           className={`${styles.button} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
         >
           {loading ? "Enviando..." : "Enviar"}
+=======
+          className={`${styles.button_registrar} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
+        >
+          {loading ? "Enviando datos..." : "Registrar"}
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
         </button>
       </div>
     </form>

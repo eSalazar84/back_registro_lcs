@@ -74,10 +74,16 @@ web_modules/
 
 # dotenv environment variable files
 .env
+<<<<<<< HEAD
 .env.*
 .env.development
 .env.test
 .env.production
+=======
+.env.development.local
+.env.test.local
+.env.production.local
+>>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 .env.local
 
 
