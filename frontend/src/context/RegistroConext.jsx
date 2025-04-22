@@ -14,6 +14,8 @@ export const RegistroProvider = ({ children }) => {
     setLoading(true);
     try {
       const data = await fetchRegistros();
+      console.log("data", data);
+      
       setRegistros(data);
     } catch (err) {
       setError(err.message);
@@ -21,22 +23,17 @@ export const RegistroProvider = ({ children }) => {
       setLoading(false);
     }
   };
+console.log("registros". registros);
 
   const getRegistroById = async (id) => {
     setLoading(true);
     try {
       const data = await fetchRegistroById(id);
       setRegistro(data);
-<<<<<<< HEAD
-     
-    } catch (err) {
-      setError(err.message);
-    console.error('Error:', err.message);
-=======
+
 
     } catch (err) {
       setError(err.message);
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
 
     } finally {
       setLoading(false);

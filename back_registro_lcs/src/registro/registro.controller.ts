@@ -79,7 +79,7 @@ export class RegistroController {
   @Patch(':id')
   async update(@Param('id') id: number, @Body() updateDto: any) {
     try {
-      const registroActualizado = await this.registroService.update(id, updateDto);
+      const registroActualizado = await this.registroService.updateRegistro(id, updateDto);
       return {
         status: HttpStatus.OK,
         message: 'Registro actualizado exitosamente',

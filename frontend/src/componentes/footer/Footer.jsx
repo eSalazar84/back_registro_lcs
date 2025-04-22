@@ -118,11 +118,8 @@ function Footer() {
             </div>
 
             <div className={styles.top_footer}>
-<<<<<<< HEAD
-                <p>Municipio de Benito Juárez © 2024 - Todos los derechos reservados | EFA.CODE</p>
-=======
                 <p>Municipio de Benito Juárez © 2025 - Todos los derechos reservados | EFA.CODE</p>
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
             </div>
 
         </div>

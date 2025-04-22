@@ -20,6 +20,8 @@ import { Lote } from 'src/lote/entities/lote.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateRegistroDto } from './dto/update-registro.dto';
 import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
+import { Localidad } from 'src/lote/enum/localidad.enum';
+import { Estado_vivienda } from 'src/vivienda/enum/estado_vivienda.enum';
 
 @Injectable()
 export class RegistroService {
@@ -171,136 +173,327 @@ export class RegistroService {
       relations: ['personas', 'vivienda', 'lote', 'personas.ingresos'],
     });
   }
+  // async updateRegistro(idRegistro: number, updateDto: UpdateRegistroDto): Promise<Registro> {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
 
-  async update(idRegistro: number, updateDto: any) {
+  //   try {
+  //     // Buscar el registro existente con todas las relaciones necesarias
+  //     const registro = await queryRunner.manager.findOne(Registro, {
+  //       where: { idRegistro },
+  //       relations: ['personas', 'personas.ingresos', 'vivienda', 'lote']
+  //     });
+
+  //     if (!registro) throw new NotFoundException(`Registro ${idRegistro} no encontrado`);
+
+  //     // 1. Actualizar o crear vivienda
+  //     if (updateDto.vivienda) {
+  //       if (updateDto.vivienda.idVivienda) {
+  //         // Actualizar vivienda existente
+  //         const viviendaActualizada = await this.viviendaService.updateVivienda(
+  //           updateDto.vivienda.idVivienda,
+  //           updateDto.vivienda,
+  //           queryRunner.manager
+  //         );
+  //         registro.vivienda = viviendaActualizada;
+  //       } else {
+
+  //         const viviendaDto: CreateViviendaDto = {
+  //           ...updateDto.vivienda,
+  //           direccion: updateDto.vivienda.direccion, // obligatorio
+  //           numero_direccion: updateDto.vivienda.numero_direccion, // obligatorio
+  //           departamento: updateDto.vivienda.departamento ?? false,
+  //           piso_departamento: updateDto.vivienda.piso_departamento ?? 0,
+  //           numero_departamento: updateDto.vivienda.numero_departamento ?? '',
+  //           alquiler: updateDto.vivienda.alquiler ?? false, // obligatorio
+  //           valor_alquiler: updateDto.vivienda.valor_alquiler ?? 0,
+  //           localidad: updateDto.vivienda.localidad, // obligatorio
+  //           cantidad_dormitorios: updateDto.vivienda.cantidad_dormitorios ?? 0, // obligatorio
+  //           estado_vivienda: updateDto.vivienda.estado_vivienda, // obligatorio
+  //           tipo_alquiler: updateDto.vivienda.tipo_alquiler ?? null
+  //         };
+    
+  //         const nuevaVivienda = await this.viviendaService.createVivienda(
+  //          viviendaDto,
+  //           queryRunner.manager
+  //         );
+  //         registro.vivienda = nuevaVivienda;
+  //       }
+  //     }
+
+
+
+  //     // 2. Procesar personas
+  //     const personasToKeep: number[] = [];
+  //     const updatedPersonas: Persona[] = [];
+
+  //     for (const personaDto of updateDto.personas) {
+  //       let personaActualizada: Persona;
+
+  //       if (personaDto.idPersona) {
+  //         // PERSONA EXISTENTE
+  //         // Actualizar datos básicos de la persona
+  //         const { ingresos = [], ...personaData } = personaDto;
+  //         personaActualizada = await this.personaService.updatePersona(
+  //           personaDto.idPersona,
+  //           personaData,
+  //           idRegistro,
+  //           queryRunner.manager
+  //         );
+
+  //         // Procesar ingresos existentes y nuevos
+  //         const ingresosActuales = registro.personas
+  //           .find(p => p.idPersona === personaDto.idPersona)?.ingresos || [];
+
+  //         // Eliminar ingresos que ya no están en el DTO
+  //         const ingresosAEliminar = ingresosActuales.filter(
+  //           ia => !ingresos.some(ni => ni.idIngreso === ia.idIngreso)
+  //         );
+  //         for (const ingreso of ingresosAEliminar) {
+  //           await queryRunner.manager.delete(Ingreso, ingreso.idIngreso);
+  //         }
+
+  //         // Actualizar/Crear ingresos
+  //         for (const ingresoDto of ingresos) {
+  //           if (ingresoDto.idIngreso) {
+  //             // Actualizar ingreso existente
+  //             await queryRunner.manager.update(
+  //               Ingreso,
+  //               ingresoDto.idIngreso,
+  //               {
+  //                 ...ingresoDto,
+  //                 idPersona: personaDto.idPersona // Mantener relación
+  //               }
+  //             );
+  //           } else {
+  //             // Crear nuevo ingreso
+  //             const nuevoIngreso = queryRunner.manager.create(Ingreso, {
+  //               ...ingresoDto,
+  //               idPersona: personaDto.idPersona,
+  //               idRegistro: idRegistro
+  //             });
+  //             await queryRunner.manager.save(nuevoIngreso);
+  //           }
+  //         }
+
+  //       } else {
+  //         // NUEVA PERSONA
+  //         const { ingresos = [], ...personaData } = personaDto;
+          
+  //         // Crear persona
+  //         personaActualizada = await this.personaService.createPersona(
+  //           personaData as CreatePersonaDto,
+  //           registro.vivienda?.idVivienda,
+  //           registro.lote?.idLote,
+  //           idRegistro,
+  //           queryRunner.manager
+  //         );
+
+  //         // Crear ingresos para la nueva persona
+  //         for (const ingresoDto of ingresos) {
+  //           const nuevoIngreso = queryRunner.manager.create(Ingreso, {
+  //             ...ingresoDto,
+  //             idPersona: personaActualizada.idPersona,
+  //             idRegistro: idRegistro
+  //           });
+  //           await queryRunner.manager.save(nuevoIngreso);
+  //         }
+  //       }
+
+  //       // Recargar persona con relaciones actualizadas
+  //       const personaCompleta = await queryRunner.manager.findOne(Persona, {
+  //         where: { idPersona: personaActualizada.idPersona },
+  //         relations: ['ingresos']
+  //       });
+
+  //       if (personaCompleta) {
+  //         updatedPersonas.push(personaCompleta);
+  //         personasToKeep.push(personaCompleta.idPersona);
+  //       }
+  //     }
+
+  //     // 3. Eliminar personas que no están en el DTO
+  //     const personasAEliminar = registro.personas
+  //       .filter(p => !personasToKeep.includes(p.idPersona));
+      
+  //     for (const persona of personasAEliminar) {
+  //       await queryRunner.manager.delete(Persona, persona.idPersona);
+  //     }
+
+  //     // 4. Actualizar el registro
+  //     registro.personas = updatedPersonas;
+  //     const registroActualizado = await queryRunner.manager.save(registro);
+
+    
+
+  //     await queryRunner.commitTransaction();
+  //     return registroActualizado;
+
+  //   } catch (err) {
+  //     await queryRunner.rollbackTransaction();
+  //     console.error("Error en updateRegistro:", err);
+  //     throw new HttpException({
+  //       status: HttpStatus.BAD_REQUEST,
+  //       error: "Error al actualizar registro",
+  //       message: err.message
+  //     }, HttpStatus.BAD_REQUEST);
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
+  
+  async updateRegistro(idRegistro: number, updateDto: UpdateRegistroDto): Promise<Registro> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
   
+    console.log("data", );
+    
     try {
-      // Obtener registro con relaciones
+      // Buscar el registro existente con todas las relaciones necesarias
       const registro = await queryRunner.manager.findOne(Registro, {
         where: { idRegistro },
-        relations: ['personas', 'vivienda', 'lote', 'personas.ingresos']
+        relations: ['personas', 'personas.ingresos', 'vivienda', 'lote']
       });
   
-      if (!registro) {
-        throw new NotFoundException("Registro no encontrado");
-      }
+      if (!registro) throw new NotFoundException(`Registro ${idRegistro} no encontrado`);
   
-      // 1. Actualizar vivienda si existe
+      // 1. Actualizar o crear vivienda
       if (updateDto.vivienda) {
-        if (registro.vivienda) {
-          await queryRunner.manager.update(
-            Vivienda, 
-            registro.vivienda.idVivienda, 
-            updateDto.vivienda
+        if (updateDto.vivienda.idVivienda) {
+          // Actualizar vivienda existente
+          const viviendaActualizada = await this.viviendaService.updateVivienda(
+            updateDto.vivienda.idVivienda,
+            updateDto.vivienda,
+            queryRunner.manager
           );
+          registro.vivienda = viviendaActualizada;
         } else {
-          const nuevaVivienda = queryRunner.manager.create(Vivienda, updateDto.vivienda);
-          registro.vivienda = await queryRunner.manager.save(nuevaVivienda);
-        }
-      }
-  
-      // 2. Actualizar lote si existe
-      if (updateDto.lote) {
-        if (registro.lote) {
-          await queryRunner.manager.update(
-            Lote, 
-            registro.lote.idLote, 
-            updateDto.lote
-          );
-        } else {
-          const nuevoLote = queryRunner.manager.create(Lote, updateDto.lote);
-          registro.lote = await queryRunner.manager.save(nuevoLote);
-        }
-      }
-  
-      // 3. Manejo de personas
-      if (Array.isArray(updateDto.personas)) {
-        const personasActuales = registro.personas || [];
-        const personasActualesIds = personasActuales.map(p => p.idPersona);
-  
-        // A. Procesar nuevas personas
-        const nuevasPersonasDtos = updateDto.personas.filter(p => !p.idPersona);
-        for (const personaDto of nuevasPersonasDtos) {
-          // SOLUCIÓN CLAVE: Crear persona sin asignar lote si ya está asignado
-          const personaData = {
-            ...personaDto,
-            idRegistro: idRegistro,
-            idVivienda: registro.vivienda?.idVivienda,
-            // Solo asignar lote si no está ya asignado a otra persona
-            idLote: registro.personas.some(p => p.idLote === registro.lote?.idLote) 
-              ? null 
-              : registro.lote?.idLote
+          // Crear nueva vivienda
+          const viviendaDto: CreateViviendaDto = {
+            ...updateDto.vivienda,
+            direccion: updateDto.vivienda.direccion,
+            numero_direccion: updateDto.vivienda.numero_direccion,
+            departamento: updateDto.vivienda.departamento ?? false,
+            piso_departamento: updateDto.vivienda.piso_departamento ?? 0,
+            numero_departamento: updateDto.vivienda.numero_departamento ?? '',
+            alquiler: updateDto.vivienda.alquiler ?? false,
+            valor_alquiler: updateDto.vivienda.valor_alquiler ?? 0,
+            localidad: updateDto.vivienda.localidad,
+            cantidad_dormitorios: updateDto.vivienda.cantidad_dormitorios ?? 0,
+            estado_vivienda: updateDto.vivienda.estado_vivienda,
+            tipo_alquiler: updateDto.vivienda.tipo_alquiler ?? null
           };
   
-          const personaCreada = queryRunner.manager.create(Persona, personaData);
-          const personaGuardada = await queryRunner.manager.save(personaCreada);
+          const nuevaVivienda = await this.viviendaService.createVivienda(viviendaDto, queryRunner.manager);
+          registro.vivienda = nuevaVivienda;
+        }
+      }
   
-          // Crear ingresos si existen
-          if (personaDto.ingresos) {
-            const ingresos = Array.isArray(personaDto.ingresos) ? personaDto.ingresos : [personaDto.ingresos];
-            for (const ingresoDto of ingresos) {
+      // 2. Procesar personas
+      const personasToKeep: number[] = [];
+      const updatedPersonas: Persona[] = [];
+  
+      for (const personaDto of updateDto.personas) {
+        let personaActualizada: Persona;
+  
+        if (personaDto.idPersona) {
+          // PERSONA EXISTENTE
+          const { ingresos = [], ...personaData } = personaDto;
+  
+          // Actualizar persona existente
+          personaActualizada = await this.personaService.updatePersona(
+            personaDto.idPersona,
+            personaData,
+            idRegistro,
+            queryRunner.manager
+          );
+  
+          // Procesar ingresos existentes y nuevos
+          const ingresosActuales = registro.personas.find(p => p.idPersona === personaDto.idPersona)?.ingresos || [];
+  
+          // Eliminar ingresos que ya no están en el DTO
+          const ingresosAEliminar = ingresosActuales.filter(ia => !ingresos.some(ni => ni.idIngreso === ia.idIngreso));
+          for (const ingreso of ingresosAEliminar) {
+            await queryRunner.manager.delete(Ingreso, ingreso.idIngreso);
+          }
+  
+          // Actualizar/Crear ingresos
+          for (const ingresoDto of ingresos) {
+            if (ingresoDto.idIngreso) {
+              // Actualizar ingreso existente
+              await queryRunner.manager.update(Ingreso, ingresoDto.idIngreso, {
+                ...ingresoDto,
+                idPersona: personaDto.idPersona // Mantener relación
+              });
+            } else {
+              // Crear nuevo ingreso
               const nuevoIngreso = queryRunner.manager.create(Ingreso, {
                 ...ingresoDto,
-                idPersona: personaGuardada.idPersona,
+                idPersona: personaDto.idPersona,
                 idRegistro: idRegistro
               });
               await queryRunner.manager.save(nuevoIngreso);
             }
           }
   
-          personasActuales.push(personaGuardada);
-        }
+        } else {
+          // NUEVA PERSONA
+          const { ingresos = [], ...personaData } = personaDto;
   
-        // B. Actualizar personas existentes
-        const personasActualizarDtos = updateDto.personas.filter(p => p.idPersona && personasActualesIds.includes(p.idPersona));
-        for (const personaDto of personasActualizarDtos) {
-          // Actualizar sin modificar relaciones existentes
-          const { ingresos, idVivienda, idLote, ...datosActualizar } = personaDto;
-          await queryRunner.manager.update(
-            Persona,
-            personaDto.idPersona,
-            datosActualizar
+          // Crear nueva persona
+          personaActualizada = await this.personaService.createPersona(
+            personaData as CreatePersonaDto,
+            personaDto.idVivienda || registro.vivienda?.idVivienda, // Asociar a nueva o existente vivienda
+            personaDto.idLote || registro.lote?.idLote,
+            idRegistro,
+            queryRunner.manager
           );
   
-          // Manejar ingresos
-          if (ingresos) {
-            const ingresosArray = Array.isArray(ingresos) ? ingresos : [ingresos];
-            for (const ingresoDto of ingresosArray) {
-              if (ingresoDto.idIngreso) {
-                await queryRunner.manager.update(
-                  Ingreso,
-                  ingresoDto.idIngreso,
-                  ingresoDto
-                );
-              } else {
-                const nuevoIngreso = queryRunner.manager.create(Ingreso, {
-                  ...ingresoDto,
-                  idPersona: personaDto.idPersona,
-                  idRegistro: idRegistro
-                });
-                await queryRunner.manager.save(nuevoIngreso);
-              }
-            }
+          // Crear ingresos para la nueva persona
+          for (const ingresoDto of ingresos) {
+            const nuevoIngreso = queryRunner.manager.create(Ingreso, {
+              ...ingresoDto,
+              idPersona: personaActualizada.idPersona,
+              idRegistro: idRegistro
+            });
+            await queryRunner.manager.save(nuevoIngreso);
           }
         }
   
-        // Actualizar referencia en el registro
-        registro.personas = personasActuales;
+        // Recargar persona con relaciones actualizadas
+        const personaCompleta = await queryRunner.manager.findOne(Persona, {
+          where: { idPersona: personaActualizada.idPersona },
+          relations: ['ingresos']
+        });
+  
+        if (personaCompleta) {
+          updatedPersonas.push(personaCompleta);
+          personasToKeep.push(personaCompleta.idPersona);
+        }
       }
   
-      await queryRunner.manager.save(registro);
+      // 3. Eliminar personas que no están en el DTO
+      const personasAEliminar = registro.personas.filter(p => !personasToKeep.includes(p.idPersona));
+      for (const persona of personasAEliminar) {
+        await queryRunner.manager.delete(Persona, persona.idPersona);
+      }
+  
+      // 4. Actualizar el registro
+      registro.personas = updatedPersonas;
+      const registroActualizado = await queryRunner.manager.save(registro);
+  
       await queryRunner.commitTransaction();
-      return await this.findOneByIdRegistro(idRegistro);
-    } catch (error) {
+      return registroActualizado;
+  
+    } catch (err) {
       await queryRunner.rollbackTransaction();
-      console.error("Error en actualización:", error);
+      console.error("Error en updateRegistro:", err);
       throw new HttpException({
         status: HttpStatus.BAD_REQUEST,
         error: "Error al actualizar registro",
-        message: error.message
+        message: err.message
       }, HttpStatus.BAD_REQUEST);
     } finally {
       await queryRunner.release();
@@ -308,35 +501,6 @@ export class RegistroService {
   }
   
   
-  
-  // Función auxiliar privada
-  private async manejarIngresosPersona(
-    personaDto: any,
-    idPersona: number,
-    idRegistro: number,
-    manager: EntityManager
-  ) {
-    if (Array.isArray(personaDto.ingresos)) {
-      const ingresosActuales = await this.ingresoService.findByPersona(idPersona);
-      const nuevosIds = personaDto.ingresos.map(i => i.idIngreso).filter(Boolean);
-  
-      for (const ingresoDto of personaDto.ingresos) {
-        if (ingresoDto.idIngreso) {
-          await this.ingresoService.updateIngreso(ingresoDto.idIngreso, ingresoDto, manager);
-        } else {
-          await this.ingresoService.createIngreso([ingresoDto], idPersona, idRegistro, manager);
-        }
-      }
-  
-      for (const ingreso of ingresosActuales) {
-        if (!nuevosIds.includes(ingreso.idIngreso)) {
-          await this.ingresoService.removeIngreso(ingreso.idIngreso);
-        }
-      }
-    }
-  }
-  
-
   async findAll(options?: {
     page?: number;
     limit?: number;
@@ -659,12 +823,12 @@ export class RegistroService {
 
   // registro.service.ts
 
-async findOneByPersonaId(idPersona: number): Promise<Registro> {
-  return this.registroRepository.findOne({
-    where: { personas: { idPersona } },
-    relations: ['vivienda','lote','personas','personas.ingresos']
-  });
-}
+  async findOneByPersonaId(idPersona: number): Promise<Registro> {
+    return this.registroRepository.findOne({
+      where: { personas: { idPersona } },
+      relations: ['vivienda', 'lote', 'personas', 'personas.ingresos']
+    });
+  }
 
 }
 

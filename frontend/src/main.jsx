@@ -10,10 +10,7 @@ import {  RegistroProvider } from './context/RegistroConext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-<<<<<<< HEAD
 
-=======
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
     <RegistroProvider> 
       <AuthProvider>
         <BrowserRouter>

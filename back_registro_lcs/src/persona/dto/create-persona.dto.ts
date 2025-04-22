@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Validate } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Validate, ValidateNested } from 'class-validator';
 import { MinAgeValidator } from "src/src/validators/min-age.validators";
 import { Tipo_DNI } from '../enum/tipo_dni.enum';
 import { Genero } from '../enum/genero.enum';
@@ -7,10 +7,14 @@ import { Nacionalidad } from '../enum/nacionalidad.enum';
 import { Vinculo } from '../enum/vinculo.enum';
 import { Rol } from '../enum/rol.enum';
 import { Titular_Cotitular } from '../enum/titular_cotitular.enum';
+import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
+import { Type } from 'class-transformer';
 
 export class CreatePersonaDto {
 
-    idPersona: number
+    @IsOptional() // ✅ Esto lo hace compatible con DTOs de Update también
+    @IsInt()
+    idPersona?: number;
 
     @IsOptional()
     @IsInt()
@@ -83,6 +87,11 @@ export class CreatePersonaDto {
     @IsOptional()
     @IsInt()
     idLote?: number;
+
+    @IsOptional()
+    @ValidateNested({ each: true })
+    @Type(() => CreateIngresoDto)
+    ingresos?: CreateIngresoDto[];
   
     
 }

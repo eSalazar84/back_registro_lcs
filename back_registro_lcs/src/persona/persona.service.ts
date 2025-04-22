@@ -1,3 +1,4 @@
+import { IngresoService } from 'src/ingreso/ingreso.service';
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreatePersonaDto } from './dto/create-persona.dto';
 import { UpdatePersonaDto } from './dto/update-persona.dto';
@@ -6,6 +7,9 @@ import { Persona } from './entities/persona.entity';
 import { EntityManager, FindOneOptions, In, Repository } from 'typeorm';
 import { Titular_Cotitular } from './enum/titular_cotitular.enum';
 import { ViviendaService } from 'src/vivienda/vivienda.service';
+import { UpdateIngresoDto } from 'src/ingreso/dto/update-ingreso.dto';
+import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
+import { LoteService } from 'src/lote/lote.service';
 
 
 
@@ -16,7 +20,9 @@ export class PersonaService {
   constructor(
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
+    private readonly loteService: LoteService,
     private readonly viviendaService: ViviendaService,
+    private readonly IngresoService: IngresoService
 
   ) { }
 
@@ -178,35 +184,53 @@ export class PersonaService {
   }
 
 
-
   async updatePersona(
     id: number,
     updatePersonaDto: UpdatePersonaDto,
+    idRegistro?: number,
     manager?: EntityManager
   ): Promise<Persona> {
-    const repo = manager || this.personaRepository;
+    const personaRepo = manager
+      ? manager.getRepository(Persona)
+      : this.personaRepository;
   
-    // Buscar la persona por su ID
-    const persona = await this.personaRepository.findOne({ where: { idPersona: id } });
-    console.log("Buscando persona con ID:", id);
-
-  
+    // Buscar la persona
+    const persona = await personaRepo.findOne({ where: { idPersona: id } });
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
   
-    // Validar que haya campos para actualizar
+    // Validar que haya datos a actualizar
     if (Object.keys(updatePersonaDto).length === 0) {
       throw new Error('No hay valores para actualizar');
     }
   
-    // Limpiar strings
+    // Limpiar strings del DTO
     const trimmedDto = this.trimStrings(updatePersonaDto);
   
-    // Actualizar y guardar
+    // Actualizar campos
     Object.assign(persona, trimmedDto);
-    return await this.personaRepository.save(persona);
+    await personaRepo.save(persona);
+  
+    // 👉 Manejo de ingresos si vienen en el DTO
+    if (updatePersonaDto.ingresos) {
+      for (const ingresoDto of updatePersonaDto.ingresos) {
+        if (ingresoDto.idIngreso) {
+          // Actualizar ingreso existente usando UpdateIngresoDto
+          await this.IngresoService.updateIngreso(ingresoDto.idIngreso, ingresoDto as UpdateIngresoDto, manager);
+        } else {
+          // Crear ingreso nuevo usando CreateIngresoDto
+          if (!idRegistro) {
+            throw new Error('idRegistro requerido para crear ingreso');
+          }
+          await this.IngresoService.createIngreso(ingresoDto as CreateIngresoDto, id, idRegistro, manager);
+        }
+      }
+    }
+  
+    return persona;
   }
+  
   
 
 

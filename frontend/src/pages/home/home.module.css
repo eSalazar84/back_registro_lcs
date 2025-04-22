@@ -282,12 +282,9 @@
 }
 
 .modern_button,
-<<<<<<< HEAD
-.modern_button_primary {
-=======
 .modern_button_primary,
 .modern_button_location {
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -308,10 +305,7 @@
     color: white;
 }
 
-<<<<<<< HEAD
-.modern_button:hover,
-.modern_button_primary:hover {
-=======
+
 .modern_button_location {
     background-color: #162230;
     color: white;
@@ -320,7 +314,7 @@
 .modern_button:hover,
 .modern_button_primary:hover,
 .modern_button_location:hover {
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }

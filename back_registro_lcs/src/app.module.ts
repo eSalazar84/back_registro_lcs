@@ -18,11 +18,9 @@ import { AdminModule } from './admin/admin.module';
       isGlobal: true,
       envFilePath: [
         '.env', // Variables comunes
-<<<<<<< HEAD
+
         `.env.${process.env.NODE_ENV || 'development'}`, // Variables por entorno
-=======
-        `.env.${process.env.NODE_ENV || 'development'}.local`, // Variables según el entorno
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
       ],
     }),
 
@@ -32,19 +30,12 @@ import { AdminModule } from './admin/admin.module';
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
-<<<<<<< HEAD
         port: parseInt(configService.get<string>('DB_PORT'), 10), // ✅ CORREGIDO
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
-=======
-        port: parseInt(configService.get<string>('DB_PORT'), 10),  // Corregido: 'port' en lugar de 'db_port'
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
-        entities: [join(__dirname, '/**/*.entity{.js,.ts}')],
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
         synchronize: configService.get<boolean>('DB_SYNC', false),
       }),
     }),
@@ -59,8 +50,6 @@ import { AdminModule } from './admin/admin.module';
     AdminModule,
   ],
 })
-<<<<<<< HEAD
+
 export class AppModule {}
-=======
-export class AppModule { }
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+

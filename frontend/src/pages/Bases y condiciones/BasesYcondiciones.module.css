@@ -61,8 +61,7 @@
     font-size: 24px;
 }
 
-<<<<<<< HEAD
-=======
+
 .texto_importante {
     display: flex;
     align-items: center;
@@ -79,7 +78,7 @@
     width: 20px;
 }
 
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
 .button_ByC {
     display:block;
     margin: 20px auto;

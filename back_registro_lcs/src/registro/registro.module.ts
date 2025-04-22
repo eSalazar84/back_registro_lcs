@@ -20,6 +20,7 @@ import { Registro } from './entities/registro.entity';
   ],
   controllers: [RegistroController],
   providers: [RegistroService, LoteService, ViviendaService, PersonaService, IngresoService],
+  exports:[RegistroService]
 })
 export class RegistroModule {}
 

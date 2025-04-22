@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './editarRegistro.module.css';
 import Swal from 'sweetalert2';
-<<<<<<< HEAD
-import { fetchRegistroById, updateRegistroById } from '../../services/registroService';
-=======
+
 import { fetchRegistroById } from '../../services/registroService';
 import { updateRegistroById } from '../../services/registroService';
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
 import { transformarDatosEnvioBackend } from '../../services/transformDataDto';
 
 const EditarRegistro = () => {
@@ -16,25 +14,17 @@ const EditarRegistro = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState(null);
 
-<<<<<<< HEAD
-  console.log("id", id);
-
-=======
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
   // Función para cargar los datos del registro
   const cargarDatos = async () => {
     try {
       setLoading(true);
       const data = await fetchRegistroById(id); // Llama a fetchRegistroById directamente
-<<<<<<< HEAD
+
       console.log('Datos cargados:', data);
       setFormData(data.data); // Se pasa directamente el objeto 'data'
     } catch (error) {
       console.error('Error al cargar los datos:', error);
-=======
-      setFormData(data.data); // Se pasa directamente el objeto 'data'
-    } catch (error) {
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -111,18 +101,16 @@ const EditarRegistro = () => {
         ingresos: datosTransformados, // Los ingresos con el idIngreso intacto
       };
 
-<<<<<<< HEAD
+
       console.log("Datos transformados a enviar:", datosParaEnviar);
-=======
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
       const datosTranformadosEnviar = transformarDatosEnvioBackend(datosParaEnviar)
 
       // Llama a la función updateRegistroById con los datos transformados
       const response = await updateRegistroById(id, datosTranformadosEnviar);
-<<<<<<< HEAD
+
       console.log("Respuesta de la actualización:", response);
-=======
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
 
       // Verifica si la respuesta es exitosa
       if (response && response.status === 200) {
@@ -136,10 +124,9 @@ const EditarRegistro = () => {
         throw new Error(response.message || 'Error desconocido');
       }
     } catch (error) {
-<<<<<<< HEAD
+
       console.error('Error al actualizar:', error);
-=======
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
 
       // Verifica si el error es de tipo "Conflict" o "InternalServerError"
       if (error.response && error.response.status === 409) {
@@ -167,15 +154,11 @@ const EditarRegistro = () => {
 
 
   // Mientras cargamos los datos
-<<<<<<< HEAD
-  if (loading) {
-    return <div className={styles.loading}>Cargando datos...</div>;
-  }
-=======
+
   // if (loading) {
   //   return <div className={styles.loading}>Cargando datos...</div>;
   // }
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
 
   // Si no se encontraron datos
   if (!formData) {

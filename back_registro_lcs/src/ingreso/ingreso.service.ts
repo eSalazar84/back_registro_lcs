@@ -16,11 +16,8 @@ export class IngresoService {
     @InjectRepository(Ingreso)
     private readonly ingresoRepository: Repository<Ingreso>, // Corregido a Repository<Ingreso>
 
-
     @InjectRepository(Registro)
     private readonly registroRepository: Repository<Registro>, // Corregido a Repository<Ingreso>
-
-
 
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
@@ -36,20 +33,20 @@ export class IngresoService {
     const ingresoRepo = manager ? manager.getRepository(Ingreso) : this.ingresoRepository;
     const personaRepo = manager ? manager.getRepository(Persona) : this.personaRepository;
     const registroRepo = manager ? manager.getRepository(Registro) : this.registroRepository;
-  
+
     // Convertir a array si es un objeto individual
     const ingresosArray = Array.isArray(ingresos) ? ingresos : [ingresos];
-    
+
     const createdIngresos: Ingreso[] = [];
-  
+
     try {
       const persona = await personaRepo.findOne({ where: { idPersona } });
       const registro = await registroRepo.findOne({ where: { idRegistro } });
-  
+
       if (!persona || !registro) {
         throw new NotFoundException(`Persona o Registro no encontrados`);
       }
-  
+
       for (const dto of ingresosArray) {
         const nuevo = ingresoRepo.create({
           situacion_laboral: dto.situacion_laboral,
@@ -59,17 +56,17 @@ export class IngresoService {
           persona,
           registro,
         });
-  
+
         createdIngresos.push(await ingresoRepo.save(nuevo));
       }
-  
+
       return createdIngresos;
-  
+
     } catch (error) {
       console.error("❌ Error al crear ingresos:", error);
       throw new InternalServerErrorException('Error al crear ingresos: ' + error.message);
 
- 
+
     }
   }
 
@@ -82,7 +79,7 @@ export class IngresoService {
       where: { persona: { idPersona } },
     });
   }
-  
+
 
 
   async findOneById(id: number): Promise<Ingreso> {
@@ -124,10 +121,10 @@ export class IngresoService {
   async removeIngreso(idIngreso: number): Promise<void> {
     const ingreso = await this.ingresoRepository.findOneBy({ idIngreso });
     if (!ingreso) return;
-  
+
     await this.ingresoRepository.remove(ingreso);
   }
-  
+
 
 
   // Metodo para buscar los ingresos de las personas por id (se usa en PdfService)

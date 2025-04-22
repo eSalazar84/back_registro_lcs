@@ -91,7 +91,6 @@ registro: Registro;
   lote: Lote;
   
   @OneToMany(() => Ingreso, ingreso => ingreso.persona)  // Relación inversa
-
   ingresos: Ingreso[];  
 
 }
