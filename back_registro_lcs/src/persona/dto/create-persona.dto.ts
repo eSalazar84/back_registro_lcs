@@ -9,6 +9,7 @@ import { Rol } from '../enum/rol.enum';
 import { Titular_Cotitular } from '../enum/titular_cotitular.enum';
 import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
 import { Type } from 'class-transformer';
+import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
 
 export class CreatePersonaDto {
 
@@ -93,5 +94,5 @@ export class CreatePersonaDto {
     @Type(() => CreateIngresoDto)
     ingresos?: CreateIngresoDto[];
   
-    
+    vivienda?: CreateViviendaDto;
 }

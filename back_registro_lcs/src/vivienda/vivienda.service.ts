@@ -8,23 +8,17 @@ import { EntityManager, FindOneOptions, Not, Repository } from 'typeorm';
 
 import { Localidad } from './enum/localidad.enum';
 
-
-
 @Injectable()
 export class ViviendaService {
   constructor(
     @InjectRepository(Vivienda)
     private readonly viviendaRepository: Repository<Vivienda>,
-
   ) { }
-
-
   async createVivienda(
     createViviendaDto: CreateViviendaDto,
     manager?: EntityManager
   ): Promise<Vivienda> {
-    const trimmedDto = this.trimStrings(createViviendaDto);
-  
+    const trimmedDto = this.trimStrings(createViviendaDto);  
     const nuevaVivienda = new Vivienda();
     nuevaVivienda.direccion = trimmedDto.direccion;
     nuevaVivienda.numero_direccion = trimmedDto.numero_direccion;
@@ -33,25 +27,18 @@ export class ViviendaService {
     nuevaVivienda.numero_departamento = trimmedDto.numero_departamento || null;
     nuevaVivienda.alquiler = trimmedDto.alquiler;
     nuevaVivienda.valor_alquiler = trimmedDto.valor_alquiler || null;
-
     nuevaVivienda.localidad = trimmedDto.localidad;
     nuevaVivienda.cantidad_dormitorios = trimmedDto.cantidad_dormitorios;
     nuevaVivienda.estado_vivienda = trimmedDto.estado_vivienda;
-    nuevaVivienda.tipo_alquiler = trimmedDto.tipo_alquiler || null;
-
-  
-    console.log("🏠 Vivienda enviada:", nuevaVivienda);
-  
+    nuevaVivienda.tipo_alquiler = trimmedDto.tipo_alquiler || null;  
+    console.log("🏠 Vivienda enviada:", nuevaVivienda);  
     // Usar el manager si está disponible, si no usar el repository normal
     if (manager) {
       return await manager.save(nuevaVivienda);
     }
-  
-    return await this.viviendaRepository.save(nuevaVivienda);
+      return await this.viviendaRepository.save(nuevaVivienda);
   }
-  
-
-  /**
+    /**
    * 🔥 Función para limpiar espacios antes y después de cada string en un objeto
    */
   private trimStrings<T>(obj: T): T {
@@ -62,12 +49,10 @@ export class ViviendaService {
     }, {} as T);
   }
 
-
   async findAllVivienda(): Promise<Vivienda[]> {
     const allVivienda = await this.viviendaRepository.find()
     return allVivienda;
   }
-
   //Trae la vivienda con las personas
   async findOneById(id: number): Promise<Vivienda> {
     const query: FindOneOptions<Vivienda> = { where: { idVivienda: id }, relations: ['personas'] };
@@ -78,8 +63,6 @@ export class ViviendaService {
     }
     return vivienda;
   }
-
-
   async updateVivienda(
     id: number,
     updateViviendaDto: UpdateViviendaDto,
@@ -117,10 +100,8 @@ export class ViviendaService {
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
-
   /**
-   * ✅ Verifica si la vivienda ya existe antes de actualizar.
-   */
+   * ✅ Verifica si la vivienda ya existe antes de actualizar.   */
 
   private async isViviendaDuplicada(
     id: number,
@@ -212,4 +193,28 @@ async findOneWithRelations(id: number) {
     }
     return vivienda;
   }
+
+  // -----------------------------------------------------------------------------------------
+
+  async findByAddressWithManager( /* en uso */
+    direccion: string,
+    numero_direccion: number,
+    localidad: Localidad,
+    departamento: boolean | null,
+    piso_departamento: number,
+    numero_departamento: string,
+    manager: EntityManager
+  ): Promise<Vivienda | null> {
+    return await manager.findOne(Vivienda, {
+      where: {
+        direccion,
+        numero_direccion,
+        localidad,
+        departamento,
+        piso_departamento,
+        numero_departamento
+      }
+    });
+  }
+  
 }

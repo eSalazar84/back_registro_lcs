@@ -17,7 +17,7 @@ export class IngresoController {
     @Query('idRegistro') idRegistro: number // 👈 Agregado
   ): Promise<Ingreso[]> {
     try {
-      return await this.ingresoService.createIngreso(ingresos, idPersona, idRegistro);
+      return await this.ingresoService.createIngreso(ingresos, idPersona);
 
     } catch (error) {
       throw new HttpException({

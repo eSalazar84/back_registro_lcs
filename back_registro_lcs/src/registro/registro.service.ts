@@ -1,5 +1,5 @@
 
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 import { Persona } from 'src/persona/entities/persona.entity';
 import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
@@ -18,10 +18,13 @@ import { Titular_Cotitular } from 'src/persona/enum/titular_cotitular.enum';
 import { Registro } from './entities/registro.entity';
 import { Lote } from 'src/lote/entities/lote.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UpdateRegistroDto } from './dto/update-registro.dto';
 import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
 import { Localidad } from 'src/lote/enum/localidad.enum';
 import { Estado_vivienda } from 'src/vivienda/enum/estado_vivienda.enum';
+import { UpdatePersonaDto } from 'src/persona/dto/update-persona.dto';
+import { UpdateIngresoDto } from 'src/ingreso/dto/update-ingreso.dto';
+import { UpdateLoteDto } from 'src/lote/dto/update-lote.dto';
+import { UpdateRegistroDto } from './dto/update-registro.dto';
 
 @Injectable()
 export class RegistroService {
@@ -47,7 +50,7 @@ export class RegistroService {
     return edad;
   }
 
-  async createAll(personas: {
+  async createRegistro(personas: {
     persona: CreatePersonaDto,
     vivienda: CreateViviendaDto,
     ingresos?: CreateIngresoDto[],
@@ -73,16 +76,15 @@ export class RegistroService {
           vivienda.localidad !== 'Coronel Rodolfo Bunge' &&
           !viviendasVerificadas[viviendaKey]
         ) {
-          const viviendaFound = await queryRunner.manager.findOne(Vivienda, {
-            where: {
-              direccion: vivienda.direccion,
-              numero_direccion: vivienda.numero_direccion,
-              localidad: vivienda.localidad,
-              departamento: vivienda.departamento,
-              piso_departamento: vivienda.piso_departamento,
-              numero_departamento: vivienda.numero_departamento,
-            }
-          });
+          const viviendaFound = await this.viviendaService.findByAddressWithManager(
+            vivienda.direccion,
+            vivienda.numero_direccion,
+            vivienda.localidad,
+            vivienda.departamento,
+            vivienda.piso_departamento,
+            vivienda.numero_departamento,
+            queryRunner.manager
+          );
 
           if (viviendaFound) {
             throw new Error(`La vivienda en ${vivienda.direccion}, ${vivienda.numero_direccion} ya está registrada.`);
@@ -91,9 +93,8 @@ export class RegistroService {
           viviendasVerificadas[viviendaKey] = true;
         }
 
-        const personaFound = await queryRunner.manager.findOne(Persona, {
-          where: { dni: persona.dni }
-        });
+        const personaFound = await this.personaService.findOneByDniWithManager(persona.dni, queryRunner.manager);
+
 
         if (personaFound) {
           throw new Error(`La persona con DNI ${persona.dni} ya está registrada.`);
@@ -109,29 +110,24 @@ export class RegistroService {
       const { vivienda, lote } = personas[0];
       const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
 
-      // Crear vivienda (solo una por registro)
       let viviendaReutilizada = viviendasCreadas[viviendaKey];
       if (!viviendaReutilizada) {
-        viviendaReutilizada = await this.viviendaService.createVivienda(vivienda);
+        viviendaReutilizada = await this.viviendaService.createVivienda(vivienda, queryRunner.manager);
         viviendasCreadas[viviendaKey] = viviendaReutilizada;
       }
 
-      // Crear lote si corresponde
       let loteCreado = null;
       if (lote) {
         loteCreado = await this.loteService.createLote(lote);
       }
 
-      // Crear el registro
       const registro = this.registroRepository.create({
-        vivienda: viviendaReutilizada,
-        lote: loteCreado ?? null,
-        ingresos: [],
+        viviendas: [viviendaReutilizada],
         personas: []
       });
-      const registroGuardado = await this.registroRepository.save(registro);
 
-      // Crear cada persona con el idRegistro
+      const registroGuardado = await queryRunner.manager.save(registro);
+
       for (const personaData of personas) {
         const { persona, ingresos } = personaData;
 
@@ -139,20 +135,19 @@ export class RegistroService {
           persona,
           viviendaReutilizada.idVivienda,
           loteCreado ? loteCreado.idLote : null,
-          registroGuardado.idRegistro
+          registroGuardado.idRegistro,
+          queryRunner.manager
         );
 
         createdPersonas.push(personaCreada);
 
         if (ingresos && ingresos.length > 0) {
-          await this.ingresoService.createIngreso(ingresos, personaCreada.idPersona, registroGuardado.idRegistro);
+          await this.ingresoService.createIngreso(ingresos, personaCreada.idPersona, queryRunner.manager);
         }
-
       }
 
       await queryRunner.commitTransaction();
 
-      // Enviar email al titular
       const titularEmail = personas[0].persona.email;
       const nombreTitular = `${createdPersonas[0].nombre} ${createdPersonas[0].apellido}`;
       const numeroRegistro = createdPersonas[0].numero_registro;
@@ -167,12 +162,14 @@ export class RegistroService {
     }
   }
 
-  async findOneByIdRegistro(id: number) {
-    return await this.registroRepository.findOne({
-      where: { idRegistro: id },
-      relations: ['personas', 'vivienda', 'lote', 'personas.ingresos'],
-    });
-  }
+
+
+  // async findOneByIdRegistro(id: number) {
+  //   return await this.registroRepository.findOne({
+  //     where: { idRegistro: id },
+  //     relations: ['personas', 'viviendas', 'lote', 'personas.ingresos'],
+  //   });
+  // }
   // async updateRegistro(idRegistro: number, updateDto: UpdateRegistroDto): Promise<Registro> {
   //   const queryRunner = this.dataSource.createQueryRunner();
   //   await queryRunner.connect();
@@ -213,7 +210,7 @@ export class RegistroService {
   //           estado_vivienda: updateDto.vivienda.estado_vivienda, // obligatorio
   //           tipo_alquiler: updateDto.vivienda.tipo_alquiler ?? null
   //         };
-    
+
   //         const nuevaVivienda = await this.viviendaService.createVivienda(
   //          viviendaDto,
   //           queryRunner.manager
@@ -280,7 +277,7 @@ export class RegistroService {
   //       } else {
   //         // NUEVA PERSONA
   //         const { ingresos = [], ...personaData } = personaDto;
-          
+
   //         // Crear persona
   //         personaActualizada = await this.personaService.createPersona(
   //           personaData as CreatePersonaDto,
@@ -316,7 +313,7 @@ export class RegistroService {
   //     // 3. Eliminar personas que no están en el DTO
   //     const personasAEliminar = registro.personas
   //       .filter(p => !personasToKeep.includes(p.idPersona));
-      
+
   //     for (const persona of personasAEliminar) {
   //       await queryRunner.manager.delete(Persona, persona.idPersona);
   //     }
@@ -325,7 +322,7 @@ export class RegistroService {
   //     registro.personas = updatedPersonas;
   //     const registroActualizado = await queryRunner.manager.save(registro);
 
-    
+
 
   //     await queryRunner.commitTransaction();
   //     return registroActualizado;
@@ -342,52 +339,38 @@ export class RegistroService {
   //     await queryRunner.release();
   //   }
   // }
-  
   async updateRegistro(idRegistro: number, updateDto: UpdateRegistroDto): Promise<Registro> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-  
-    console.log("data", );
     
     try {
       // Buscar el registro existente con todas las relaciones necesarias
       const registro = await queryRunner.manager.findOne(Registro, {
         where: { idRegistro },
-        relations: ['personas', 'personas.ingresos', 'vivienda', 'lote']
+        relations: ['personas', 'personas.ingresos', 'viviendas', 'personas.lote'] // Corregir el acceso a viviendas y lote
       });
   
       if (!registro) throw new NotFoundException(`Registro ${idRegistro} no encontrado`);
-  
+      if (!Array.isArray(updateDto.personas)) {
+        throw new Error('El campo personas debe ser un array');
+      }
       // 1. Actualizar o crear vivienda
       if (updateDto.vivienda) {
-        if (updateDto.vivienda.idVivienda) {
-          // Actualizar vivienda existente
-          const viviendaActualizada = await this.viviendaService.updateVivienda(
-            updateDto.vivienda.idVivienda,
-            updateDto.vivienda,
-            queryRunner.manager
-          );
-          registro.vivienda = viviendaActualizada;
-        } else {
-          // Crear nueva vivienda
-          const viviendaDto: CreateViviendaDto = {
-            ...updateDto.vivienda,
-            direccion: updateDto.vivienda.direccion,
-            numero_direccion: updateDto.vivienda.numero_direccion,
-            departamento: updateDto.vivienda.departamento ?? false,
-            piso_departamento: updateDto.vivienda.piso_departamento ?? 0,
-            numero_departamento: updateDto.vivienda.numero_departamento ?? '',
-            alquiler: updateDto.vivienda.alquiler ?? false,
-            valor_alquiler: updateDto.vivienda.valor_alquiler ?? 0,
-            localidad: updateDto.vivienda.localidad,
-            cantidad_dormitorios: updateDto.vivienda.cantidad_dormitorios ?? 0,
-            estado_vivienda: updateDto.vivienda.estado_vivienda,
-            tipo_alquiler: updateDto.vivienda.tipo_alquiler ?? null
-          };
-  
-          const nuevaVivienda = await this.viviendaService.createVivienda(viviendaDto, queryRunner.manager);
-          registro.vivienda = nuevaVivienda;
+        for (const viviendaDto of updateDto.vivienda) {
+          if (viviendaDto.idVivienda) {
+            // Actualizar vivienda existente
+            const viviendaActualizada = await this.viviendaService.updateVivienda(
+              viviendaDto.idVivienda,
+              viviendaDto,
+              queryRunner.manager
+            );
+            registro.viviendas.push(viviendaActualizada);  // Usamos push porque 'viviendas' es un array
+          } else {
+            // Crear nueva vivienda
+            const nuevaVivienda = await this.viviendaService.createVivienda(viviendaDto as CreateViviendaDto, queryRunner.manager);
+            registro.viviendas.push(nuevaVivienda);  // Usamos push para agregarla al array
+          }
         }
       }
   
@@ -445,8 +428,8 @@ export class RegistroService {
           // Crear nueva persona
           personaActualizada = await this.personaService.createPersona(
             personaData as CreatePersonaDto,
-            personaDto.idVivienda || registro.vivienda?.idVivienda, // Asociar a nueva o existente vivienda
-            personaDto.idLote || registro.lote?.idLote,
+            personaDto.idVivienda || registro.viviendas[0]?.idVivienda, // Asociar a nueva o existente vivienda
+            personaDto.idLote || registro.personas[0]?.lote?.idLote,  // Asociar a lote si existe
             idRegistro,
             queryRunner.manager
           );
@@ -501,7 +484,11 @@ export class RegistroService {
   }
   
   
-  async findAll(options?: {
+  
+  
+
+
+  async findAllRegistros(options?: {
     page?: number;
     limit?: number;
     search?: string;
@@ -509,15 +496,15 @@ export class RegistroService {
     titular?: boolean;
   }) {
     try {
+      // Consulta para obtener los registros, sin la relación 'lote' directa en 'registro'.
       const registrosRaw = await this.registroRepository.find({
         relations: {
           personas: {
             ingresos: true,
-            vivienda: true,
-            lote: true,
+            viviendas: true,
+            lote: true,  // Cargar 'lote' a través de la relación 'persona'
           },
-          vivienda: true,
-          lote: true
+          viviendas: true, // Relación con viviendas
         },
         order: {
           idRegistro: 'ASC'
@@ -525,26 +512,30 @@ export class RegistroService {
       });
 
       let registros = registrosRaw.map(registro => {
+        // Tomar la primera vivienda como principal (o null si no hay)
+        const viviendaPrincipal = registro.viviendas?.length > 0 ? registro.viviendas[0] : null;
+
         return {
           idRegistro: registro.idRegistro,
-          vivienda: registro.vivienda ? {
-            idVivienda: registro.vivienda.idVivienda,
-            direccion: registro.vivienda.direccion,
-            numero_direccion: registro.vivienda.numero_direccion,
-            departamento: registro.vivienda.departamento,
-            piso_departamento: registro.vivienda.piso_departamento,
-            numero_departamento: registro.vivienda.numero_departamento,
-            alquiler: registro.vivienda.alquiler,
-            valor_alquiler: registro.vivienda.valor_alquiler,
-            localidad: registro.vivienda.localidad,
-            cantidad_dormitorios: registro.vivienda.cantidad_dormitorios,
-            estado_vivienda: registro.vivienda.estado_vivienda,
-            tipo_alquiler: registro.vivienda.tipo_alquiler
+          vivienda: viviendaPrincipal ? { // Mantenemos vivienda en singular en la respuesta
+            idVivienda: viviendaPrincipal.idVivienda,
+            direccion: viviendaPrincipal.direccion,
+            numero_direccion: viviendaPrincipal.numero_direccion,
+            departamento: viviendaPrincipal.departamento,
+            piso_departamento: viviendaPrincipal.piso_departamento,
+            numero_departamento: viviendaPrincipal.numero_departamento,
+            alquiler: viviendaPrincipal.alquiler,
+            valor_alquiler: viviendaPrincipal.valor_alquiler,
+            localidad: viviendaPrincipal.localidad,
+            cantidad_dormitorios: viviendaPrincipal.cantidad_dormitorios,
+            estado_vivienda: viviendaPrincipal.estado_vivienda,
+            tipo_alquiler: viviendaPrincipal.tipo_alquiler
           } : null,
-          lote: registro.lote ? {
-            idLote: registro.lote.idLote,
-            localidad: registro.lote.localidad
-          } : null,
+          viviendas: registro.viviendas?.map(v => ({ // Opcional: incluir todas las viviendas
+            idVivienda: v.idVivienda,
+            direccion: v.direccion,
+            localidad: v.localidad
+          })) || [],
           personas: registro.personas.map(persona => {
             const totalIngresos = persona.ingresos?.reduce((sum, ingreso) => sum + (ingreso.salario || 0), 0) || 0;
             return {
@@ -565,29 +556,29 @@ export class RegistroService {
               rol: persona.rol,
               vinculo: persona.vinculo,
               titular_cotitular: persona.titular_cotitular,
-              vivienda: persona.vivienda ? {
-                idVivienda: persona.vivienda.idVivienda,
-                direccion: persona.vivienda.direccion,
-                localidad: persona.vivienda.localidad
+              vivienda: persona.viviendas ? {
+                idVivienda: persona.viviendas.idVivienda,
+                direccion: persona.viviendas.direccion,
+                localidad: persona.viviendas.localidad
               } : null,
               lote: persona.lote ? {
                 idLote: persona.lote.idLote,
                 localidad: persona.lote.localidad
               } : null,
-              ingresos: persona.ingresos.map(ingreso => ({
+              ingresos: persona.ingresos?.map(ingreso => ({
                 idIngreso: ingreso.idIngreso,
                 situacion_laboral: ingreso.situacion_laboral,
                 ocupacion: ingreso.ocupacion,
                 CUIT_empleador: ingreso.CUIT_empleador,
                 salario: ingreso.salario
-              })),
+              })) || [],
               totalIngresos
             };
           })
         };
       });
 
-      // 🔍 Filtros
+      // 🔍 Filtros (sin cambios)
       if (options?.search) {
         const searchLower = options.search.toLowerCase();
         registros = registros.filter(registro =>
@@ -613,7 +604,7 @@ export class RegistroService {
         );
       }
 
-      // 🔡 Orden por apellido + nombre (del titular, si existe)
+      // 🔡 Orden (sin cambios)
       registros.sort((a, b) => {
         const personaA = a.personas.find(p => p.titular_cotitular === 'Titular') || a.personas[0];
         const personaB = b.personas.find(p => p.titular_cotitular === 'Titular') || b.personas[0];
@@ -622,7 +613,7 @@ export class RegistroService {
         return personaA.nombre.localeCompare(personaB.nombre);
       });
 
-      // 📦 Paginación
+      // 📦 Paginación (sin cambios)
       const total = registros.length;
       if (options?.page && options?.limit) {
         const start = (options.page - 1) * options.limit;
@@ -650,18 +641,43 @@ export class RegistroService {
     }
   }
 
-  async findOneById(id: number) {
+  async findOneByIdRegistro(id: number) {
     try {
-      // Obtener la persona con todas sus relaciones
-      const persona = await this.personaService.findOneById(id);
+      // Obtener el registro con todas sus relaciones (personas, viviendas, ingresos)
+      const registro = await this.registroRepository.findOne({
+        where: { idRegistro: id },
+        relations: {
+          personas: {
+            ingresos: true,
+            viviendas: true,
+            lote: true
+          },
+          viviendas: true, // Relación de viviendas del registro
+        }
+      });
 
-      if (!persona) {
+      if (!registro) {
         throw new NotFoundException(`No se encontró el registro con ID ${id}`);
       }
 
       // Estructurar la respuesta
-      const registro = {
-        persona: {
+      const resultado = {
+        idRegistro: registro.idRegistro,
+        viviendas: registro.viviendas?.map(vivienda => ({
+          idVivienda: vivienda.idVivienda,
+          direccion: vivienda.direccion,
+          numero_direccion: vivienda.numero_direccion,
+          departamento: vivienda.departamento,
+          piso_departamento: vivienda.piso_departamento,
+          numero_departamento: vivienda.numero_departamento,
+          alquiler: vivienda.alquiler,
+          valor_alquiler: vivienda.valor_alquiler,
+          localidad: vivienda.localidad,
+          cantidad_dormitorios: vivienda.cantidad_dormitorios,
+          estado_vivienda: vivienda.estado_vivienda,
+          tipo_alquiler: vivienda.tipo_alquiler
+        })) || [],
+        personas: registro.personas.map(persona => ({
           idPersona: persona.idPersona,
           numero_registro: persona.numero_registro,
           nombre: persona.nombre,
@@ -678,42 +694,31 @@ export class RegistroService {
           certificado_discapacidad: persona.certificado_discapacidad,
           rol: persona.rol,
           vinculo: persona.vinculo,
-          titular_cotitular: persona.titular_cotitular
-        },
-        vivienda: persona.vivienda ? {
-          idVivienda: persona.vivienda.idVivienda,
-          direccion: persona.vivienda.direccion,
-          numero_direccion: persona.vivienda.numero_direccion,
-          departamento: persona.vivienda.departamento,
-          piso_departamento: persona.vivienda.piso_departamento,
-          numero_departamento: persona.vivienda.numero_departamento,
-          alquiler: persona.vivienda.alquiler,
-          valor_alquiler: persona.vivienda.valor_alquiler,
-          localidad: persona.vivienda.localidad,
-          cantidad_dormitorios: persona.vivienda.cantidad_dormitorios,
-          estado_vivienda: persona.vivienda.estado_vivienda,
-          tipo_alquiler: persona.vivienda.tipo_alquiler
-        } : null,
-        lote: persona.lote ? {
-          idLote: persona.lote.idLote,
-          localidad: persona.lote.localidad
-        } : null,
-        ingresos: persona.ingresos ? persona.ingresos.map(ingreso => ({
-          idIngreso: ingreso.idIngreso,
-          situacion_laboral: ingreso.situacion_laboral,
-          ocupacion: ingreso.ocupacion,
-          CUIT_empleador: ingreso.CUIT_empleador,
-          salario: ingreso.salario
-        })) : [],
-        totalIngresos: persona.ingresos
-          ? persona.ingresos.reduce((sum, ingreso) => sum + (ingreso.salario || 0), 0)
-          : 0
+          titular_cotitular: persona.titular_cotitular,
+          vivienda: persona.viviendas ? {
+            idVivienda: persona.viviendas.idVivienda,
+            direccion: persona.viviendas.direccion,
+            localidad: persona.viviendas.localidad
+          } : null,
+          lote: persona.lote ? {
+            idLote: persona.lote.idLote,
+            localidad: persona.lote.localidad
+          } : null,
+          ingresos: persona.ingresos?.map(ingreso => ({
+            idIngreso: ingreso.idIngreso,
+            situacion_laboral: ingreso.situacion_laboral,
+            ocupacion: ingreso.ocupacion,
+            CUIT_empleador: ingreso.CUIT_empleador,
+            salario: ingreso.salario
+          })) || [],
+          totalIngresos: persona.ingresos?.reduce((sum, ingreso) => sum + (ingreso.salario || 0), 0) || 0
+        }))
       };
 
       return {
         status: HttpStatus.OK,
         message: 'Registro obtenido exitosamente',
-        data: registro
+        data: resultado
       };
 
     } catch (error) {
@@ -726,7 +731,6 @@ export class RegistroService {
         message: error.message
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
   }
 
   async findByViviendaId(idVivienda: number) {
@@ -823,12 +827,12 @@ export class RegistroService {
 
   // registro.service.ts
 
-  async findOneByPersonaId(idPersona: number): Promise<Registro> {
-    return this.registroRepository.findOne({
-      where: { personas: { idPersona } },
-      relations: ['vivienda', 'lote', 'personas', 'personas.ingresos']
-    });
-  }
+  // async findOneByPersonaId(idPersona: number): Promise<Registro> {
+  //   return this.registroRepository.findOne({
+  //     where: { personas: { idPersona } },
+  //     relations: ['viviendas', 'lote', 'personas', 'personas.ingresos']
+  //   });
+  // }
 
 }
 

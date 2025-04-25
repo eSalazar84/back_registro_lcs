@@ -24,7 +24,7 @@ export class RegistroController {
   ) {
     try {
       // Llamada al servicio para crear los registros
-      const personas = await this.registroService.createAll(createAllDto);
+      const personas = await this.registroService.createRegistro(createAllDto);
 
       return {
         status: HttpStatus.CREATED,
@@ -60,7 +60,7 @@ export class RegistroController {
     @Query('localidad') localidad?: string,
     @Query('titular') titular?: boolean
   ) {
-    return await this.registroService.findAll({
+    return await this.registroService.findAllRegistros({
       page: page ? +page : undefined,
       limit: limit ? +limit : undefined,
       search,
@@ -105,14 +105,14 @@ export class RegistroController {
 
 // registro.controller.ts
 
-@Get('by-persona/:idPersona')
-async findByPersona(
-  @Param('idPersona', ParseIntPipe) idPersona: number
-) {
-  // En tu servicio, implementa findOneByPersonaId
-  const registro = await this.registroService.findOneByPersonaId(idPersona);
-  return { status: HttpStatus.OK, data: registro };
-}
+// @Get('by-persona/:idPersona')
+// async findByPersona(
+//   @Param('idPersona', ParseIntPipe) idPersona: number
+// ) {
+//   // En tu servicio, implementa findOneByPersonaId
+//   const registro = await this.registroService.findOneByPersonaId(idPersona);
+//   return { status: HttpStatus.OK, data: registro };
+// }
 
 
 }

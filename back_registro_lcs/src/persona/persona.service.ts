@@ -100,7 +100,7 @@ export class PersonaService {
     try {
       // Encuentra todas las personas con las relaciones necesarias
       const personas = await this.personaRepository.find({
-        relations: ['vivienda', 'lote', 'ingresos'], // Incluye las relaciones con 'vivienda', 'lote' e 'ingresos'
+        relations: ['viviendas', 'lote', 'ingresos'], // Incluye las relaciones con 'vivienda', 'lote' e 'ingresos'
         order: { idPersona: 'ASC' }, // Ordena por ID de persona
       });
 
@@ -126,7 +126,7 @@ export class PersonaService {
     // Buscar la persona por id con las relaciones necesarias
     const persona = await this.personaRepository.findOne({
       where: { idPersona: id },
-      relations: ['vivienda', 'lote', 'ingresos'],
+      relations: ['viviendas', 'lote', 'ingresos'],
     });
   
     if (!persona) {
@@ -161,7 +161,7 @@ export class PersonaService {
       // Buscar la persona por id con las relaciones necesarias
       const persona = await this.personaRepository.findOne({
         where: { dni: dni },
-        relations: ['vivienda', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
+        relations: ['viviendas', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
       });
 
       if (!persona) {
@@ -223,29 +223,25 @@ export class PersonaService {
           if (!idRegistro) {
             throw new Error('idRegistro requerido para crear ingreso');
           }
-          await this.IngresoService.createIngreso(ingresoDto as CreateIngresoDto, id, idRegistro, manager);
+          await this.IngresoService.createIngreso(ingresoDto as CreateIngresoDto, id, manager);
         }
       }
-    }
-  
+    }  
     return persona;
   }
-  
-  
-
 
   async remove(id: number): Promise<void> {
     // Buscar la persona por su ID
     const persona = await this.personaRepository.findOne({
       where: { idPersona: id },
-      relations: ['vivienda'], // Cargar la vivienda asociada
+      relations: ['viviendas'], // Cargar la vivienda asociada
     });
 
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
 
-    const vivienda = persona.vivienda; // Vivienda asociada a la persona (si existe)
+    const vivienda = persona.viviendas; // Vivienda asociada a la persona (si existe)
 
     // Eliminar la persona de la base de datos
     await this.personaRepository.remove(persona);
@@ -253,7 +249,7 @@ export class PersonaService {
     if (vivienda) {
       // Verificar si quedan más personas asociadas a esta vivienda
       const personasRestantes = await this.personaRepository.count({
-        where: { vivienda: { idVivienda: vivienda.idVivienda } },
+        where: { viviendas: { idVivienda: vivienda.idVivienda } },
       });
 
       // Si no quedan personas, eliminar la vivienda y si quedan personas no elimina la vivienda
@@ -267,10 +263,10 @@ export class PersonaService {
     try {
       const personas = await this.personaRepository.find({
         where: {
-          vivienda: { idVivienda: idVivienda }
+          viviendas: { idVivienda: idVivienda }
         },
         relations: [
-          'vivienda',
+          'viviendas',
           'ingresos',
           'lote'
         ],
@@ -296,5 +292,16 @@ export class PersonaService {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+// ---------------------------------------------------------------------------------
+
+// en uso
+async findOneByDniWithManager(dni: number, manager: EntityManager): Promise<Persona | null> {
+  const personaRepo = manager.getRepository(Persona);
+  const persona = await personaRepo.findOne({
+    where: { dni: dni },
+    relations: ['viviendas', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
+  });
+  return persona ?? null;
+}
 
 }
