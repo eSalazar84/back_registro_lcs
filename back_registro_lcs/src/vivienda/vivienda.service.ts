@@ -3,25 +3,23 @@ import { CreateViviendaDto } from './dto/create-vivienda.dto';
 import { UpdateViviendaDto } from './dto/update-vivienda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
+
 import { EntityManager, FindOneOptions, Not, Repository } from 'typeorm';
+
 import { Localidad } from './enum/localidad.enum';
-
-
 
 @Injectable()
 export class ViviendaService {
   constructor(
     @InjectRepository(Vivienda)
     private readonly viviendaRepository: Repository<Vivienda>,
-
   ) { }
-
   async createVivienda(
     createViviendaDto: CreateViviendaDto,
-    manager?: EntityManager
+    manager?: EntityManager,
+    idRegistro?: number  // 👈 Agregado parámetro opcional
   ): Promise<Vivienda> {
     const trimmedDto = this.trimStrings(createViviendaDto);
-  
     const nuevaVivienda = new Vivienda();
     nuevaVivienda.direccion = trimmedDto.direccion;
     nuevaVivienda.numero_direccion = trimmedDto.numero_direccion;
@@ -35,17 +33,20 @@ export class ViviendaService {
     nuevaVivienda.estado_vivienda = trimmedDto.estado_vivienda;
     nuevaVivienda.tipo_alquiler = trimmedDto.tipo_alquiler || null;
   
+    // 👇 Agregás el idRegistro si fue provisto
+    if (idRegistro) {
+      nuevaVivienda.registro = { idRegistro } as any;
+    }
+  
     console.log("🏠 Vivienda enviada:", nuevaVivienda);
   
-    // Usar el manager si está disponible, si no usar el repository normal
     if (manager) {
       return await manager.save(nuevaVivienda);
     }
-  
     return await this.viviendaRepository.save(nuevaVivienda);
   }
   
-  /**
+    /**
    * 🔥 Función para limpiar espacios antes y después de cada string en un objeto
    */
   private trimStrings<T>(obj: T): T {
@@ -56,12 +57,10 @@ export class ViviendaService {
     }, {} as T);
   }
 
-
   async findAllVivienda(): Promise<Vivienda[]> {
     const allVivienda = await this.viviendaRepository.find()
     return allVivienda;
   }
-
   //Trae la vivienda con las personas
   async findOneById(id: number): Promise<Vivienda> {
     const query: FindOneOptions<Vivienda> = { where: { idVivienda: id }, relations: ['personas'] };
@@ -72,7 +71,6 @@ export class ViviendaService {
     }
     return vivienda;
   }
-
   async updateVivienda(
     id: number,
     updateViviendaDto: UpdateViviendaDto,
@@ -104,17 +102,15 @@ export class ViviendaService {
       console.log('📝 Datos antes de guardar la vivienda actualizada:', viviendaFound);
   
       return await viviendaRepo.save(viviendaFound);
+
     } catch (error) {
       console.error("❌ Error al actualizar la vivienda:", error);
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
-  
-
-
   /**
-   * ✅ Verifica si la vivienda ya existe antes de actualizar.
-   */
+   * ✅ Verifica si la vivienda ya existe antes de actualizar.   */
+
   private async isViviendaDuplicada(
     id: number,
     dto: UpdateViviendaDto,
@@ -135,6 +131,7 @@ export class ViviendaService {
     console.log(`🔎 Verificando casa duplicada en ${dto.direccion} ${dto.numero_direccion}`);
   
     return await viviendaRepo
+
       .createQueryBuilder("v")
       .where("LOWER(TRIM(v.localidad)) = LOWER(TRIM(:localidad))", { localidad: dto.localidad })
       .andWhere("LOWER(TRIM(v.direccion)) = LOWER(TRIM(:direccion))", { direccion: dto.direccion })
@@ -153,6 +150,7 @@ export class ViviendaService {
     console.log(`🔎 Verificando departamento duplicado en ${dto.direccion} ${dto.numero_direccion}, Piso ${dto.piso_departamento}, Nº ${dto.numero_departamento}`);
   
     return await viviendaRepo
+
       .createQueryBuilder("v")
       .where("LOWER(TRIM(v.localidad)) = LOWER(TRIM(:localidad))", { localidad: dto.localidad })
       .andWhere("LOWER(TRIM(v.direccion)) = LOWER(TRIM(:direccion))", { direccion: dto.direccion })
@@ -162,7 +160,7 @@ export class ViviendaService {
       .andWhere("v.idVivienda != :id", { id }) // Excluimos la vivienda actual
       .getExists();
   }
-  
+
 
   // Se utiliza en el registro para ver si la vivienda ya existe
   async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean | null, piso_departamento: number, numero_departamento: string): Promise<Vivienda | null> {
@@ -203,4 +201,28 @@ async findOneWithRelations(id: number) {
     }
     return vivienda;
   }
+
+  // -----------------------------------------------------------------------------------------
+
+  async findByAddressWithManager( /* en uso */
+    direccion: string,
+    numero_direccion: number,
+    localidad: Localidad,
+    departamento: boolean | null,
+    piso_departamento: number,
+    numero_departamento: string,
+    manager: EntityManager
+  ): Promise<Vivienda | null> {
+    return await manager.findOne(Vivienda, {
+      where: {
+        direccion,
+        numero_direccion,
+        localidad,
+        departamento,
+        piso_departamento,
+        numero_departamento
+      }
+    });
+  }
+  
 }

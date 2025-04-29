@@ -11,6 +11,7 @@ import { Ingreso } from "src/ingreso/entities/ingreso.entity";
 import { Lote } from "src/lote/entities/lote.entity";
 import { Registro } from "src/registro/entities/registro.entity";
 
+
 @Entity()
 export class Persona {
   @PrimaryGeneratedColumn()
@@ -65,29 +66,26 @@ export class Persona {
   titular_cotitular: Titular_Cotitular | null;
 
   @Column({type: "int", nullable: true})
-  idVivienda: number
+  idVivienda: number;
 
   @Column({type: "int", nullable: true})
-  idLote: number
+  idLote: number;
 
   @Column({ nullable: true })
-idRegistro: number;
+  idRegistro: number;
 
-@ManyToOne(() => Registro, registro => registro.personas, { onDelete: 'CASCADE' })
-@JoinColumn({ name: 'idRegistro' })
-registro: Registro;
+  @ManyToOne(() => Registro, registro => registro.personas, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'idRegistro' })
+  registro: Registro;
 
-
-  // Guardar solo el ID de vivienda
   @ManyToOne(() => Vivienda, (vivienda) => vivienda.personas, { cascade: true })
-  @JoinColumn({ name: "idVivienda" }) // Asegúrate de que el nombre de la columna sea correcto
-  vivienda: Vivienda;
+  @JoinColumn({ name: "idVivienda" })
+  viviendas: Vivienda;
 
-  // Guardar solo el ID de lote
   @OneToOne(() => Lote, (lote) => lote.persona, { cascade: true })
-  @JoinColumn({ name: "idLote" }) // Asegúrate de que el nombre de la columna sea correcto
+  @JoinColumn({ name: "idLote" })
   lote: Lote;
-  
-  @OneToMany(() => Ingreso, ingreso => ingreso.persona)  // Relación inversa
-  ingresos: Ingreso[];  
+
+  @OneToMany(() => Ingreso, ingreso => ingreso.persona)
+  ingresos: Ingreso[];
 }

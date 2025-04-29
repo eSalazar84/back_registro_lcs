@@ -25,7 +25,6 @@ export class IngresoService {
   async createIngreso(
     ingresos: CreateIngresoDto | CreateIngresoDto[], // Acepta tanto array como objeto individual
     idPersona: number,
-    idRegistro: number,
     manager?: EntityManager
   ): Promise<Ingreso[]> {
     const ingresoRepo = manager ? manager.getRepository(Ingreso) : this.ingresoRepository;
@@ -34,37 +33,44 @@ export class IngresoService {
   
     // Convertir a array si es un objeto individual
     const ingresosArray = Array.isArray(ingresos) ? ingresos : [ingresos];
-    
+  
     const createdIngresos: Ingreso[] = [];
   
     try {
+      // Verificar que persona y registro existan
       const persona = await personaRepo.findOne({ where: { idPersona } });
-      const registro = await registroRepo.findOne({ where: { idRegistro } });
+      
   
-      if (!persona || !registro) {
+      if (!persona ) {
         throw new NotFoundException(`Persona o Registro no encontrados`);
       }
   
+      // Crear ingresos
       for (const dto of ingresosArray) {
-        const nuevo = ingresoRepo.create({
+        const nuevoIngreso = ingresoRepo.create({
           situacion_laboral: dto.situacion_laboral,
           ocupacion: dto.ocupacion,
           CUIT_empleador: dto.CUIT_empleador,
           salario: dto.salario,
-          persona,
-          registro,
+          persona,  // Asociar el ingreso con la persona
+          
         });
   
-        createdIngresos.push(await ingresoRepo.save(nuevo));
+        const ingresoGuardado = await ingresoRepo.save(nuevoIngreso); // Guardar el nuevo ingreso
+        createdIngresos.push(ingresoGuardado); // Añadir el ingreso guardado al array de resultados
       }
   
       return createdIngresos;
   
     } catch (error) {
+      // Logueo de errores para depuración
       console.error("❌ Error al crear ingresos:", error);
+      // Lanzar un error de servidor interno con el mensaje adecuado
       throw new InternalServerErrorException('Error al crear ingresos: ' + error.message);
     }
   }
+  
+
 
   async findAllIngreso(): Promise<Ingreso[]> {
     return this.ingresoRepository.find();
