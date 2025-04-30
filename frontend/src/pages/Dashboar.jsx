@@ -28,6 +28,7 @@ const Dashboard = () => {
   useEffect(() => {
     getRegistros();
   }, []);
+console.log("registros",registros);
 
   const handleLogout = () => {
     logout();

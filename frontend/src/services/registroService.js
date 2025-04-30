@@ -7,6 +7,8 @@ const API_BASE = 'http://localhost:3000';
 
 console.log("API_URL", API_URL);
 
+import { esMenorDeEdad } from "./transformDataDto";
+
 
 
 export const fetchRegistros = async () => {
@@ -78,11 +80,6 @@ export const updateRegistroById = async (id, formData) => {
 };
 
 
-// src/services/registroService.js
-
-
-
-
 export async function fetchRegistroById(registroId) {
   const res = await fetch(`${API_BASE}/registro/${registroId}`);
   if (!res.ok) {
@@ -92,11 +89,62 @@ export async function fetchRegistroById(registroId) {
   return res.json(); // { status, data: {...} }
 }
 
+const transformarParaBackend = (personas) => {
+  // Verifica que personas es un array
+  console.log(Array.isArray(personas));  // Esto debería ser 'true'
+  console.log("datos para transformar",personas);  // Esto te mostrará el contenido de personas
+
+  if (!Array.isArray(personas)) {
+      console.error("El campo personas no es un array", personas);
+      return []; // O maneja la situación según tu lógica
+  }
+
+  return personas.map(persona => ({
+      ...persona,
+      vivienda: persona.vivienda ? {
+          idVivienda: persona.vivienda.idVivienda,
+          idRegistro: persona.vivienda.idRegistro,
+          direccion: persona.vivienda.direccion,
+          numero_direccion: persona.vivienda.numero_direccion,
+          departamento: persona.vivienda.departamento,
+          piso_departamento: persona.vivienda.piso_departamento,
+          numero_departamento: persona.vivienda.numero_departamento,
+          alquiler: persona.vivienda.alquiler,
+          valor_alquiler: persona.vivienda.valor_alquiler,
+          localidad: persona.vivienda.localidad,
+          cantidad_dormitorios: persona.vivienda.cantidad_dormitorios,
+          estado_vivienda: persona.vivienda.estado_vivienda,
+          tipo_alquiler: persona.vivienda.tipo_alquiler
+      } : null,
+      lote: persona.lote ? {
+          idLote: persona.lote.idLote,
+          localidad: persona.lote.localidad
+      } : null,
+      ingresos: Array.isArray(persona.ingresos)
+      ? persona.ingresos.map(ingreso => ({
+          idIngreso: ingreso.idIngreso,
+          situacion_laboral: ingreso.situacion_laboral,
+          ocupacion: ingreso.ocupacion,
+          CUIT_empleador: ingreso.CUIT_empleador,
+          salario: ingreso.salario
+        }))
+      : []
+    
+  }));
+};
+
+
 export async function updateRegistro(registroId, payload) {
+ console.log("payload", payload);
+
+ const datosTranformados= transformarParaBackend (payload)
+ console.log("datos transformados", datosTranformados);
+
+  
   const res = await fetch(`${API_BASE}/registro/${registroId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(datosTranformados),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

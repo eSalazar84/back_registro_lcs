@@ -7,8 +7,13 @@ import Swal from 'sweetalert2';
 const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
     const agregarPersonaRef = useRef(null);
 
+    console.log("formData", formData);
+
+
     // Plantillas para nuevos registros
     const nuevaVivienda = {
+       
+        idRegistro: formData.idRegistro,
         localidad: "",
         direccion: "",
         otra_calle: false,
@@ -24,6 +29,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
     };
 
     const nuevaPersona = {
+               
         nombre: "",
         apellido: "",
         tipo_dni: "Documento único",
@@ -78,25 +84,27 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
             reverseButtons: true
         }).then((result) => {
             const comparteVivienda = result.isConfirmed;
-            
+    
+            const viviendaTitular = formData.personas.find(p => p.vivienda)?.vivienda;
+    
             const persona = {
                 ...nuevaPersona,
                 comparteVivienda,
-                vivienda: comparteVivienda ? null : { ...nuevaVivienda },
-                idVivienda: comparteVivienda ? formData.vivienda.id : null
+                vivienda: comparteVivienda ? viviendaTitular : { ...nuevaVivienda },
             };
-
+    
             onChange('personas', [...formData.personas, persona]);
-
+    
             // Scroll al nuevo elemento
             setTimeout(() => {
-                agregarPersonaRef.current?.scrollIntoView({ 
-                    behavior: "smooth", 
-                    block: "start" 
+                agregarPersonaRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
                 });
             }, 300);
         });
     };
+    
 
     // Cambiar a vivienda diferente
     const cambiarVivienda = (index) => {
@@ -156,12 +164,14 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
     // Eliminar ingreso
     const eliminarIngreso = (personaIndex, ingresoIndex) => {
         const updatedPersonas = [...formData.personas];
+        console.log("eliminar ingreso", updatedPersonas);
+        
         updatedPersonas[personaIndex].ingresos = updatedPersonas[personaIndex].ingresos.filter((_, i) => i !== ingresoIndex);
         onChange('personas', updatedPersonas);
     };
-
     // Renderizar select de calles según localidad
     const renderSelectCalles = (localidad, value, onChangeFn) => {
+        // Verificar si 'callesPorLocalidad' tiene datos para la localidad seleccionada
         if (!callesPorLocalidad[localidad]?.length) {
             return (
                 <input
@@ -180,6 +190,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                     value={value || ""}
                     onChange={(e) => {
                         const val = e.target.value;
+                        // Cambiar la dirección dependiendo de si es "Otra"
                         onChangeFn('direccion', val === "Otra" ? "" : val);
                         onChangeFn('otra_calle', val === "Otra");
                     }}
@@ -192,7 +203,8 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                     <option value="Otra">Otra</option>
                 </select>
 
-                {formData.vivienda.otra_calle && (
+                {/* Verificar si 'formData.vivienda' está definido y tiene 'otra_calle' */}
+                {formData?.vivienda?.otra_calle && (
                     <input
                         type="text"
                         placeholder="Ingrese su calle"
@@ -207,13 +219,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
 
     // Renderizar sección de vivienda según corresponda
     const renderVivienda = (persona, index) => {
-        if (index === 0) {
-            return (
-                <div className={styles.viviendaInfo}>
-                    <p>Esta persona usa la vivienda principal registrada.</p>
-                </div>
-            );
-        }
+
 
         if (persona.comparteVivienda) {
             return (
@@ -225,7 +231,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                         {formData.vivienda.departamento && (
                             <p><strong>Departamento:</strong> {formData.vivienda.piso_departamento} {formData.vivienda.numero_departamento}</p>
                         )}
-                        <button 
+                        <button
                             type="button"
                             onClick={() => cambiarVivienda(index)}
                             className={styles.cambiarViviendaButton}
@@ -275,6 +281,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                 className={styles.input}
                             />
                         </label>
+
 
                         <label className={styles.label}>
                             <span className={styles.labelText}>¿Es departamento? *</span>
@@ -397,7 +404,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                             </div>
                         )}
 
-                        <button 
+                        <button
                             type="button"
                             onClick={() => compartirVivienda(index)}
                             className={styles.compartirViviendaButton}
@@ -413,176 +420,17 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
     return (
         <div className={styles.editForm}>
             {/* SECCIÓN VIVIENDA PRINCIPAL */}
-            <div className={styles.section}>
-                <h3>Vivienda Principal</h3>
 
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>Localidad *</span>
-                        <select
-                            name="localidad"
-                            value={formData.vivienda.localidad || ""}
-                            onChange={(e) => onChange('vivienda.localidad', e.target.value)}
-                            className={styles.select}
-                            required
-                        >
-                            <option value="" disabled>Seleccione localidad</option>
-                            {Object.keys(callesPorLocalidad).map(localidad => (
-                                <option key={localidad} value={localidad}>{localidad}</option>
-                            ))}
-                        </select>
-                    </label>
 
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>Dirección *</span>
-                        {renderSelectCalles(
-                            formData.vivienda.localidad,
-                            formData.vivienda.direccion,
-                            (field, value) => onChange(`vivienda.${field}`, value)
-                        )}
-                    </label>
 
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>Número</span>
-                        <input
-                            type="number"
-                            placeholder={callesPorLocalidad[formData.vivienda.localidad]?.length ? "Número" : "S/N"}
-                            value={formData.vivienda.numero_direccion || ""}
-                            onChange={(e) => onChange('vivienda.numero_direccion', e.target.value)}
-                            className={styles.input}
-                        />
-                    </label>
-
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>¿Es departamento? *</span>
-                        <select
-                            name="departamento"
-                            value={formData.vivienda.departamento === null ? "" : formData.vivienda.departamento ? "Si" : "No"}
-                            onChange={(e) => onChange('vivienda.departamento', e.target.value === 'Si')}
-                            className={styles.select}
-                            required
-                        >
-                            <option value="" disabled>¿Es departamento?</option>
-                            <option value="Si">Sí</option>
-                            <option value="No">No</option>
-                        </select>
-                    </label>
-
-                    {formData.vivienda.departamento && (
-                        <>
-                            <label className={styles.label}>
-                                <span className={styles.labelText}>Piso *</span>
-                                <input
-                                    type="text"
-                                    placeholder="Piso"
-                                    value={formData.vivienda.piso_departamento || ""}
-                                    onChange={(e) => onChange('vivienda.piso_departamento', e.target.value)}
-                                    className={styles.input}
-                                    required
-                                />
-                            </label>
-
-                            <label className={styles.label}>
-                                <span className={styles.labelText}>Departamento *</span>
-                                <input
-                                    type="text"
-                                    placeholder="Departamento"
-                                    value={formData.vivienda.numero_departamento || ""}
-                                    onChange={(e) => onChange('vivienda.numero_departamento', e.target.value)}
-                                    className={styles.input}
-                                    required
-                                />
-                            </label>
-                        </>
-                    )}
-
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>Cantidad de dormitorios *</span>
-                        <input
-                            type="number"
-                            min="1"
-                            placeholder="Cantidad de dormitorios"
-                            value={formData.vivienda.cantidad_dormitorios || ""}
-                            onChange={(e) => onChange('vivienda.cantidad_dormitorios', e.target.value)}
-                            className={styles.input}
-                            required
-                        />
-                    </label>
-
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>Estado de la vivienda *</span>
-                        <select
-                            name="estado_vivienda"
-                            value={formData.vivienda.estado_vivienda || ""}
-                            onChange={(e) => onChange('vivienda.estado_vivienda', e.target.value)}
-                            className={styles.select}
-                            required
-                        >
-                            <option value="" disabled>¿Estado de la Vivienda?</option>
-                            <option value="Muy bueno">Muy bueno</option>
-                            <option value="Bueno">Bueno</option>
-                            <option value="Regular">Regular</option>
-                            <option value="Malo">Malo</option>
-                            <option value="Muy malo">Muy malo</option>
-                        </select>
-                    </label>
-
-                    <label className={styles.label}>
-                        <span className={styles.labelText}>¿Alquila? *</span>
-                        <select
-                            name="alquiler"
-                            value={formData.vivienda.alquiler === true ? "Si" : formData.vivienda.alquiler === false ? "No" : ""}
-                            onChange={(e) => onChange('vivienda.alquiler', e.target.value === 'Si')}
-                            className={styles.select}
-                            required
-                        >
-                            <option value="" disabled>¿Alquila la vivienda?</option>
-                            <option value="Si">Sí</option>
-                            <option value="No">No</option>
-                        </select>
-                    </label>
-
-                    {formData.vivienda.alquiler && (
-                        <div className={styles.alquilerGroup}>
-                            <label className={styles.label}>
-                                <span className={styles.labelText}>Monto del alquiler *</span>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    placeholder="Monto del alquiler"
-                                    value={formData.vivienda.valor_alquiler || ""}
-                                    onChange={(e) => onChange('vivienda.valor_alquiler', e.target.value)}
-                                    className={styles.input}
-                                    required
-                                />
-                            </label>
-
-                            <label className={styles.label}>
-                                <span className={styles.labelText}>Tipo de alquiler *</span>
-                                <select
-                                    name="tipo_alquiler"
-                                    value={formData.vivienda.tipo_alquiler || ""}
-                                    onChange={(e) => onChange('vivienda.tipo_alquiler', e.target.value)}
-                                    className={styles.select}
-                                    required
-                                >
-                                    <option value="" disabled>Seleccione tipo de alquiler</option>
-                                    <option value="Particular">Particular</option>
-                                    <option value="Inmobiliaria">Inmobiliaria</option>
-                                </select>
-                            </label>
-                        </div>
-                    )}
-                </div>
-            </div>
 
             {/* SECCIÓN HABITANTES */}
             <div className={styles.section}>
                 <h3>Habitantes</h3>
 
                 {formData.personas.map((habitante, index) => (
-                    <div 
-                        key={index} 
+                    <div
+                        key={index}
                         className={styles.habitanteCard}
                         ref={index === formData.personas.length - 1 ? agregarPersonaRef : null}
                     >
@@ -595,6 +443,32 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
 
                         <div className={styles.formGroup}>
                             <div className={styles.row}>
+
+                                <label className={styles.label}>
+                                                <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
+                                                {index === 0 ? (
+                                                  <input
+                                                    type="text"
+                                                    value="Titular"
+                                                    disabled
+                                                    className={`${styles.input} ${styles.inputDisabled}`}
+                                                  />
+                                                ) : (
+                                                  <select
+                                                    required
+                                                    name="titular_cotitular"
+                                                    value={habitante.titular_cotitular || ""}
+                                                    onChange={(e) => handleInputChange(index, 'personas.titular_cotitular', e.target.value)}
+                                                    className={styles.select}
+                                                  >
+                                                    <option value="" disabled>Seleccione rol</option>
+                                                    <option value="Cotitular">Cotitular</option>
+                                                    <option value="Conviviente">Conviviente</option>
+                                                  </select>
+                                                )}
+                                              </label>
+
+
                                 <label className={styles.label}>
                                     <span className={styles.labelText}>Nombre *</span>
                                     <input
@@ -871,6 +745,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                                     required
                                                 />
                                             </label>
+                                           
                                             <button
                                                 type="button"
                                                 onClick={() => eliminarIngreso(index, ingresoIndex)}

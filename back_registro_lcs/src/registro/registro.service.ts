@@ -183,6 +183,10 @@ export class RegistroService {
       const resultado = {
         idRegistro: registro.idRegistro,
         personas: registro.personas.map(persona => ({
+          idRegistro: persona.idRegistro,
+          idPersona: persona.idPersona,
+          idVivienda: persona.idVivienda,
+          idLote: persona.idLote,
           numero_registro: persona.numero_registro,
           nombre: persona.nombre,
           apellido: persona.apellido,
@@ -199,6 +203,8 @@ export class RegistroService {
           vinculo: persona.vinculo,
           titular_cotitular: persona.titular_cotitular,
           vivienda: persona.viviendas ? {
+            idVivienda: persona.viviendas.idVivienda,
+            idRegistro: persona.viviendas.idRegistro,
             direccion: persona.viviendas.direccion,
             numero_direccion: persona.viviendas.numero_direccion,
             departamento: persona.viviendas.departamento,
@@ -212,9 +218,11 @@ export class RegistroService {
             tipo_alquiler: persona.viviendas.tipo_alquiler
           } : null,
           lote: persona.lote ? {
+            idLote: persona.lote.idLote,
             localidad: persona.lote.localidad
           } : null,
           ingresos: persona.ingresos?.map(ingreso => ({
+            idIngreso: ingreso.idIngreso,
             situacion_laboral: ingreso.situacion_laboral,
             ocupacion: ingreso.ocupacion,
             CUIT_empleador: ingreso.CUIT_empleador,
@@ -463,6 +471,9 @@ export class RegistroService {
           personas: registro.personas.map(persona => {
             const totalIngresos = persona.ingresos?.reduce((sum, ingreso) => sum + (ingreso.salario || 0), 0) || 0;
             return {
+              idVivienda: persona.idVivienda,
+              idRegistro: persona.idRegistro,
+              idLote: persona.idLote,
               idPersona: persona.idPersona,
               numero_registro: persona.numero_registro,
               nombre: persona.nombre,
