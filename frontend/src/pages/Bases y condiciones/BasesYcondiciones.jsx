@@ -2,10 +2,8 @@ import { useNavigate } from "react-router-dom";
 import React, { useEffect } from 'react';
 import styles from "./BasesYcondiciones.module.css";
 import { FaWhatsapp } from "react-icons/fa";
-<<<<<<< HEAD
-=======
 import { Info } from "lucide-react";
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
 
 function BasesYCondiciones() {
     const navigate = useNavigate();
@@ -53,7 +51,7 @@ function BasesYCondiciones() {
                 </button>
             </div>
         </div>
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
     )
 }
 export default BasesYCondiciones;

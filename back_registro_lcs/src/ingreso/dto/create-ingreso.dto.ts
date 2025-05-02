@@ -3,7 +3,6 @@ import { Relacion } from "../enum/relacion.enum"
 import { Type } from "class-transformer"
 import { Persona } from "src/persona/entities/persona.entity"
 
-
 export class CreateIngresoDto{  
 
     idIngreso: number

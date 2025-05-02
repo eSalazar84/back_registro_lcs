@@ -16,8 +16,6 @@ export class Ingreso {
     @Column({ type: 'bigint', nullable: true })
     CUIT_empleador?: number | null;
 
-<<<<<<< HEAD
-
     @Column({ type: 'int', nullable: true })
     salario?: number | null;
 
@@ -29,16 +27,4 @@ export class Ingreso {
     persona: Persona;
   newIngreso: { idRegistro: number; };
 }
-=======
-    @Column({ type: 'int' , nullable: true})
-    salario?: number | null;
 
-    @Column({type:"int"})
-    idPersona: number
-
-    @ManyToOne(() => Persona, (persona) => persona.ingresos, {onDelete: 'CASCADE'})//REVISAR CASCADE
-    @JoinColumn({ name: "idPersona" })
-    persona: Persona;
-    
-}
->>>>>>> db367188ec5cdd42967f2ccf1a81725ac2a20bad
