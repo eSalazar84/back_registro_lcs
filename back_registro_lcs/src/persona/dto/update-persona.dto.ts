@@ -7,10 +7,14 @@ import { Estado_Civil } from '../enum/estado_civil.enum';
 import { Nacionalidad } from '../enum/nacionalidad.enum';
 import { Vinculo } from '../enum/vinculo.enum';
 import { Titular_Cotitular } from '../enum/titular_cotitular.enum';
+
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
+
 
 export class UpdatePersonaDto extends PartialType(CreatePersonaDto) {
 
     idPersona?: number
+
     vivienda?: CreateViviendaDto;
+
 }

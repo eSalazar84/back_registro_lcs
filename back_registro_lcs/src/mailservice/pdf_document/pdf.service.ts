@@ -7,6 +7,7 @@ import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { LoteService } from 'src/lote/lote.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 
+
 @Injectable()
 export class PdfService {
     private readonly leftMargin = 50;
@@ -52,10 +53,12 @@ export class PdfService {
                 const imageBuffer = Buffer.from(await response.arrayBuffer());
 
                 // Constantes para el encabezado
+
                 const headerHeight = 130; // Altura total del encabezado
                 const baseYPosition = 20; // Posición Y inicial
                 const logoContainerSize = 80; // Tamaño del contenedor azul
                 const logoSize = 75; // Tamaño del logo
+
                 const borderRadius = 8;
                 const titleStartX = 160; // Posición X donde empiezan los títulos
 

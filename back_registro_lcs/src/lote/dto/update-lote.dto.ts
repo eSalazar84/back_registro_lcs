@@ -7,3 +7,4 @@ export class UpdateLoteDto extends PartialType(CreateLoteDto) {
     @IsInt()
     idPersona?: number; // Agregar esto si solo necesitas el id de la persona
 }
+

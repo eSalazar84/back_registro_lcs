@@ -8,6 +8,7 @@ import { Persona } from 'src/persona/entities/persona.entity';
 import { EntityManager } from 'typeorm';
 import { Registro } from 'src/registro/entities/registro.entity';
 
+
 @Injectable()
 export class IngresoService {
   constructor(
@@ -16,7 +17,6 @@ export class IngresoService {
 
     @InjectRepository(Registro)
     private readonly registroRepository: Repository<Registro>, // Corregido a Repository<Ingreso>
-
 
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
@@ -72,6 +72,7 @@ export class IngresoService {
   
 
 
+
   async findAllIngreso(): Promise<Ingreso[]> {
     return this.ingresoRepository.find();
   }
@@ -82,7 +83,6 @@ export class IngresoService {
     });
   }
   
-
   async findOneById(id: number): Promise<Ingreso> {
     const ingreso = await this.ingresoRepository.findOne({
       where: { idIngreso: id },
@@ -125,7 +125,6 @@ export class IngresoService {
     await this.ingresoRepository.remove(ingreso);
   }
   
-
   // Metodo para buscar los ingresos de las personas por id (se usa en PdfService)
 
   async getIngresosByPersonaId(idPersona: number): Promise<Ingreso[]> {

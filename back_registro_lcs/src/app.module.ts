@@ -28,6 +28,7 @@ import { AdminModule } from './admin/admin.module';
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
         host: configService.get<string>('DB_HOST'),
+
         port: parseInt(configService.get<string>('DB_PORT'), 10), // ✅ CORREGIDO
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
@@ -47,4 +48,6 @@ import { AdminModule } from './admin/admin.module';
     AdminModule,
   ],
 })
+
 export class AppModule {}
+

@@ -32,6 +32,7 @@ export const RegistroProvider = ({ children }) => {
       setError(err.message);
     console.error('Error:', err.message);
 
+
     } finally {
       setLoading(false);
     }

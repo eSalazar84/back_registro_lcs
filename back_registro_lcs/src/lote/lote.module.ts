@@ -7,6 +7,7 @@ import {Vivienda } from 'src/vivienda/entities/vivienda.entity';
 import { Persona } from 'src/persona/entities/persona.entity';
 import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
 
+
 @Module({
   imports:[TypeOrmModule.forFeature([Lote,Vivienda,Persona,Ingreso])],
   controllers: [LoteController],

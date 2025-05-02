@@ -3,9 +3,7 @@ import { CreateViviendaDto } from './dto/create-vivienda.dto';
 import { UpdateViviendaDto } from './dto/update-vivienda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
-
 import { EntityManager, FindOneOptions, Not, Repository } from 'typeorm';
-
 import { Localidad } from './enum/localidad.enum';
 
 @Injectable()
@@ -13,6 +11,7 @@ export class ViviendaService {
   constructor(
     @InjectRepository(Vivienda)
     private readonly viviendaRepository: Repository<Vivienda>,
+
   ) { }
   async createVivienda(
     createViviendaDto: CreateViviendaDto,
@@ -47,6 +46,7 @@ export class ViviendaService {
   }
   
     /**
+
    * 🔥 Función para limpiar espacios antes y después de cada string en un objeto
    */
   private trimStrings<T>(obj: T): T {
@@ -61,6 +61,7 @@ export class ViviendaService {
     const allVivienda = await this.viviendaRepository.find()
     return allVivienda;
   }
+
   //Trae la vivienda con las personas
   async findOneById(id: number): Promise<Vivienda> {
     const query: FindOneOptions<Vivienda> = { where: { idVivienda: id }, relations: ['personas'] };
@@ -71,6 +72,7 @@ export class ViviendaService {
     }
     return vivienda;
   }
+
   async updateVivienda(
     id: number,
     updateViviendaDto: UpdateViviendaDto,
@@ -108,6 +110,7 @@ export class ViviendaService {
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
+
   /**
    * ✅ Verifica si la vivienda ya existe antes de actualizar.   */
 
@@ -201,6 +204,7 @@ async findOneWithRelations(id: number) {
     }
     return vivienda;
   }
+
 
   // -----------------------------------------------------------------------------------------
 

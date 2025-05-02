@@ -10,6 +10,7 @@ import { Registro } from 'src/registro/entities/registro.entity';
 
 @Module({
   imports:[TypeOrmModule.forFeature([Lote,Vivienda,Persona,Ingreso,Registro])],
+
   controllers: [IngresoController],
   providers: [IngresoService],
   exports: [IngresoService]

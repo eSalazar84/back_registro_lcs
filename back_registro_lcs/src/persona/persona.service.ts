@@ -70,6 +70,7 @@ export class PersonaService {
       const lastPersona = await personaRepo.findOne({
         order: { numero_registro: "DESC" },
 
+
         where: { titular_cotitular: Titular_Cotitular.Titular },
       });
       personaData.numero_registro = (lastPersona?.numero_registro ?? 0) + 1;
@@ -77,7 +78,6 @@ export class PersonaService {
     } else {
       personaData.numero_registro = null;
     }
-
   
     // Limpiar strings
     personaData = this.trimStrings(personaData);
@@ -85,8 +85,7 @@ export class PersonaService {
     // Crear y guardar
     const persona = personaRepo.create(personaData);
     return await personaRepo.save(persona);
-  }
-  
+  } 
 
   private trimStrings<T>(obj: T): T {
     return Object.keys(obj).reduce((acc, key) => {
@@ -146,6 +145,7 @@ export class PersonaService {
   
 
 
+
   async findOneByDniRegistro(dni: number): Promise<Persona | null> {
     const persona = await this.personaRepository.findOne({ where: { dni } });
 
@@ -162,6 +162,7 @@ export class PersonaService {
       const persona = await this.personaRepository.findOne({
         where: { dni: dni },
         relations: ['viviendas', 'lote', 'ingresos'], // Relacionar con vivienda, lote e ingresos
+
       });
 
       if (!persona) {
@@ -182,7 +183,6 @@ export class PersonaService {
       throw new InternalServerErrorException(`Error al obtener la persona: ${error.message}`);
     }
   }
-
 
   async updatePersona(
     id: number,
@@ -228,6 +228,7 @@ export class PersonaService {
       }
     }  
     return persona;
+
   }
 
   async remove(id: number): Promise<void> {
@@ -235,13 +236,16 @@ export class PersonaService {
     const persona = await this.personaRepository.findOne({
       where: { idPersona: id },
       relations: ['viviendas'], // Cargar la vivienda asociada
+
     });
 
     if (!persona) {
       throw new Error('Persona no encontrada');
     }
 
+
     const vivienda = persona.viviendas; // Vivienda asociada a la persona (si existe)
+
 
     // Eliminar la persona de la base de datos
     await this.personaRepository.remove(persona);
@@ -250,6 +254,7 @@ export class PersonaService {
       // Verificar si quedan más personas asociadas a esta vivienda
       const personasRestantes = await this.personaRepository.count({
         where: { viviendas: { idVivienda: vivienda.idVivienda } },
+
       });
 
       // Si no quedan personas, eliminar la vivienda y si quedan personas no elimina la vivienda
@@ -267,6 +272,7 @@ export class PersonaService {
         },
         relations: [
           'viviendas',
+
           'ingresos',
           'lote'
         ],
@@ -292,6 +298,7 @@ export class PersonaService {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 // ---------------------------------------------------------------------------------
 
 // en uso
@@ -305,3 +312,4 @@ async findOneByDniWithManager(dni: number, manager: EntityManager): Promise<Pers
 }
 
 }
+

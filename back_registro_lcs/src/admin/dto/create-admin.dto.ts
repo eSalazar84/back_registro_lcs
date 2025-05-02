@@ -2,6 +2,7 @@ import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateAdminDto {
 
+
         idAdmin: number     
     
         @IsNotEmpty()
@@ -16,4 +17,5 @@ export class CreateAdminDto {
         @IsString()
         password: string;
             
+
 }

@@ -11,6 +11,7 @@ export class ViviendaController {
   @Post()
   async create(@Body() createViviendaDto: CreateViviendaDto): Promise<Vivienda> {
     try {
+
       return await this.viviendaService.createVivienda(
         createViviendaDto,
         undefined,
@@ -24,7 +25,6 @@ export class ViviendaController {
     }
   }
   
-
   @Get()
   async findAll(): Promise<Vivienda[]> {
     return this.viviendaService.findAllVivienda();

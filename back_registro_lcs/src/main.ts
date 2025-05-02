@@ -14,7 +14,6 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }))
   const configService = app.get(ConfigService);
-
 console.log('🚀 NODE_ENV:', process.env.NODE_ENV);
 console.log('📦 DB_HOST:', configService.get<string>('DB_HOST'));
 console.log('📦 DB_PORT:', configService.get<number>('DB_PORT'));
@@ -22,6 +21,7 @@ console.log('📦 DB_USERNAME:', configService.get<string>('DB_USERNAME'));
 console.log('📦 DB_DATABASE:', configService.get<string>('DB_DATABASE'));
 
 const port = configService.get<number>('PORT') || 3000; 
+
 
   await app.listen(port);
   console.log(`🚀 Servidor corriendo en http://localhost:${port}`);

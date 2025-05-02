@@ -8,6 +8,7 @@ import { Type } from 'class-transformer';
 export class UpdateRegistroDto {
   @IsOptional()
   @ValidateNested()
+
   @Type(() => UpdateViviendaDto)
   vivienda?: UpdateViviendaDto[];
 
@@ -18,6 +19,7 @@ export class UpdateRegistroDto {
 
   @IsOptional()
   @ValidateNested({ each: true })
+
   @Type(() => UpdatePersonaDto)
   personas?: UpdatePersonaDto[];
 
@@ -44,3 +46,4 @@ export class UpdateRegistroArrayDto {
   @ValidateNested()
   lote?: UpdateLoteDto;
 }
+

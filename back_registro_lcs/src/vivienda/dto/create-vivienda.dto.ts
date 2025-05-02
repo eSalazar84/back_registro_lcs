@@ -5,6 +5,7 @@ import { Alquiler } from "../enum/alquiler.enum"
 import { Expose } from "class-transformer"
 
 export class CreateViviendaDto {
+
     idVivienda: number;
   
     @IsString()

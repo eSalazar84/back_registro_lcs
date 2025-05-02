@@ -9,7 +9,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const data = await loginUser(email, password);
+
     console.log("Login data:", data);  // Verifica que recibes el token correctamente
+db367188ec5cdd42967f2ccf1a81725ac2a20bad
     setUser(data.user);
     setToken(data.access_token);  // Asegúrate de que `data.access_token` es el valor correcto
     localStorage.setItem("token", data.access_token);

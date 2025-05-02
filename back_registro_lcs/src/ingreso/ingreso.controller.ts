@@ -10,11 +10,13 @@ export class IngresoController {
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true, transform: true })) 
+
   async createIngreso(
     @Body() ingresos: CreateIngresoDto[],
     @Query('idPersona') idPersona: number,
     @Query('idRegistro') idRegistro: number // 👈 Agregado
   ): Promise<Ingreso[]> {
+
     try {
       return await this.ingresoService.createIngreso(ingresos, idPersona);
     } catch (error) {
@@ -24,7 +26,6 @@ export class IngresoController {
       }, HttpStatus.BAD_REQUEST);
     }
   }
-  
 
   @Get()
   findAll() {

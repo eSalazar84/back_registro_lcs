@@ -1,11 +1,4 @@
-
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
+import {Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany,} from 'typeorm';
 import { Vivienda } from 'src/vivienda/entities/vivienda.entity';
 import { Lote } from 'src/lote/entities/lote.entity';
 import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
@@ -23,3 +16,4 @@ export class Registro {
   personas: Persona[];
   registro: Vivienda;
 }
+

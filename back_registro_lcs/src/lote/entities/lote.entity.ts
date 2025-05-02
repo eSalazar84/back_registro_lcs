@@ -1,3 +1,4 @@
+
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Localidad } from "../enum/localidad.enum";
 import { Persona } from "src/persona/entities/persona.entity";
@@ -12,4 +13,5 @@ export class Lote {
 
     @OneToOne(() => Persona, persona => persona.lote, { nullable: true })
     persona: Persona;
+
 }

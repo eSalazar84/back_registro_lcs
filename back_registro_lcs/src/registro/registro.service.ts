@@ -574,18 +574,17 @@ export class RegistroService {
   }
   
 
+
   async findByViviendaId(idVivienda: number) {
     try {
       // Obtener la vivienda con todas sus relaciones
       const vivienda = await this.viviendaService.findOneWithRelations(idVivienda);
-
       if (!vivienda) {
         throw new NotFoundException(`No se encontró la vivienda con ID ${idVivienda}`);
       }
 
       // Obtener todas las personas que viven en esta vivienda con sus relaciones
       const personas = await this.personaService.findByViviendaId(idVivienda);
-
       // Estructurar la respuesta
       const registro = {
         vivienda: {
@@ -650,7 +649,6 @@ export class RegistroService {
         message: 'Registro de vivienda obtenido exitosamente',
         data: registro
       };
-
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -662,7 +660,6 @@ export class RegistroService {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
   // registro.service.ts
 
   async findOneByPersonaId(idPersona: number): Promise<Registro> {
@@ -673,5 +670,4 @@ export class RegistroService {
   }
 
 }
-
 

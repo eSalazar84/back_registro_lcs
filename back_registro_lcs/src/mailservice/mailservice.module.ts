@@ -5,6 +5,7 @@ import { ViviendaModule } from 'src/vivienda/vivienda.module';
 import { LoteModule } from 'src/lote/lote.module';
 import { IngresoModule } from 'src/ingreso/ingreso.module';
 
+
 @Module({
   imports: [PdfModule, ViviendaModule, LoteModule, IngresoModule],
   providers: [MailserviceService],

@@ -96,3 +96,4 @@ export class CreatePersonaDto {
   
     vivienda?: CreateViviendaDto;
 }
+

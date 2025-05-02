@@ -1,7 +1,7 @@
+
 import { CreateViviendaDto } from 'src/vivienda/dto/create-vivienda.dto';
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, BadRequestException, Put, Query, ParseIntPipe } from '@nestjs/common';
 import { RegistroService } from './registro.service';
-
 import { UpdateRegistroDto } from './dto/update-registro.dto';
 import { CreateLoteDto } from 'src/lote/dto/create-lote.dto';
 import { CreateIngresoDto } from 'src/ingreso/dto/create-ingreso.dto';
@@ -12,6 +12,7 @@ import {  UpdatePersonaDto } from 'src/persona/dto/update-persona.dto';
 import { UpdateViviendaDto } from 'src/vivienda/dto/update-vivienda.dto';
 import { UpdateIngresoDto } from 'src/ingreso/dto/update-ingreso.dto';
 import { UpdateLoteDto } from 'src/lote/dto/update-lote.dto';
+
 
 @Controller('registro')
 export class RegistroController {
@@ -63,7 +64,9 @@ export class RegistroController {
     @Query('localidad') localidad?: string,
     @Query('titular') titular?: boolean
   ) {
+
     return await this.registroService.findAllRegistros({
+
       page: page ? +page : undefined,
       limit: limit ? +limit : undefined,
       search,
@@ -74,6 +77,7 @@ export class RegistroController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
+
     return await this.registroService.findOneByIdRegistro(id);
   }
 
@@ -93,6 +97,7 @@ export class RegistroController {
         status: HttpStatus.OK,
         message: 'Registro actualizado exitosamente',
         data: resultado
+
       };
     } catch (error) {
       throw new HttpException(
@@ -106,11 +111,11 @@ export class RegistroController {
     }
   }
   
-  
   @Get('vivienda/:id')
   async findByViviendaId(@Param('id') id: number) {
     return this.registroService.findByViviendaId(id);
   }
+
 
 
 // registro.controller.ts

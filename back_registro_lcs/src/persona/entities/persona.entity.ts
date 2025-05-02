@@ -12,6 +12,7 @@ import { Lote } from "src/lote/entities/lote.entity";
 import { Registro } from "src/registro/entities/registro.entity";
 
 
+
 @Entity()
 export class Persona {
   @PrimaryGeneratedColumn()
@@ -66,6 +67,7 @@ export class Persona {
   titular_cotitular: Titular_Cotitular | null;
 
   @Column({type: "int", nullable: true})
+
   idVivienda: number;
 
   @Column({type: "int", nullable: true})

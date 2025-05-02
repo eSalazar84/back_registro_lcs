@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styles from "./Formulario.module.css";
+import styles from "./formulario.module.css";
 import Swal from 'sweetalert2';
 import { callesPorLocalidad } from '../../services/listado_calles/listadoCalles';
 import { useNavigate } from 'react-router-dom';
@@ -404,10 +404,12 @@ const Formulario = ({ onSubmit }) => {
     setLoading(true);
 
     try {
+
       console.log(personas);
 
       const datosTransformados = personas.map(persona => transformarDatosEnvioBackend(persona));
       console.log("datos trandformado", datosTransformados);
+
 
 
       const response = await fetch(API_URL, {
@@ -438,10 +440,8 @@ const Formulario = ({ onSubmit }) => {
         });
         return;
       }
-
       console.log('Registro exitoso, intentando redireccionar...');
 
-      console.log('Navegación ejecutada');
       // Si el registro fue exitoso
       await Swal.fire({
         icon: 'success',
@@ -463,7 +463,9 @@ const Formulario = ({ onSubmit }) => {
       }, 200);
 
     } catch (error) {
+
       console.error('Error en el frontend:', error);
+
       Swal.fire({
         icon: 'error',
         title: 'Error en el registro',
@@ -836,7 +838,7 @@ const Formulario = ({ onSubmit }) => {
             <div className={`${styles.inputGroup} ${index === 0 || showHousingData[index] ? styles.visible : styles.hidden}`}>
               {/* Localidad - Nuevo orden */}
               <label className={styles.label}>
-                <span className={styles.labelText}>Localidad *</span>
+                <span className={styles.labelText}>Localidad donde residís *</span>
                 <select
                   required={index === 0 || showHousingData[index]}
                   name="localidad"
@@ -1210,9 +1212,11 @@ const Formulario = ({ onSubmit }) => {
         <button
           type="submit"
           disabled={loading || !aceptaDeclaracion}
-          className={`${styles.button} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
+
+          className={`${styles.button_registrar} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
         >
-          {loading ? "Enviando..." : "Enviar"}
+          {loading ? "Enviando datos..." : "Registrar"}
+
         </button>
       </div>
     </form>
