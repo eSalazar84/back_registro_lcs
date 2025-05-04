@@ -13,8 +13,11 @@ const Login = () => {
     e.preventDefault();
     try {
       await login(email, password);
+
+      console.log("Redirigiendo a /dashboard");
       navigate("/dashboard");
     } catch (error) {
+
       alert(error.message);
     }
   };

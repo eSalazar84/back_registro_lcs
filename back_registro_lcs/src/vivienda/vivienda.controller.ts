@@ -11,16 +11,20 @@ export class ViviendaController {
   @Post()
   async create(@Body() createViviendaDto: CreateViviendaDto): Promise<Vivienda> {
     try {
-      return await this.viviendaService.createVivienda(createViviendaDto);
-    }
-    catch (error) {
+
+      return await this.viviendaService.createVivienda(
+        createViviendaDto,
+        undefined,
+        createViviendaDto.idRegistro // 👈 lo pasás si viene en el DTO
+      );
+    } catch (error) {
       throw new HttpException({
         status: HttpStatus.BAD_REQUEST,
         error: `NOT VALID`
-      }, HttpStatus.BAD_REQUEST)
+      }, HttpStatus.BAD_REQUEST);
     }
   }
-
+  
   @Get()
   async findAll(): Promise<Vivienda[]> {
     return this.viviendaService.findAllVivienda();

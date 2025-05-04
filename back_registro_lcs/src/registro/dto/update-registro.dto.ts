@@ -8,13 +8,9 @@ import { Type } from 'class-transformer';
 export class UpdateRegistroDto {
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdatePersonaDto)
-  persona?: UpdatePersonaDto;
 
-  @IsOptional()
-  @ValidateNested()
   @Type(() => UpdateViviendaDto)
-  vivienda?: UpdateViviendaDto;
+  vivienda?: UpdateViviendaDto[];
 
   @IsOptional()
   @ValidateNested()
@@ -23,6 +19,31 @@ export class UpdateRegistroDto {
 
   @IsOptional()
   @ValidateNested({ each: true })
+
+  @Type(() => UpdatePersonaDto)
+  personas?: UpdatePersonaDto[];
+
+  @IsOptional()
+  @ValidateNested({ each: true })
   @Type(() => UpdateIngresoDto)
   ingresos?: UpdateIngresoDto[];
 }
+
+
+export class UpdateRegistroArrayDto {
+  @ValidateNested()
+  persona: UpdatePersonaDto;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  ingresos?: UpdateIngresoDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  vivienda?: UpdateViviendaDto;
+
+  @IsOptional()
+  @ValidateNested()
+  lote?: UpdateLoteDto;
+}
+

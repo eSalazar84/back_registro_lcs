@@ -405,7 +405,11 @@ const Formulario = ({ onSubmit }) => {
 
     try {
 
+      console.log(personas);
+
       const datosTransformados = personas.map(persona => transformarDatosEnvioBackend(persona));
+      console.log("datos trandformado", datosTransformados);
+
 
 
       const response = await fetch(API_URL, {
@@ -436,7 +440,7 @@ const Formulario = ({ onSubmit }) => {
         });
         return;
       }
-
+      console.log('Registro exitoso, intentando redireccionar...');
 
       // Si el registro fue exitoso
       await Swal.fire({
@@ -459,6 +463,9 @@ const Formulario = ({ onSubmit }) => {
       }, 200);
 
     } catch (error) {
+
+      console.error('Error en el frontend:', error);
+
       Swal.fire({
         icon: 'error',
         title: 'Error en el registro',
@@ -1205,9 +1212,11 @@ const Formulario = ({ onSubmit }) => {
         <button
           type="submit"
           disabled={loading || !aceptaDeclaracion}
+
           className={`${styles.button_registrar} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
         >
           {loading ? "Enviando datos..." : "Registrar"}
+
         </button>
       </div>
     </form>

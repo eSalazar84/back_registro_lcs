@@ -23,6 +23,7 @@
     "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/InitialMigration -d ./data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d ./data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d ./data-source.ts"
+
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",

@@ -4,10 +4,12 @@ import styles from "./BasesYcondiciones.module.css";
 import { FaWhatsapp } from "react-icons/fa";
 import { Info } from "lucide-react";
 
+
 function BasesYCondiciones() {
     const navigate = useNavigate();
     useEffect(() => {
         window.scrollTo(0, 0);
+
     }, []);
 
     return (
@@ -49,6 +51,7 @@ function BasesYCondiciones() {
                 </button>
             </div>
         </div>
+
     )
 }
 export default BasesYCondiciones;

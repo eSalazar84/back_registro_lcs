@@ -51,6 +51,7 @@
     padding-right: 40px;
 }
 
+
 @media screen and (min-width: 1025px) {
     .numero_texto {
         display: none;
@@ -125,8 +126,10 @@
 /* Para pantallas menores a 480px (muy pequeñas) */
 @media (max-width: 480px) {
     .container_general_nav {
+
         height: 80px;
         /* Mantengo la altura */
+
         padding: 5px;
     }
 

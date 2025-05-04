@@ -3,9 +3,10 @@ import { Injectable } from '@nestjs/common';
 import * as PDFDocument from 'pdfkit';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ViviendaService } from '../../vivienda/vivienda.service';
-import { LoteService } from '../../lote/lote.service';
-import { IngresoService } from '../../ingreso/ingreso.service';
+import { ViviendaService } from 'src/vivienda/vivienda.service';
+import { LoteService } from 'src/lote/lote.service';
+import { IngresoService } from 'src/ingreso/ingreso.service';
+
 
 @Injectable()
 export class PdfService {
@@ -52,10 +53,12 @@ export class PdfService {
                 const imageBuffer = Buffer.from(await response.arrayBuffer());
 
                 // Constantes para el encabezado
-                const headerHeight = 120; // Altura total del encabezado (reducida)
+
+                const headerHeight = 130; // Altura total del encabezado
                 const baseYPosition = 20; // Posición Y inicial
-                const logoContainerSize = 85; // Tamaño del contenedor azul (aumentado)
-                const logoSize = 85; // Tamaño del logo (aumentado)
+                const logoContainerSize = 80; // Tamaño del contenedor azul
+                const logoSize = 75; // Tamaño del logo
+
                 const borderRadius = 8;
                 const titleStartX = 160; // Posición X donde empiezan los títulos
 
@@ -263,9 +266,9 @@ export class PdfService {
             // --- PIE DE PÁGINA ---
             doc.fontSize(10)
                 .fillColor(this.colors.text)
-                .text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, this.leftMargin, yPosition, { align: 'center' })
+                .text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, this.leftMargin, yPosition, { align: 'left' })
                 .text('N/D = Dato no proporcionado', this.leftMargin, yPosition + 15)
-                .text('Este documento es válido como comprobante de registro oficial.', this.leftMargin, yPosition + 30, { align: 'center' });
+                .text('Este documento es válido como comprobante de registro oficial.', this.leftMargin, yPosition + 30, { align: 'left' });
 
             doc.end();
 

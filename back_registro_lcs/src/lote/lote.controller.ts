@@ -3,6 +3,7 @@ import { LoteService } from './lote.service';
 import { CreateLoteDto } from './dto/create-lote.dto';
 import { UpdateLoteDto } from './dto/update-lote.dto';
 import { Lote } from './entities/lote.entity';
+import { CreatePersonaDto } from 'src/persona/dto/create-persona.dto';
 
 @Controller('lote')
 export class LoteController {

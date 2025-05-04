@@ -5,8 +5,6 @@ import { FaLinkedin } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { FaPhoneAlt } from "react-icons/fa";
 
-
-
 function Nav() {
     // Obtener la fecha actual
     const fechaActual = new Date().toLocaleDateString('es-ES', {
@@ -26,6 +24,7 @@ function Nav() {
 
                 <div className={styles.container_h2_nav}>
                     <h2>Programa Mi Hábitat, mi Hogar</h2>
+
                 </div>
 
                 <div className={styles.container_redes}>
@@ -46,9 +45,11 @@ function Nav() {
                     </a>
                 </div>
 
+
                 <a href="https://benitojuarez.gov.ar/telefonos-utiles/" className={styles.numero_texto}>
                     <FaPhoneAlt className={styles.icon_emergencias} />
                 </a>
+
                 <div className={styles.container_fecha}>
                     <p>{fechaActual}</p>
                 </div>
