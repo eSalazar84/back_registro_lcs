@@ -320,23 +320,29 @@ export class RegistroService {
   
         // 1. Vivienda
         let viviendaProcesada = viviendasCreadas[viviendaKey];
-        if (!viviendaProcesada) {
-          if (vivienda.idVivienda) {
-            viviendaProcesada = await this.viviendaService.updateVivienda(
-              vivienda.idVivienda,
-              vivienda,
-              queryRunner.manager
-            );
-          } else {
-            viviendaProcesada = await this.viviendaService.createVivienda(
-              vivienda as CreateViviendaDto,
-              queryRunner.manager,
-              idRegistro
-            );
-          }
-          viviendasCreadas[viviendaKey] = viviendaProcesada;
+        console.log('→ Vivienda recibida:', vivienda);
+
+
+        if (vivienda.idVivienda) {
+          // Siempre actualizar si viene con ID
+          console.log('→ ACTUALIZANDO VIVIENDA:', vivienda.idVivienda);
+          viviendaProcesada = await this.viviendaService.updateVivienda(
+            vivienda.idVivienda,
+            vivienda,
+            queryRunner.manager
+          );
+        } else if (!viviendaProcesada) {
+          // Solo crear si no se creó ya antes
+          viviendaProcesada = await this.viviendaService.createVivienda(
+            vivienda as CreateViviendaDto,
+            queryRunner.manager,
+            idRegistro
+          );
         }
-  
+        
+        // Guardar por clave para no duplicar creaciones
+        viviendasCreadas[viviendaKey] = viviendaProcesada;
+        
         // 2. Lote
         if (persona.titular_cotitular === 'Titular' && !persona.idLote && lote) {
           const loteCreado = await this.loteService.createLote(lote as CreateLoteDto);
@@ -362,20 +368,33 @@ export class RegistroService {
           );
         }
   
-        // 4. Ingresos
-        if (Array.isArray(ingresos)) {
-          for (const ingreso of ingresos) {
-            if (ingreso.idIngreso) {
-              await this.ingresoService.updateIngreso(ingreso.idIngreso, ingreso, queryRunner.manager);
-            } else {
-              await this.ingresoService.createIngreso(
-                ingreso as CreateIngresoDto,
-                personaProcesada.idPersona,
-                queryRunner.manager
-              );
-            }
-          }
-        }
+// 4. Ingresos
+const ingresosActuales = await queryRunner.manager.find(Ingreso, {
+  where: { persona: { idPersona: personaProcesada.idPersona } }
+});
+
+const idsEnviados = (ingresos ?? []).filter(i => i.idIngreso).map(i => i.idIngreso);
+
+// Eliminar ingresos que ya no están en la lista enviada
+for (const ingresoExistente of ingresosActuales) {
+  if (!idsEnviados.includes(ingresoExistente.idIngreso)) {
+    await this.ingresoService.removeIngreso(ingresoExistente.idIngreso);
+  }
+}
+
+// Crear o actualizar los ingresos enviados
+for (const ingreso of ingresos ?? []) {
+  if (ingreso.idIngreso) {
+    await this.ingresoService.updateIngreso(ingreso.idIngreso, ingreso, queryRunner.manager);
+  } else {
+    await this.ingresoService.createIngreso(
+      ingreso as CreateIngresoDto,
+      personaProcesada.idPersona,
+      queryRunner.manager
+    );
+  }
+}
+
   
         personasProcesadas.push(personaProcesada);
       }
