@@ -12,7 +12,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
 
     // Plantillas para nuevos registros
     const nuevaVivienda = {
-       
+
         idRegistro: formData.idRegistro,
         localidad: "",
         direccion: "",
@@ -29,7 +29,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
     };
 
     const nuevaPersona = {
-               
+
         nombre: "",
         apellido: "",
         tipo_dni: "Documento único",
@@ -84,17 +84,17 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
             reverseButtons: true
         }).then((result) => {
             const comparteVivienda = result.isConfirmed;
-    
+
             const viviendaTitular = formData.personas.find(p => p.vivienda)?.vivienda;
-    
+
             const persona = {
                 ...nuevaPersona,
                 comparteVivienda,
                 vivienda: comparteVivienda ? viviendaTitular : { ...nuevaVivienda },
             };
-    
+
             onChange('personas', [...formData.personas, persona]);
-    
+
             // Scroll al nuevo elemento
             setTimeout(() => {
                 agregarPersonaRef.current?.scrollIntoView({
@@ -104,7 +104,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
             }, 300);
         });
     };
-    
+
 
     // Cambiar a vivienda diferente
     const cambiarVivienda = (index) => {
@@ -165,7 +165,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
     const eliminarIngreso = (personaIndex, ingresoIndex) => {
         const updatedPersonas = [...formData.personas];
         console.log("eliminar ingreso", updatedPersonas);
-        
+
         updatedPersonas[personaIndex].ingresos = updatedPersonas[personaIndex].ingresos.filter((_, i) => i !== ingresoIndex);
         onChange('personas', updatedPersonas);
     };
@@ -436,7 +436,8 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                     >
                         <div className={styles.habitanteHeader}>
                             <h4>
-                                {`${[habitante.nombre, habitante.apellido, habitante.titular_cotitular]}`}
+                            {`${habitante.nombre} ${habitante.apellido} - ${habitante.titular_cotitular}`}
+
                                 {index > 0 && ` (${habitante.vinculo})`}
                             </h4>
                         </div>
@@ -445,28 +446,28 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                             <div className={styles.row}>
 
                                 <label className={styles.label}>
-                                                <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
-                                                {index === 0 ? (
-                                                  <input
-                                                    type="text"
-                                                    value="Titular"
-                                                    disabled
-                                                    className={`${styles.input} ${styles.inputDisabled}`}
-                                                  />
-                                                ) : (
-                                                  <select
-                                                    required
-                                                    name="titular_cotitular"
-                                                    value={habitante.titular_cotitular || ""}
-                                                    onChange={(e) => handleInputChange(index, 'personas.titular_cotitular', e.target.value)}
-                                                    className={styles.select}
-                                                  >
-                                                    <option value="" disabled>Seleccione rol</option>
-                                                    <option value="Cotitular">Cotitular</option>
-                                                    <option value="Conviviente">Conviviente</option>
-                                                  </select>
-                                                )}
-                                              </label>
+                                    <span className={styles.labelText}>Titular - Cotitular - Conviviente *</span>
+                                    {index === 0 ? (
+                                        <input
+                                            type="text"
+                                            value="Titular"
+                                            disabled
+                                            className={`${styles.input} ${styles.inputDisabled}`}
+                                        />
+                                    ) : (
+                                        <select
+                                        required
+                                        name="titular_cotitular"
+                                        value={habitante.titular_cotitular || ""}
+                                        onChange={(e) => onChange(`personas.${index}.titular_cotitular`, e.target.value)}
+                                        className={styles.select}
+                                    >
+                                        <option value="" disabled>Seleccione rol</option>
+                                        <option value="Cotitular">Cotitular</option>
+                                        <option value="Conviviente">Conviviente</option>
+                                    </select>
+                                    )}
+                                </label>
 
 
                                 <label className={styles.label}>
@@ -548,21 +549,6 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                             />
                                         </label>
 
-                                        <label className={styles.label}>
-                                            <span className={styles.labelText}>Género *</span>
-                                            <select
-                                                value={habitante.genero || ""}
-                                                onChange={(e) => onChange(`personas.${index}.genero`, e.target.value)}
-                                                className={styles.select}
-                                                required
-                                            >
-                                                <option value="" disabled>Seleccione género</option>
-                                                <option value="Masculino">Masculino</option>
-                                                <option value="Femenino">Femenino</option>
-                                                <option value="Otro">Otro</option>
-                                                <option value="No especifica">No especifica</option>
-                                            </select>
-                                        </label>
                                     </div>
 
                                     <div className={styles.row}>
@@ -607,7 +593,12 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                             </select>
                                         </label>
 
-                                        <label className={styles.label}>
+                                      
+                                    </div>
+                                </>
+                            )}
+
+<label className={styles.label}>
                                             <span className={styles.labelText}>Nacionalidad *</span>
                                             <select
                                                 value={habitante.nacionalidad || ""}
@@ -630,9 +621,22 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                                 <option value="Otro">Otro</option>
                                             </select>
                                         </label>
-                                    </div>
-                                </>
-                            )}
+
+                            <label className={styles.label}>
+                                <span className={styles.labelText}>Género *</span>
+                                <select
+                                    value={habitante.genero || ""}
+                                    onChange={(e) => onChange(`personas.${index}.genero`, e.target.value)}
+                                    className={styles.select}
+                                    required
+                                >
+                                    <option value="" disabled>Seleccione género</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                    <option value="No especifica">No especifica</option>
+                                </select>
+                            </label>
 
                             <label className={styles.label}>
                                 <span className={styles.labelText}>Certificado de discapacidad *</span>
@@ -745,7 +749,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                                     required
                                                 />
                                             </label>
-                                           
+
                                             <button
                                                 type="button"
                                                 onClick={() => eliminarIngreso(index, ingresoIndex)}

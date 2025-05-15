@@ -91,73 +91,73 @@ export async function fetchRegistroById(registroId) {
 
 export const transformarParaBackend = (formData) => {
   if (!formData || !Array.isArray(formData.personas)) {
-      console.error("El campo personas no es un array o formData es inválido:", formData);
-      return [];
+    console.error("El campo personas no es un array o formData es inválido:", formData);
+    return [];
   }
 
   return formData.personas.map((persona) => {
-      // Validar que la persona tenga los campos requeridos
-      if (!persona.idPersona) {
-          console.error("Persona sin idPersona detectada:", persona);
-          throw new Error("Persona sin idPersona detectada. Verifica los datos antes de enviarlos.");
-      }
+   
 
-      return {
-          persona: {
-              idRegistro: persona.idRegistro || null,
-              idPersona: persona.idPersona || null,
-              idVivienda: persona.idVivienda || null,
-              idLote: persona.idLote || null,
-              numero_registro: persona.numero_registro || null,
-              nombre: persona.nombre || "",
-              apellido: persona.apellido || "",
-              tipo_dni: persona.tipo_dni || "",
-              dni: persona.dni || "",
-              CUIL_CUIT: persona.CUIL_CUIT || "",
-              genero: persona.genero || "",
-              fecha_nacimiento: persona.fecha_nacimiento || "",
-              email: persona.email || "",
-              telefono: persona.telefono || "",
-              estado_civil: persona.estado_civil || "",
-              nacionalidad: persona.nacionalidad || "",
-              certificado_discapacidad: persona.certificado_discapacidad || false,
-              vinculo: persona.vinculo || "",
-              titular_cotitular: persona.titular_cotitular || ""
-          },
-          vivienda: persona.vivienda
-              ? {
-                    idVivienda: persona.vivienda.idVivienda || null,
-                    idRegistro: persona.vivienda.idRegistro || null,
-                    direccion: persona.vivienda.direccion || "",
-                    numero_direccion: persona.vivienda.numero_direccion || "",
-                    departamento: persona.vivienda.departamento || false,
-                    piso_departamento: persona.vivienda.piso_departamento || null,
-                    numero_departamento: persona.vivienda.numero_departamento || null,
-                    alquiler: persona.vivienda.alquiler || false,
-                    valor_alquiler: persona.vivienda.valor_alquiler || 0,
-                    localidad: persona.vivienda.localidad || "",
-                    cantidad_dormitorios: persona.vivienda.cantidad_dormitorios || 0,
-                    estado_vivienda: persona.vivienda.estado_vivienda || "",
-                    tipo_alquiler: persona.vivienda.tipo_alquiler || ""
-                }
-              : null,
-          lote: persona.lote
-              ? {
-                    idLote: persona.lote.idLote || null,
-                    localidad: persona.lote.localidad || ""
-                }
-              : null,
-          ingresos: Array.isArray(persona.ingresos)
-              ? persona.ingresos.map((ingreso) => ({
-                    idIngreso: ingreso.idIngreso || null,
-                    situacion_laboral: ingreso.situacion_laboral || "",
-                    ocupacion: ingreso.ocupacion || "",
-                    CUIT_empleador: ingreso.CUIT_empleador || "",
-                    salario: ingreso.salario || 0,
-                    idPersona: persona.idPersona || null
-                }))
-              : []
-      };
+    const esMenor = esMenorDeEdad(persona.fecha_nacimiento);
+
+    return {
+      persona: {
+        idRegistro: persona.idRegistro || null,
+        idPersona: persona.idPersona || null,
+        idVivienda: persona.idVivienda || null,
+        idLote: persona.idLote || null,
+        numero_registro: persona.numero_registro || null,
+        nombre: persona.nombre || "",
+        apellido: persona.apellido || "",
+        tipo_dni: persona.tipo_dni || "",
+        dni: persona.dni || "",
+        CUIL_CUIT: esMenor ? "0" : (persona.CUIL_CUIT || ""),
+        genero: persona.genero || "",
+        fecha_nacimiento: persona.fecha_nacimiento || "",
+        email: esMenor ? "no@aplica.com" : (persona.email || ""),
+        telefono: esMenor ? "0000000000" : (persona.telefono || ""),
+        estado_civil: esMenor ? "Soltero/a" : (persona.estado_civil || ""),
+        nacionalidad: persona.nacionalidad || "",
+        certificado_discapacidad: persona.certificado_discapacidad || false,
+        vinculo: persona.vinculo || "",
+        titular_cotitular: persona.titular_cotitular || ""
+      },
+      vivienda: persona.vivienda
+        ? {
+            idVivienda: persona.vivienda.idVivienda || null,
+            idRegistro: persona.vivienda.idRegistro || null,
+            direccion: persona.vivienda.direccion || "",
+            numero_direccion: persona.vivienda.numero_direccion || "",
+            departamento: persona.vivienda.departamento || false,
+            piso_departamento: persona.vivienda.piso_departamento || null,
+            numero_departamento: persona.vivienda.numero_departamento || null,
+            alquiler: persona.vivienda.alquiler || false,
+            valor_alquiler: persona.vivienda.valor_alquiler || 0,
+            localidad: persona.vivienda.localidad || "",
+            cantidad_dormitorios: persona.vivienda.cantidad_dormitorios || 0,
+            estado_vivienda: persona.vivienda.estado_vivienda || "",
+            tipo_alquiler: persona.vivienda.tipo_alquiler || null
+          }
+        : null,
+      lote: persona.lote
+        ? {
+            idLote: persona.lote.idLote || null,
+            localidad: persona.lote.localidad || ""
+          }
+        : null,
+      ingresos: esMenor
+        ? []
+        : Array.isArray(persona.ingresos)
+        ? persona.ingresos.map((ingreso) => ({
+            idIngreso: ingreso.idIngreso || null,
+            situacion_laboral: ingreso.situacion_laboral || "",
+            ocupacion: ingreso.ocupacion || "",
+            CUIT_empleador: ingreso.CUIT_empleador || "0",
+            salario: ingreso.salario || 0,
+            idPersona: persona.idPersona || null
+          }))
+        : []
+    };
   });
 };
 

@@ -59,7 +59,7 @@ export class PersonaController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.personaService.remove(+id);
+    return this.personaService.removePersona(+id);
   }
 
   

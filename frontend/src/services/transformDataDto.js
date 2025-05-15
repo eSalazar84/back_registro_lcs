@@ -1,7 +1,7 @@
 export function transformarVivienda(data) {
 
     console.log(data);
-db367188ec5cdd42967f2ccf1a81725ac2a20bad
+
     
     return {
         idVivienda: Number(data.idVivienda) || 0, // Asigna 0 si no hay ID
