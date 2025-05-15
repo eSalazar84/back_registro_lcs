@@ -736,17 +736,17 @@ const Formulario = ({ onSubmit }) => {
                   className={styles.select}
                 >
                   <option value="" disabled>Seleccione nacionalidad</option>
-                  <option value="Argentina">Argentina</option>
-                  <option value="Bolivia">Bolivia</option>
-                  <option value="Chilena">Chilena</option>
-                  <option value="Paraguaya">Paraguaya</option>
-                  <option value="Uruguaya">Uruguaya</option>
-                  <option value="Peruana">Peruana</option>
-                  <option value="Brasileña">Brasileña</option>
-                  <option value="Venezolana">Venezolana</option>
-                  <option value="Colombiana">Colombiana</option>
-                  <option value="Española">Española</option>
-                  <option value="Italiana">Italiana</option>
+                  <option value="Argentina">Argentino/a</option>
+                  <option value="Bolivia">Boliviano/a</option>
+                  <option value="Chilena">Chileno/a</option>
+                  <option value="Paraguaya">Paraguayo/a</option>
+                  <option value="Uruguaya">Uruguayo/a</option>
+                  <option value="Peruana">Peruano/a</option>
+                  <option value="Brasileña">Brasileño/a</option>
+                  <option value="Venezolana">Venezolano/a</option>
+                  <option value="Colombiana">Colombiano/a</option>
+                  <option value="Española">Español/a</option>
+                  <option value="Italiana">Italiano/a</option>
                   <option value="Otro">Otro</option>
                 </select>
               </label>
@@ -777,7 +777,7 @@ const Formulario = ({ onSubmit }) => {
                   />
                 ) : (
                   <label className={styles.label}>
-                    <span className={styles.labelText}>Vínculo *</span>
+                    <span className={styles.labelText}>Vínculo con el titular *</span>
                     <select
                       required
                       name="vinculo"
@@ -1176,21 +1176,7 @@ const Formulario = ({ onSubmit }) => {
         </div>
       ))}
 
-      {/* Después de todas las secciones del formulario y antes de los botones */}
-      <div className={styles.declaracionJurada}>
-        <label className={styles.checkboxLabel}>
-          <input
-            type="checkbox"
-            checked={aceptaDeclaracion}
-            onChange={(e) => setAceptaDeclaracion(e.target.checked)}
-            className={styles.checkbox}
-          />
-          <span className={styles.checkboxText}>
-            Declaro bajo juramento que los datos ingresados son verídicos y acepto que cualquier falsedad u omisión puede dar lugar a la desestimación de mi inscripción.
-          </span>
-        </label>
-      </div>
-
+      {/* Botón de Añadir Persona antes de la declaración jurada */}
       <div className={styles.buttonGroup}>
         <button
           type="button"
@@ -1209,14 +1195,42 @@ const Formulario = ({ onSubmit }) => {
             Cancelar Última Persona
           </button>
         )}
+      </div>
+
+      {/* Nota importante sobre agregar personas */}
+      <div className={styles.importantNote}>
+        <p className={styles.noteText}>
+          <strong>¡IMPORTANTE!</strong> No olvide agregar a todas las personas:
+        </p>
+        <ul className={styles.noteList}>
+          <li>Cotitulares</li>
+          <li>Convivientes</li>
+        </ul>
+      </div>
+
+      {/* Declaración jurada */}
+      <div className={styles.declaracionJurada}>
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={aceptaDeclaracion}
+            onChange={(e) => setAceptaDeclaracion(e.target.checked)}
+            className={styles.checkbox}
+          />
+          <span className={styles.checkboxText}>
+            Declaro bajo juramento que los datos ingresados son verídicos y acepto que cualquier falsedad u omisión puede dar lugar a la desestimación de mi inscripción.
+          </span>
+        </label>
+      </div>
+
+      {/* Botón de Registrar */}
+      <div className={styles.buttonGroup}>
         <button
           type="submit"
           disabled={loading || !aceptaDeclaracion}
-
           className={`${styles.button_registrar} ${!aceptaDeclaracion ? styles.buttonDisabled : ''}`}
         >
           {loading ? "Enviando datos..." : "Registrar"}
-
         </button>
       </div>
     </form>

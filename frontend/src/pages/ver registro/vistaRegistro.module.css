@@ -1,130 +1,224 @@
+/* Container principal */
 .container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 1.5rem;
+  background-color: #fff;
+  font-family:"Montserrat", sans-serif;;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Encabezado con título y botón de edición */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #3182ce;
 }
 
 .title {
-  color: #333;
-  text-align: center;
-  margin-bottom: 30px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
 }
 
+.editButton {
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editButton:hover {
+  background-color: #2c5282;
+}
+
+/* Indicador de carga */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #4a5568;
+}
+
+/* Secciones generales */
 .section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-left: 4px solid #3182ce;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section h3 {
-  color: #2c3e50;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eee;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Viviendas agrupadas */
+.viviendaAgrupada {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  border-left: 4px solid #e53e3e;
 }
 
 .viviendaInfo {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.viviendaInfo h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 .viviendaInfo p {
-  margin: 8px 0;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
 }
 
+/* Lista de habitantes - Modificado para mostrar verticalmente */
 .habitantesList {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
+/* Tarjeta de habitante */
 .habitanteCard {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
-  border: 1px solid #dee2e6;
+  background-color: #fff;
+  border-radius: 0.25rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3182ce;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .habitanteCard h4 {
-  color: #2c3e50;
-  margin-bottom: 15px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #dee2e6;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.habitanteInfo {
+  margin-bottom: 1.25rem;
 }
 
 .habitanteInfo p {
-  margin: 5px 0;
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
 }
 
+/* Sección de ingresos */
 .ingresosSection {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #dee2e6;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.ingresosSection h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 .ingresoItem {
-  background: white;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 4px;
-  border: 1px solid #eee;
+  background-color: #f8f9fa;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
-.totalIngresos {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px dashed #dee2e6;
-  font-size: 1.1em;
-  color: #28a745;
+.ingresoItem p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
 }
 
-.loteInfo {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #dee2e6;
-}
-
-.totalVivienda {
-  margin-top: 30px;
-  padding: 20px;
-  background: #28a745;
-  color: white;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.loading {
-  text-align: center;
-  padding: 50px;
-  font-size: 1.2em;
-  color: #666;
-}
-
-.error {
-  text-align: center;
-  padding: 50px;
-  color: #dc3545;
-}
-
+/* Sección de morosidad */
 .morosidadSection {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #DEE2E6;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 
+/* Estilos para datos específicos */
+strong {
+  font-weight: 600;
+  color: #4a5568;
+}
+.sinMorosidad {
+  color: #555;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+.totalIngresos {
+  color: green;
+  font-weight: bold;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 10px;
+    padding: 1rem;
   }
 
-  .habitantesList {
-    grid-template-columns: 1fr;
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
-  .viviendaInfo {
-    grid-template-columns: 1fr;
+  .viviendaAgrupada {
+    padding: 1rem;
+  }
+
+  .habitanteCard {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .section {
+    padding: 1rem;
   }
 }
