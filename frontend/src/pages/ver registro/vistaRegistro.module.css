@@ -18,6 +18,18 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.editButton {
+  background: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  background: #0056b3;
+}
 .section h3 {
   color: #2c3e50;
   margin-bottom: 20px;

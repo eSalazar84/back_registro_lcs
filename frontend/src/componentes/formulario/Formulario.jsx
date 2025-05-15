@@ -736,17 +736,17 @@ const Formulario = ({ onSubmit }) => {
                   className={styles.select}
                 >
                   <option value="" disabled>Seleccione nacionalidad</option>
-                  <option value="Argentina">Argentina</option>
-                  <option value="Bolivia">Bolivia</option>
-                  <option value="Chilena">Chilena</option>
-                  <option value="Paraguaya">Paraguaya</option>
-                  <option value="Uruguaya">Uruguaya</option>
-                  <option value="Peruana">Peruana</option>
-                  <option value="Brasileña">Brasileña</option>
-                  <option value="Venezolana">Venezolana</option>
-                  <option value="Colombiana">Colombiana</option>
-                  <option value="Española">Española</option>
-                  <option value="Italiana">Italiana</option>
+                  <option value="Argentina">Argentino/a</option>
+                  <option value="Bolivia">Boliviano/a</option>
+                  <option value="Chilena">Chileno/a</option>
+                  <option value="Paraguaya">Paraguayo/a</option>
+                  <option value="Uruguaya">Uruguayo/a</option>
+                  <option value="Peruana">Peruano/a</option>
+                  <option value="Brasileña">Brasileño/a</option>
+                  <option value="Venezolana">Venezolano/a</option>
+                  <option value="Colombiana">Colombiano/a</option>
+                  <option value="Española">Español/a</option>
+                  <option value="Italiana">Italiano/a</option>
                   <option value="Otro">Otro</option>
                 </select>
               </label>
