@@ -223,10 +223,9 @@ export const updateVivienda = async (id, data) => {
 export const getRegistroDeudorBcra = async (cuilCuit) => {
   try {
     // URL de la API de BCRA
-    const url = `https://api.bcra.gob.ar/CentralDeDeudores/v1.0/Deudas/${cuilCuit}`;
-    console.log('Realizando solicitud a la API de BCRA:', url);
+   
     // Realizar la solicitud fetch
-    const res = await fetch(url);
+    const res = await fetch(`https://api.bcra.gob.ar/CentralDeDeudores/v1.0/Deudas/${cuilCuit}`);
     // Verificar si la respuesta es exitosa
     if (!res.ok) {
       const errorData = await res.json();

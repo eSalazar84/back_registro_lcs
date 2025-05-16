@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './vistaRegistro.module.css'; // reutilizamos estilos
 import Swal from 'sweetalert2';
-import { fetchRegistroById, updateRegistro, transformarParaBackend } from '../../services/registroService';
+import { fetchRegistroById, updateRegistro, transformarParaBackend, fetchViviendaById, getRegistroDeudorBcra } from '../../services/registroService';
 import ClasificacionDeudor from '../../componentes/clasificacionDeudor/ClasificacionDeudor';
 import FormularioEdicion from '../../componentes/formularioEdicion/FormularioEdicion';
+import { formatPeriodo } from '../../services/transformDataDto';
 
 const VistaRegistro = () => {
   const { registroId } = useParams();
@@ -20,34 +21,51 @@ const VistaRegistro = () => {
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const data = await fetchViviendaById(id); // Obtener datos de la vivienda
-      console.log('Datos cargados:', data);
-      setViviendaData(data.data);
-      // Obtener la morosidad de cada habitante
-      const morosidadPromises = data.data.habitantes.map(async (habitante) => {
+
+      // 1. Cargar el registro completo
+      const res = await fetchRegistroById(registroId);
+      const registro = res.data;
+
+      setRegistro(registro);
+      setFormData(registro);
+      console.log('Registro cargado:', registro);
+
+      // 2. Cargar morosidad de cada persona del registro
+      const morosidadPromises = registro.personas?.map(async (persona) => {
+        const cuit = persona?.CUIL_CUIT;
+        const idPersona = persona?.idPersona;
+
+        if (!cuit || !idPersona) return { idPersona, morosidad: null };
+
         try {
-          const deudorBcra = await getRegistroDeudorBcra(habitante.persona.CUIL_CUIT);
-          console.log('Datos deudor bcra:', deudorBcra);
-          // Extraer solo los campos necesarios
-          const morosidadInfo = deudorBcra.results.periodos.map((periodo) => ({
-            deuda: periodo.entidades[0].monto,
-            entidad: periodo.entidades[0].entidad,
-            periodo: periodo.periodo,
-            situacion: periodo.entidades[0].situacion,
-            procesoJud: periodo.entidades[0].procesoJud,
-          }));
-          return { idPersona: habitante.persona.idPersona, morosidad: morosidadInfo };
+          console.log(`Cargando morosidad para ${cuit}`);
+          const deudorBcra = await getRegistroDeudorBcra(cuit);
+          const morosidadInfo = deudorBcra?.results?.periodos?.flatMap((periodo) =>
+            (periodo.entidades || []).map((entidad) => ({
+              deuda: entidad?.monto,
+              entidad: entidad?.entidad,
+              periodo: periodo?.periodo,
+              situacion: entidad?.situacion,
+              procesoJud: entidad?.procesoJud,
+            }))
+          ) || [];
+
+
+          return { idPersona, morosidad: morosidadInfo };
         } catch (error) {
-          console.error(`Error al obtener morosidad para ${habitante.persona.CUIL_CUIT}:`, error);
-          return { idPersona: habitante.persona.idPersona, morosidad: null };
+          console.error(`Error al obtener morosidad para ${cuit}:`, error);
+          return { idPersona, morosidad: null };
         }
-      });
+      }) || [];
+
       const morosidadResults = await Promise.all(morosidadPromises);
       const morosidadMap = morosidadResults.reduce((acc, curr) => {
         acc[curr.idPersona] = curr.morosidad;
         return acc;
       }, {});
-      setMorosidadData(morosidadMap); // Almacenar la morosidad en el estado
+
+      setMorosidadData(morosidadMap);
+
     } catch (error) {
       console.error('Error al cargar los datos:', error);
       Swal.fire({
@@ -55,28 +73,14 @@ const VistaRegistro = () => {
         title: 'Error',
         text: 'No se pudieron cargar los datos del registro',
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cargar = async () => {
-    try {
-      setLoading(true);
-      const res = await fetchRegistroById(registroId);
-      setRegistro(res.data);
-      setFormData(res.data);
-      
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Error', 'No se pudo cargar el registro', 'error');
       navigate(-1);
     } finally {
       setLoading(false);
     }
   };
- 
-  useEffect(() => { cargar(); }, [registroId]);
+
+
+  useEffect(() => { cargarDatos(); }, [registroId]);
 
   const handleChange = (path, value) => {
     setFormData(prev => {
@@ -95,15 +99,15 @@ const VistaRegistro = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-  
+
       // 🔁 Convertimos formData a array compatible con backend
       const datosTransformados = transformarParaBackend(formData);
-  
+
       await updateRegistro(registro.idRegistro, datosTransformados);
-  
+
       Swal.fire('Éxito', 'Registro actualizado', 'success');
       setEditMode(false);
-      cargar();
+      cargarDatos();
     } catch (err) {
       console.error(err);
       Swal.fire('Error', 'No se pudo guardar', 'error');
@@ -111,7 +115,7 @@ const VistaRegistro = () => {
       setLoading(false);
     }
   };
-  
+
   const handleCancel = () => {
     setFormData(registro);
     setEditMode(false);
@@ -208,24 +212,24 @@ const VistaRegistro = () => {
                         </div>
 
                         <div className={styles.morosidadSection}>
-                  <h5>Morosidad</h5>
-                  {morosidadData[p.idPersona] ? (
-                    <div>
-                      {morosidadData[p.idPersona].map((info, index) => (
-                        <div key={index}>
-                          <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
-                          <p><strong>Entidad:</strong> {info.entidad}</p>
-                          {/* <p><strong>Deuda:</strong> ${formatMoney(info.deuda) + '.000'}</p> */}
-                          <ClasificacionDeudor situacion={info.situacion} />
-                          <p><strong>En Proceso Judicial:</strong> {info.procesoJud ? 'Sí' : 'No'}</p>
-                          <hr /> {/* Separador entre períodos */}
+                          <h5>Morosidad</h5>
+                          {morosidadData[p.idPersona] && morosidadData[p.idPersona].length > 0 ? (
+                            <>
+                              {morosidadData[p.idPersona].map((info, index) => (
+                                <div key={index}>
+                                  <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
+                                  <p><strong>Entidad:</strong> {info.entidad}</p>
+                                  <ClasificacionDeudor situacion={info.situacion} />
+                                  <p><strong>En Proceso Judicial:</strong> {info.procesoJud ? 'Sí' : 'No'}</p>
+                                  <hr />
+                                </div>
+                              ))}
+                            </>
+                          ) : (
+                            <p>No se pudo obtener la información de morosidad.</p>
+                          )}
+
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>No se pudo obtener la información de morosidad.</p>
-                  )}
-                </div>
                       </div>
                     ))}
                   </div>
@@ -234,8 +238,9 @@ const VistaRegistro = () => {
             })()}
           </div>
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 
