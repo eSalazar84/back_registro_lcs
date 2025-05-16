@@ -11,5 +11,6 @@ import { Ingreso } from 'src/ingreso/entities/ingreso.entity';
   imports: [TypeOrmModule.forFeature([Lote, Vivienda, Persona, Ingreso])],
   controllers: [ViviendaController],
   providers: [ViviendaService],
+  exports: [ViviendaService]
 })
 export class ViviendaModule { }

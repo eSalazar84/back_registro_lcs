@@ -11,13 +11,16 @@ import { ViviendaService } from 'src/vivienda/vivienda.service';
 import { PersonaService } from 'src/persona/persona.service';
 import { IngresoService } from 'src/ingreso/ingreso.service';
 import { MailserviceModule } from 'src/mailservice/mailservice.module';
+import { Registro } from './entities/registro.entity';
 
 @Module({
   imports:[
-    TypeOrmModule.forFeature([Lote, Vivienda,Persona,Ingreso]), 
+    TypeOrmModule.forFeature([Registro, Lote, Vivienda, Persona, Ingreso]), 
     MailserviceModule
   ],
   controllers: [RegistroController],
-  providers: [RegistroService,LoteService, ViviendaService, PersonaService, IngresoService],
+  providers: [RegistroService, LoteService, ViviendaService, PersonaService, IngresoService],
 })
 export class RegistroModule {}
+
+

@@ -6,58 +6,83 @@ import { Ingreso } from './entities/ingreso.entity';
 import { FindOneOptions, Repository } from 'typeorm';
 import { Persona } from 'src/persona/entities/persona.entity';
 import { EntityManager } from 'typeorm';
+import { Registro } from 'src/registro/entities/registro.entity';
+
 
 @Injectable()
 export class IngresoService {
   constructor(
     @InjectRepository(Ingreso)
     private readonly ingresoRepository: Repository<Ingreso>, // Corregido a Repository<Ingreso>
-    
+
+    @InjectRepository(Registro)
+    private readonly registroRepository: Repository<Registro>, // Corregido a Repository<Ingreso>
+
     @InjectRepository(Persona)
     private readonly personaRepository: Repository<Persona>,
-  ) {}
+  ) { }
 
-  async createIngreso(ingresos: CreateIngresoDto[], idPersona: number): Promise<Ingreso[]> {
+  async createIngreso(
+    ingresos: CreateIngresoDto | CreateIngresoDto[], // Acepta tanto array como objeto individual
+    idPersona: number,
+    manager?: EntityManager
+  ): Promise<Ingreso[]> {
+    const ingresoRepo = manager ? manager.getRepository(Ingreso) : this.ingresoRepository;
+    const personaRepo = manager ? manager.getRepository(Persona) : this.personaRepository;
+    const registroRepo = manager ? manager.getRepository(Registro) : this.registroRepository;
+  
+    // Convertir a array si es un objeto individual
+    const ingresosArray = Array.isArray(ingresos) ? ingresos : [ingresos];
+  
     const createdIngresos: Ingreso[] = [];
-
-    // Iniciar una transacción para asegurar la atomicidad
-    const queryRunner = this.ingresoRepository.manager.connection.createQueryRunner();
-    await queryRunner.startTransaction();
-
+  
     try {
-      const persona = await this.personaRepository.findOne({ where: { idPersona } });
-
-      if (!persona) {
-        throw new NotFoundException(`Persona con ID ${idPersona} no encontrada`);
+      // Verificar que persona y registro existan
+      const persona = await personaRepo.findOne({ where: { idPersona } });
+      
+  
+      if (!persona ) {
+        throw new NotFoundException(`Persona o Registro no encontrados`);
       }
-
-      for (const ingresoDto of ingresos) {
-        const newIngreso = new Ingreso();
-        newIngreso.idPersona = persona.idPersona;
-        newIngreso.situacion_laboral = ingresoDto.situacion_laboral;
-        newIngreso.ocupacion = ingresoDto.ocupacion;
-        newIngreso.CUIT_empleador = ingresoDto.CUIT_empleador;
-        newIngreso.salario = ingresoDto.salario;
-
-        const savedIngreso = await queryRunner.manager.save(newIngreso);
-        createdIngresos.push(savedIngreso);
+  
+      // Crear ingresos
+      for (const dto of ingresosArray) {
+        const nuevoIngreso = ingresoRepo.create({
+          situacion_laboral: dto.situacion_laboral,
+          ocupacion: dto.ocupacion,
+          CUIT_empleador: dto.CUIT_empleador,
+          salario: dto.salario,
+          persona,  // Asociar el ingreso con la persona
+          
+        });
+  
+        const ingresoGuardado = await ingresoRepo.save(nuevoIngreso); // Guardar el nuevo ingreso
+        createdIngresos.push(ingresoGuardado); // Añadir el ingreso guardado al array de resultados
       }
-
-      await queryRunner.commitTransaction();
+  
       return createdIngresos;
-
+  
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      // Logueo de errores para depuración
+      console.error("❌ Error al crear ingresos:", error);
+      // Lanzar un error de servidor interno con el mensaje adecuado
       throw new InternalServerErrorException('Error al crear ingresos: ' + error.message);
-    } finally {
-      await queryRunner.release();
     }
   }
+  
+
+
 
   async findAllIngreso(): Promise<Ingreso[]> {
     return this.ingresoRepository.find();
   }
 
+  async findByPersona(idPersona: number): Promise<Ingreso[]> {
+    return await this.ingresoRepository.find({
+      where: { persona: { idPersona } },
+    });
+  }
+  
   async findOneById(id: number): Promise<Ingreso> {
     const ingreso = await this.ingresoRepository.findOne({
       where: { idIngreso: id },
@@ -71,29 +96,42 @@ export class IngresoService {
     return ingreso;
   }
 
-  async updateIngreso(id: number, updateIngresoDto: UpdateIngresoDto): Promise<Ingreso> {
-    const ingresoFound = await this.ingresoRepository.findOne({ where: { idIngreso: id } });
+  async updateIngreso(
+    idIngreso: number,
+    updateDto: UpdateIngresoDto,
+    manager?: EntityManager
+  ): Promise<Ingreso> {
+    const ingresoRepo = manager ? manager.getRepository(Ingreso) : this.ingresoRepository;
 
-    if (!ingresoFound) {
-      throw new NotFoundException(`Ingreso con id ${id} no encontrado`);
+    const ingreso = await ingresoRepo.findOne({ where: { idIngreso } });
+    if (!ingreso) {
+      throw new NotFoundException(`Ingreso con ID ${idIngreso} no encontrado`);
     }
 
-    Object.assign(ingresoFound, updateIngresoDto);
+    ingresoRepo.merge(ingreso, updateDto);
 
     try {
-      return await this.ingresoRepository.save(ingresoFound);
+      return await ingresoRepo.save(ingreso);
     } catch (error) {
-      throw new InternalServerErrorException('Error al actualizar ingreso: ' + error.message);
+      console.error("❌ Error al actualizar ingreso:", error);
+      throw new InternalServerErrorException("Error al actualizar ingreso: " + error.message);
     }
   }
 
-  async removeIngreso(id: number): Promise<void> {
-    const ingreso = await this.ingresoRepository.findOne({ where: { idIngreso: id } });
-
-    if (!ingreso) {
-      throw new NotFoundException(`Ingreso con id ${id} no encontrado`);
-    }
-
+  async removeIngreso(idIngreso: number): Promise<void> {
+    const ingreso = await this.ingresoRepository.findOneBy({ idIngreso });
+    if (!ingreso) return;
+  
     await this.ingresoRepository.remove(ingreso);
+  }
+  
+  // Metodo para buscar los ingresos de las personas por id (se usa en PdfService)
+
+  async getIngresosByPersonaId(idPersona: number): Promise<Ingreso[]> {
+    const persona = await this.personaRepository.findOne({ where: { idPersona }, relations: ['ingresos'] });
+    if (!persona) {
+      throw new NotFoundException(`Persona con ID ${idPersona} no encontrada`);
+    }
+    return persona.ingresos;
   }
 }

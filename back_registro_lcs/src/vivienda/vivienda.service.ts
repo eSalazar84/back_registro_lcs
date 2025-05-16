@@ -1,12 +1,10 @@
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateViviendaDto } from './dto/create-vivienda.dto';
 import { UpdateViviendaDto } from './dto/update-vivienda.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vivienda } from './entities/vivienda.entity';
-import { FindOneOptions, Repository } from 'typeorm';
+import { EntityManager, FindOneOptions, Not, Repository } from 'typeorm';
 import { Localidad } from './enum/localidad.enum';
-import { log } from 'console';
-
 
 @Injectable()
 export class ViviendaService {
@@ -15,27 +13,48 @@ export class ViviendaService {
     private readonly viviendaRepository: Repository<Vivienda>,
 
   ) { }
-
-  async createVivienda(createViviendaDto: CreateViviendaDto): Promise<Vivienda> {
+  async createVivienda(
+    createViviendaDto: CreateViviendaDto,
+    manager?: EntityManager,
+    idRegistro?: number  // 👈 Agregado parámetro opcional
+  ): Promise<Vivienda> {
+    const trimmedDto = this.trimStrings(createViviendaDto);
     const nuevaVivienda = new Vivienda();
+    nuevaVivienda.direccion = trimmedDto.direccion;
+    nuevaVivienda.numero_direccion = trimmedDto.numero_direccion;
+    nuevaVivienda.departamento = trimmedDto.departamento;
+    nuevaVivienda.piso_departamento = trimmedDto.piso_departamento || null;
+    nuevaVivienda.numero_departamento = trimmedDto.numero_departamento || null;
+    nuevaVivienda.alquiler = trimmedDto.alquiler;
+    nuevaVivienda.valor_alquiler = trimmedDto.valor_alquiler || null;
+    nuevaVivienda.localidad = trimmedDto.localidad;
+    nuevaVivienda.cantidad_dormitorios = trimmedDto.cantidad_dormitorios;
+    nuevaVivienda.estado_vivienda = trimmedDto.estado_vivienda;
+    nuevaVivienda.tipo_alquiler = trimmedDto.tipo_alquiler || null;
+  
+    // 👇 Agregás el idRegistro si fue provisto
+    if (idRegistro) {
+      nuevaVivienda.registro = { idRegistro } as any;
+    }
+  
+    console.log("🏠 Vivienda enviada:", nuevaVivienda);
+  
+    if (manager) {
+      return await manager.save(nuevaVivienda);
+    }
+    return await this.viviendaRepository.save(nuevaVivienda);
+  }
+  
+    /**
 
-    // Asignar propiedades del DTO a la entidad
-    nuevaVivienda.direccion = createViviendaDto.direccion;
-    nuevaVivienda.numero_direccion = createViviendaDto.numero_direccion;
-    nuevaVivienda.departamento = createViviendaDto.departamento;
-    nuevaVivienda.piso_departamento = createViviendaDto.piso_departamento || null; // valor opcional
-    nuevaVivienda.numero_departamento = createViviendaDto.numero_departamento || null; // valor opcional
-    nuevaVivienda.alquiler = createViviendaDto.alquiler;
-    nuevaVivienda.valor_alquiler = createViviendaDto.valor_alquiler || null; // valor opcional
-    nuevaVivienda.localidad = createViviendaDto.localidad;
-    nuevaVivienda.cantidad_dormitorios = createViviendaDto.cantidad_dormitorios;
-    nuevaVivienda.estado_vivienda = createViviendaDto.estado_vivienda;
-    nuevaVivienda.tipo_alquiler = createViviendaDto.tipo_alquiler || null;
- 
-    console.log("vivienda enviada", nuevaVivienda)
-    // Guardar la vivienda en la base de datos
-    const vivienda = await this.viviendaRepository.save(nuevaVivienda);
-    return vivienda;
+   * 🔥 Función para limpiar espacios antes y después de cada string en un objeto
+   */
+  private trimStrings<T>(obj: T): T {
+    return Object.keys(obj).reduce((acc, key) => {
+      const value = obj[key];
+      acc[key] = typeof value === "string" ? value.trim() : value;
+      return acc;
+    }, {} as T);
   }
 
   async findAllVivienda(): Promise<Vivienda[]> {
@@ -54,44 +73,168 @@ export class ViviendaService {
     return vivienda;
   }
 
-  async updateVivienda(id: number, updateViviendaDto: UpdateViviendaDto): Promise<Vivienda> {
+  async updateVivienda(
+    id: number,
+    updateViviendaDto: UpdateViviendaDto,
+    manager?: EntityManager
+  ): Promise<Vivienda> {
     try {
-      const queryFound: FindOneOptions = { where: { idVivienda: id } };
-      const viviendaFound = await this.viviendaRepository.findOne(queryFound);
-
+      const viviendaRepo = manager ? manager.getRepository(Vivienda) : this.viviendaRepository;
+  
+      console.log('➡️ Entrando a updateVivienda con ID:', id);
+      console.log('📋 DTO recibido:', updateViviendaDto);
+  
+      // Buscar la vivienda actual
+      const viviendaFound = await viviendaRepo.findOne({ where: { idVivienda: id } });
+  
       if (!viviendaFound) {
-        throw new NotFoundException(`Vivienda con id ${id} no encontrada`);
+        throw new NotFoundException(`⚠️ Vivienda con ID ${id} no encontrada`);
       }
-
-      // Actualiza los campos de viviendaFound con los valores de updateViviendaDto
-      Object.assign(viviendaFound, updateViviendaDto);
-
-      // Guarda los cambios en la base de datos
-      await this.viviendaRepository.save(viviendaFound);
-
-      return viviendaFound;
+  
+      console.log('🏠 Vivienda encontrada en base de datos:', viviendaFound);
+  
+      // Aplicar trim() a todas las propiedades de tipo string
+      const trimmedDto = this.trimStrings(updateViviendaDto);
+      console.log('✂️ DTO con strings limpios:', trimmedDto);
+  
+      // Verificar si la vivienda ya existe antes de actualizar (por dirección duplicada)
+      const yaExiste = await this.isViviendaDuplicada(id, trimmedDto, manager);
+      console.log('🧪 ¿Ya existe una vivienda duplicada con esos datos?', yaExiste);
+  
+      if (yaExiste) {
+        throw new ConflictException(`❌ La vivienda en esta dirección ya está registrada.`);
+      }
+  
+      // Asignar los nuevos valores
+      Object.assign(viviendaFound, trimmedDto);
+      console.log('📝 Vivienda actualizada lista para guardar:', viviendaFound);
+  
+      const resultado = await viviendaRepo.save(viviendaFound);
+      console.log('✅ Vivienda guardada correctamente:', resultado);
+  
+      return resultado;
     } catch (error) {
+      console.error("❌ Error al actualizar la vivienda:", error);
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
-// Se utiliza en el registro para ver si la vivienda ya existe
-  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean |  null, piso_departamento:number, numero_departamento:string): Promise<Vivienda | null> {
-    return await this.viviendaRepository.findOne({
-        where: { direccion, numero_direccion, localidad, departamento, piso_departamento, numero_departamento }
-    });
-}
-
-async removeVivienda(id: number): Promise<void> {
   
-  const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
+  /**
+   * ✅ Verifica si la vivienda ya existe antes de actualizar.   */
 
-  if (!vivienda) {
-    throw new Error('vivienda no encontrada');
+  private async isViviendaDuplicada(
+    id: number,
+    dto: UpdateViviendaDto,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    return dto.departamento
+      ? await this.isDepartamentoDuplicado(id, dto, manager)
+      : await this.isCasaDuplicada(id, dto, manager);
+  }
+  
+  private async isCasaDuplicada(
+    id: number,
+    dto: UpdateViviendaDto,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    const viviendaRepo = manager ? manager.getRepository(Vivienda) : this.viviendaRepository;
+  
+    console.log(`🔎 Verificando casa duplicada en ${dto.direccion} ${dto.numero_direccion}`);
+  
+    return await viviendaRepo
+
+      .createQueryBuilder("v")
+      .where("LOWER(TRIM(v.localidad)) = LOWER(TRIM(:localidad))", { localidad: dto.localidad })
+      .andWhere("LOWER(TRIM(v.direccion)) = LOWER(TRIM(:direccion))", { direccion: dto.direccion })
+      .andWhere("TRIM(v.numero_direccion) = TRIM(:numero_direccion)", { numero_direccion: dto.numero_direccion })
+      .andWhere("v.idVivienda != :id", { id }) // Excluimos la vivienda actual
+      .getExists();
+  }
+  
+  private async isDepartamentoDuplicado(
+    id: number,
+    dto: UpdateViviendaDto,
+    manager?: EntityManager
+  ): Promise<boolean> {
+    const viviendaRepo = manager ? manager.getRepository(Vivienda) : this.viviendaRepository;
+  
+    console.log(`🔎 Verificando departamento duplicado en ${dto.direccion} ${dto.numero_direccion}, Piso ${dto.piso_departamento}, Nº ${dto.numero_departamento}`);
+  
+    return await viviendaRepo
+
+      .createQueryBuilder("v")
+      .where("LOWER(TRIM(v.localidad)) = LOWER(TRIM(:localidad))", { localidad: dto.localidad })
+      .andWhere("LOWER(TRIM(v.direccion)) = LOWER(TRIM(:direccion))", { direccion: dto.direccion })
+      .andWhere("TRIM(v.numero_direccion) = TRIM(:numero_direccion)", { numero_direccion: dto.numero_direccion })
+      .andWhere("TRIM(v.piso_departamento) = TRIM(:piso_departamento)", { piso_departamento: dto.piso_departamento })
+      .andWhere("TRIM(v.numero_departamento) = TRIM(:numero_departamento)", { numero_departamento: dto.numero_departamento })
+      .andWhere("v.idVivienda != :id", { id }) // Excluimos la vivienda actual
+      .getExists();
   }
 
-  // Eliminar la vivienda de la base de datos
-  await this.viviendaRepository.remove(vivienda);
+
+  // Se utiliza en el registro para ver si la vivienda ya existe
+  async findByAddress(direccion: string, numero_direccion: number, localidad: Localidad, departamento: boolean | null, piso_departamento: number, numero_departamento: string): Promise<Vivienda | null> {
+    return await this.viviendaRepository.findOne({
+      where: { direccion, numero_direccion, localidad, departamento, piso_departamento, numero_departamento }
+    });
+  }
+
+  async removeVivienda(id: number): Promise<void> {
+
+    const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
+
+    if (!vivienda) {
+      throw new Error('vivienda no encontrada');
+    }
+
+    // Eliminar la vivienda de la base de datos
+    await this.viviendaRepository.remove(vivienda);
+  }
+
+async findOneWithRelations(id: number) {
+  const vivienda = await this.viviendaRepository.findOne({
+    where: { idVivienda: id },
+    relations: ['personas', 'personas.ingresos', 'personas.lote']
+  });
+
+  if (!vivienda) {
+    throw new NotFoundException(`Vivienda con ID ${id} no encontrada`);
+  }
+
+  return vivienda;
 }
+  // Metodo para obtener la vivienda por id para usar en pdfService
+  async getViviendaById(id: number): Promise<Vivienda> {
+    const vivienda = await this.viviendaRepository.findOne({ where: { idVivienda: id } });
+    if (!vivienda) {
+      throw new NotFoundException(`Vivienda con ID ${id} no encontrada`);
+    }
+    return vivienda;
+  }
 
 
+  // -----------------------------------------------------------------------------------------
+
+  async findByAddressWithManager( /* en uso */
+    direccion: string,
+    numero_direccion: number,
+    localidad: Localidad,
+    departamento: boolean | null,
+    piso_departamento: number,
+    numero_departamento: string,
+    manager: EntityManager
+  ): Promise<Vivienda | null> {
+    return await manager.findOne(Vivienda, {
+      where: {
+        direccion,
+        numero_direccion,
+        localidad,
+        departamento,
+        piso_departamento,
+        numero_departamento
+      }
+    });
+  }
+  
 }
