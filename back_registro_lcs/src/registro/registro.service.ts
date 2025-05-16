@@ -275,7 +275,7 @@ export class RegistroService {
   
       if (!registro) throw new NotFoundException('Registro no encontrado');
   
-      // PRIMERA PASADA: Validaciones
+      // Validaciones
       for (const item of personas) {
         const { persona, vivienda } = item;
         const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
@@ -313,37 +313,38 @@ export class RegistroService {
         }
       }
   
-      // SEGUNDA PASADA: Procesamiento
+      // Procesamiento
+      const idsPersonasEnviadas: number[] = [];
+  
       for (const item of personas) {
         const { persona, vivienda, ingresos, lote } = item;
         const viviendaKey = `${vivienda.direccion}-${vivienda.numero_direccion}-${vivienda.localidad}`;
   
-        // 1. Vivienda
         let viviendaProcesada = viviendasCreadas[viviendaKey];
-        if (!viviendaProcesada) {
-          if (vivienda.idVivienda) {
-            viviendaProcesada = await this.viviendaService.updateVivienda(
-              vivienda.idVivienda,
-              vivienda,
-              queryRunner.manager
-            );
-          } else {
-            viviendaProcesada = await this.viviendaService.createVivienda(
-              vivienda as CreateViviendaDto,
-              queryRunner.manager,
-              idRegistro
-            );
-          }
-          viviendasCreadas[viviendaKey] = viviendaProcesada;
+        console.log('→ Vivienda recibida:', vivienda);
+  
+        if (vivienda.idVivienda) {
+          console.log('→ ACTUALIZANDO VIVIENDA:', vivienda.idVivienda);
+          viviendaProcesada = await this.viviendaService.updateVivienda(
+            vivienda.idVivienda,
+            vivienda,
+            queryRunner.manager
+          );
+        } else if (!viviendaProcesada) {
+          viviendaProcesada = await this.viviendaService.createVivienda(
+            vivienda as CreateViviendaDto,
+            queryRunner.manager,
+            idRegistro
+          );
         }
   
-        // 2. Lote
+        viviendasCreadas[viviendaKey] = viviendaProcesada;
+  
         if (persona.titular_cotitular === 'Titular' && !persona.idLote && lote) {
           const loteCreado = await this.loteService.createLote(lote as CreateLoteDto);
           persona.idLote = loteCreado.idLote;
         }
   
-        // 3. Persona
         let personaProcesada: Persona;
         if (persona.idPersona) {
           personaProcesada = await this.personaService.updatePersona(
@@ -362,26 +363,45 @@ export class RegistroService {
           );
         }
   
-        // 4. Ingresos
-        if (Array.isArray(ingresos)) {
-          for (const ingreso of ingresos) {
-            if (ingreso.idIngreso) {
-              await this.ingresoService.updateIngreso(ingreso.idIngreso, ingreso, queryRunner.manager);
-            } else {
-              await this.ingresoService.createIngreso(
-                ingreso as CreateIngresoDto,
-                personaProcesada.idPersona,
-                queryRunner.manager
-              );
-            }
+        idsPersonasEnviadas.push(personaProcesada.idPersona);
+  
+        const ingresosActuales = await queryRunner.manager.find(Ingreso, {
+          where: { persona: { idPersona: personaProcesada.idPersona } }
+        });
+  
+        const idsEnviados = (ingresos ?? []).filter(i => i.idIngreso).map(i => i.idIngreso);
+  
+        for (const ingresoExistente of ingresosActuales) {
+          if (!idsEnviados.includes(ingresoExistente.idIngreso)) {
+            await this.ingresoService.removeIngreso(ingresoExistente.idIngreso);
+          }
+        }
+  
+        for (const ingreso of ingresos ?? []) {
+          if (ingreso.idIngreso) {
+            await this.ingresoService.updateIngreso(ingreso.idIngreso, ingreso, queryRunner.manager);
+          } else {
+            await this.ingresoService.createIngreso(
+              ingreso as CreateIngresoDto,
+              personaProcesada.idPersona,
+              queryRunner.manager
+            );
           }
         }
   
         personasProcesadas.push(personaProcesada);
       }
   
-      await queryRunner.commitTransaction();
+      // ➖ Eliminar personas que ya no están en el array enviado
+      const idsPersonasOriginales = registro.personas.map(p => p.idPersona);
+      for (const idOriginal of idsPersonasOriginales) {
+        if (!idsPersonasEnviadas.includes(idOriginal)) {
+          console.log(`🗑 Eliminando persona con id ${idOriginal} que ya no está en el nuevo array`);
+          await this.personaService.removePersona(idOriginal);
+        }
+      }
   
+      await queryRunner.commitTransaction();
       return personasProcesadas;
     } catch (error) {
       await queryRunner.rollbackTransaction();

@@ -81,7 +81,8 @@ export class ViviendaService {
     try {
       const viviendaRepo = manager ? manager.getRepository(Vivienda) : this.viviendaRepository;
   
-      console.log('🔍 Buscando vivienda con ID:', id);
+      console.log('➡️ Entrando a updateVivienda con ID:', id);
+      console.log('📋 DTO recibido:', updateViviendaDto);
   
       // Buscar la vivienda actual
       const viviendaFound = await viviendaRepo.findOne({ where: { idVivienda: id } });
@@ -90,27 +91,34 @@ export class ViviendaService {
         throw new NotFoundException(`⚠️ Vivienda con ID ${id} no encontrada`);
       }
   
+      console.log('🏠 Vivienda encontrada en base de datos:', viviendaFound);
+  
       // Aplicar trim() a todas las propiedades de tipo string
       const trimmedDto = this.trimStrings(updateViviendaDto);
+      console.log('✂️ DTO con strings limpios:', trimmedDto);
   
-      // 🔹 Verificar si la vivienda ya existe antes de actualizar
+      // Verificar si la vivienda ya existe antes de actualizar (por dirección duplicada)
       const yaExiste = await this.isViviendaDuplicada(id, trimmedDto, manager);
+      console.log('🧪 ¿Ya existe una vivienda duplicada con esos datos?', yaExiste);
+  
       if (yaExiste) {
         throw new ConflictException(`❌ La vivienda en esta dirección ya está registrada.`);
       }
   
-      // 🚀 Actualizar solo si no hay duplicados
+      // Asignar los nuevos valores
       Object.assign(viviendaFound, trimmedDto);
-      console.log('📝 Datos antes de guardar la vivienda actualizada:', viviendaFound);
+      console.log('📝 Vivienda actualizada lista para guardar:', viviendaFound);
   
-      return await viviendaRepo.save(viviendaFound);
-
+      const resultado = await viviendaRepo.save(viviendaFound);
+      console.log('✅ Vivienda guardada correctamente:', resultado);
+  
+      return resultado;
     } catch (error) {
       console.error("❌ Error al actualizar la vivienda:", error);
       throw new InternalServerErrorException('Error al actualizar la vivienda');
     }
   }
-
+  
   /**
    * ✅ Verifica si la vivienda ya existe antes de actualizar.   */
 

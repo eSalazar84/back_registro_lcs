@@ -231,7 +231,7 @@ export class PersonaService {
 
   }
 
-  async remove(id: number): Promise<void> {
+  async removePersona(id: number): Promise<void> {
     // Buscar la persona por su ID
     const persona = await this.personaRepository.findOne({
       where: { idPersona: id },

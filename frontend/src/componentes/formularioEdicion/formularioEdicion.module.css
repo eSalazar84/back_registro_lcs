@@ -1,333 +1,292 @@
-/* Main Form Container */
+/* Contenedor principal */
 .editForm {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: #fff;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Section Headers */
-.section {
-  margin-bottom: 40px;
+/* Títulos */
+.editForm h2 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
 }
 
 .section h3 {
-  color: #2c3e50;
-  font-size: 1.25rem;
-  font-weight: 600;
-  padding-bottom: 8px;
+  color: #34495e;
   border-bottom: 2px solid #3498db;
-  margin-bottom: 25px;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-/* Form Groups */
-.formGroup {
-  background-color: #f8f9fa;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+/* Sección de habitantes */
+.section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
-/* Grid System */
-.row {
-  display: flex;
-  margin: 0 -10px 20px -10px;
-  flex-wrap: wrap;
-  width: 100%;
+.section > h3 {
+  grid-column: 1 / -1;
+  color: #34495e;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-/* Form Controls */
-.label {
-  padding: 0 10px;
-  width: 33.33%;
-  margin-bottom: 15px;
-  box-sizing: border-box;
-  flex: 0 0 33.33%;
+.section > button {
+  grid-column: 1 / -1;
 }
 
-.labelText {
-  display: block;
-  font-size: 0.875rem;
-  color: #2c3e50;
-  font-weight: 500;
-  margin-bottom: 5px;
-}
-
-.labelText::after {
-  content: " *";
-  color: #e74c3c;
-}
-
-.input,
-.select {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: #fff;
-  color: #2c3e50;
-  height: 38px;
-  box-sizing: border-box;
-}
-
-.input:disabled,
-.select:disabled {
-  background-color: #f5f6f7;
-  color: #7f8c8d;
-}
-
-.input:focus,
-.select:focus {
-  border-color: #3498db;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-/* Specific Field Styles */
-.input[type="date"] {
-  padding-right: 8px;
-}
-
-.input[placeholder="S/N"],
-.input[placeholder="DNI"] {
-  background-color: #fff;
-}
-
-/* Section: Datos del Titular */
-.titularSection {
-  margin-bottom: 30px;
-}
-
-.titularSection .input[disabled] {
-  background-color: #f5f6f7;
-}
-
-/* Section: Datos del domicilio */
-.domicilioSection {
-  margin-top: 30px;
-}
-
-/* Vivienda Section */
-.viviendaSection {
-  margin-top: 20px;
-}
-
-.viviendaSection h5,
-.ingresosSection h5 {
-  color: #2c3e50;
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #dcdfe6;
-}
-
-.viviendaSection .formGroup {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 -10px;
-  padding: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.viviendaSection .label {
-  width: 33.33%;
-  padding: 0 10px;
-  margin-bottom: 15px;
-  box-sizing: border-box;
-}
-
-/* Ingresos Section */
-.ingresosSection {
-  margin-top: 20px;
-}
-
-.ingresoCard {
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 15px;
-  margin-bottom: 15px;
-}
-
-.ingresoCard .formGroup {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 -10px;
-  padding: 0;
-  background: none;
-  box-shadow: none;
-}
-
-.ingresoCard .label {
-  width: 33.33%;
-  padding: 0 10px;
-  margin-bottom: 15px;
-  box-sizing: border-box;
-}
-
-/* Buttons Container */
-.buttonContainer {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 15px;
-}
-
-/* Buttons */
-.addButton,
-.deleteButton {
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  width: 200px;
-}
-
-.addButton {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.deleteButton {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.addSmallButton,
-.deleteSmallButton {
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  width: 150px;
-}
-
-.addSmallButton {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.deleteSmallButton {
-  background-color: #e74c3c;
-  color: white;
-}
-
-/* Habitante Card */
+/* Tarjeta de habitante */
 .habitanteCard {
   background-color: white;
-  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .habitanteHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .habitanteHeader h4 {
   color: #2c3e50;
-  font-size: 1.2rem;
   margin: 0;
+  font-size: 1.2rem;
 }
 
-/* Form Actions */
-.formActions {
+/* Grupos de formulario */
+.formGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Labels e inputs */
+.label {
   display: flex;
-  gap: 15px;
-  justify-content: flex-end;
-  margin-top: 30px;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
+.labelText {
+  font-weight: 600;
+  color: #34495e;
+  font-size: 0.9rem;
+}
+
+.input,
+.select {
+  padding: 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  outline: none;
+}
+
+.inputDisabled {
+  background-color: #f7f7f7;
+  cursor: not-allowed;
+}
+
+/* Sección de ingresos */
+.ingresosSection {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+}
+
+.ingresoCard {
+  background-color: white;
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ingreso {
+  display: flex;
+  margin-bottom: 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+
+}
+
+.ingresoDetalle {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ingresoHeader {
+  margin-bottom: 1rem;
+}
+
+.ingresoHeader h6 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* Botones */
+.deleteButton,
+.addSmallButton,
+.deleteSmallButton,
 .primaryButton,
 .secondaryButton {
-  padding: 10px 24px;
-  border-radius: 4px;
-  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   border: none;
+  margin-top: 10px;
+  height: 2.5rem;
+  font-size: 0.9rem;
+}
+
+.addSmallButton {
+  background-color: #2ecc71;
+  color: white;
+  width: fit-content;
+  margin: 1rem auto;
+  display: block;
+}
+
+.addSmallButton:hover {
+  background-color: #27ae60;
+}
+
+.deleteSmallButton {
+  background-color: #e74c3c;
+  color: white;
+  width: fit-content;
+}
+
+.deleteSmallButton:hover {
+  background-color: #c0392b;
+}
+
+/* Botones de acción del formulario */
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
 }
 
 .primaryButton {
   background-color: #3498db;
   color: white;
+  min-width: 150px;
+}
+
+.primaryButton:hover {
+  background-color: #2980b9;
 }
 
 .secondaryButton {
   background-color: #95a5a6;
   color: white;
+  min-width: 150px;
 }
 
-/* Required Field Indicator */
-.requiredField::after {
-  content: " *";
-  color: #e74c3c;
+.secondaryButton:hover {
+  background-color: #7f8c8d;
 }
 
-/* Specific field adjustments */
-.label:has(select[name="certificado_discapacidad"]),
-.label:has(select[name="vinculo"]) {
-  flex: 0 0 33.33%;
-  width: 33.33%;
-  box-sizing: border-box;
-  padding: 0 10px;
-  margin-bottom: 15px;
+/* Sección de vivienda */
+.viviendaSection {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
 }
 
-/* Ensure these fields are in a row */
-.label:has(select[name="certificado_discapacidad"]),
-.label:has(select[name="vinculo"]) {
-  display: inline-block;
-  vertical-align: top;
+.viviendaCompartida {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
 }
 
-/* New styles for specific fields */
-.label:has(select[name="estado_vivienda"]),
-.label:has(select[name="alquiler"]),
-.label:has(select[name="tipo_alquiler"]),
-.label:has(select[name="situacion_laboral"]),
-.label:has(input[name="ocupacion"]),
-.label:has(input[name="salario"]) {
-  width: 33.33%;
+.datosVivienda {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 6px;
 }
 
-/* Responsive Design */
+.datosVivienda p {
+  margin: 0.5rem 0;
+  color: #2c3e50;
+}
+
+.datosVivienda strong {
+  color: #34495e;
+}
+
+
+/* Grupo de alquiler */
+.alquilerGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+/* Media queries para responsividad */
 @media (max-width: 1024px) {
-  .label,
-  .viviendaSection .label,
-  .ingresoCard .label {
-    width: 50%;
+  .section {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .label,
-  .viviendaSection .label,
-  .ingresoCard .label {
-    width: 100%;
+  .editForm {
+    padding: 1rem;
   }
-  
+
   .formGroup {
-    padding: 15px;
+    grid-template-columns: 1fr;
   }
-  
-  .input,
-  .select {
-    font-size: 16px;
-    height: 42px;
+
+  .formActions {
+    flex-direction: column;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
   }
 }

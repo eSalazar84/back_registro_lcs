@@ -89,58 +89,80 @@ export async function fetchRegistroById(registroId) {
   return res.json(); // { status, data: {...} }
 }
 
-const transformarParaBackend = (personas) => {
-  // Verifica que personas es un array
-  console.log(Array.isArray(personas));  // Esto debería ser 'true'
-  console.log("datos para transformar",personas);  // Esto te mostrará el contenido de personas
-
-  if (!Array.isArray(personas)) {
-      console.error("El campo personas no es un array", personas);
-      return []; // O maneja la situación según tu lógica
+export const transformarParaBackend = (formData) => {
+  if (!formData || !Array.isArray(formData.personas)) {
+    console.error("El campo personas no es un array o formData es inválido:", formData);
+    return [];
   }
 
-  return personas.map(persona => ({
-      ...persona,
-      vivienda: persona.vivienda ? {
-          idVivienda: persona.vivienda.idVivienda,
-          idRegistro: persona.vivienda.idRegistro,
-          direccion: persona.vivienda.direccion,
-          numero_direccion: persona.vivienda.numero_direccion,
-          departamento: persona.vivienda.departamento,
-          piso_departamento: persona.vivienda.piso_departamento,
-          numero_departamento: persona.vivienda.numero_departamento,
-          alquiler: persona.vivienda.alquiler,
-          valor_alquiler: persona.vivienda.valor_alquiler,
-          localidad: persona.vivienda.localidad,
-          cantidad_dormitorios: persona.vivienda.cantidad_dormitorios,
-          estado_vivienda: persona.vivienda.estado_vivienda,
-          tipo_alquiler: persona.vivienda.tipo_alquiler
-      } : null,
-      lote: persona.lote ? {
-          idLote: persona.lote.idLote,
-          localidad: persona.lote.localidad
-      } : null,
-      ingresos: Array.isArray(persona.ingresos)
-      ? persona.ingresos.map(ingreso => ({
-          idIngreso: ingreso.idIngreso,
-          situacion_laboral: ingreso.situacion_laboral,
-          ocupacion: ingreso.ocupacion,
-          CUIT_empleador: ingreso.CUIT_empleador,
-          salario: ingreso.salario
-        }))
-      : []
-    
-  }));
+  return formData.personas.map((persona) => {
+   
+
+    const esMenor = esMenorDeEdad(persona.fecha_nacimiento);
+
+    return {
+      persona: {
+        idRegistro: persona.idRegistro || null,
+        idPersona: persona.idPersona || null,
+        idVivienda: persona.idVivienda || null,
+        idLote: persona.idLote || null,
+        numero_registro: persona.numero_registro || null,
+        nombre: persona.nombre || "",
+        apellido: persona.apellido || "",
+        tipo_dni: persona.tipo_dni || "",
+        dni: persona.dni || "",
+        CUIL_CUIT: esMenor ? "0" : (persona.CUIL_CUIT || ""),
+        genero: persona.genero || "",
+        fecha_nacimiento: persona.fecha_nacimiento || "",
+        email: esMenor ? "no@aplica.com" : (persona.email || ""),
+        telefono: esMenor ? "0000000000" : (persona.telefono || ""),
+        estado_civil: esMenor ? "Soltero/a" : (persona.estado_civil || ""),
+        nacionalidad: persona.nacionalidad || "",
+        certificado_discapacidad: persona.certificado_discapacidad || false,
+        vinculo: persona.vinculo || "",
+        titular_cotitular: persona.titular_cotitular || ""
+      },
+      vivienda: persona.vivienda
+        ? {
+            idVivienda: persona.vivienda.idVivienda || null,
+            idRegistro: persona.vivienda.idRegistro || null,
+            direccion: persona.vivienda.direccion || "",
+            numero_direccion: persona.vivienda.numero_direccion || "",
+            departamento: persona.vivienda.departamento || false,
+            piso_departamento: persona.vivienda.piso_departamento || null,
+            numero_departamento: persona.vivienda.numero_departamento || null,
+            alquiler: persona.vivienda.alquiler || false,
+            valor_alquiler: persona.vivienda.valor_alquiler || 0,
+            localidad: persona.vivienda.localidad || "",
+            cantidad_dormitorios: persona.vivienda.cantidad_dormitorios || 0,
+            estado_vivienda: persona.vivienda.estado_vivienda || "",
+            tipo_alquiler: persona.vivienda.tipo_alquiler || null
+          }
+        : null,
+      lote: persona.lote
+        ? {
+            idLote: persona.lote.idLote || null,
+            localidad: persona.lote.localidad || ""
+          }
+        : null,
+      ingresos: esMenor
+        ? []
+        : Array.isArray(persona.ingresos)
+        ? persona.ingresos.map((ingreso) => ({
+            idIngreso: ingreso.idIngreso || null,
+            situacion_laboral: ingreso.situacion_laboral || "",
+            ocupacion: ingreso.ocupacion || "",
+            CUIT_empleador: ingreso.CUIT_empleador || "0",
+            salario: ingreso.salario || 0,
+            idPersona: persona.idPersona || null
+          }))
+        : []
+    };
+  });
 };
 
-
-export async function updateRegistro(registroId, payload) {
- console.log("payload", payload);
-
- const datosTranformados= transformarParaBackend (payload)
- console.log("datos transformados", datosTranformados);
-
-  
+export async function updateRegistro(registroId, datosTranformados) {
+   
   const res = await fetch(`${API_BASE}/registro/${registroId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -224,3 +246,5 @@ export const getRegistroDeudorBcra = async (cuilCuit) => {
     throw new Error(error.message);
   }
 };
+
+

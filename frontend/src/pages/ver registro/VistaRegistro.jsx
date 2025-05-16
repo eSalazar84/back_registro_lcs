@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './vistaRegistro.module.css';
 import Swal from 'sweetalert2';
-import { fetchRegistroById, updateRegistro } from '../../services/registroService';
+import { fetchRegistroById, updateRegistro, transformarParaBackend } from '../../services/registroService';
 import ClasificacionDeudor from '../../componentes/clasificacionDeudor/ClasificacionDeudor';
 import FormularioEdicion from '../../componentes/formularioEdicion/FormularioEdicion';
 
@@ -51,16 +51,12 @@ const VistaRegistro = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      const payload = formData.personas.map(persona => {
-        return {
-          persona,
-          ingresos: persona.ingresos || [],
-          vivienda: persona.vivienda || null,
-          lote: formData.lote || null,
-        };
-      });
-
-      await updateRegistro(registro.idRegistro, payload);
+  
+      // 🔁 Convertimos formData a array compatible con backend
+      const datosTransformados = transformarParaBackend(formData);
+  
+      await updateRegistro(registro.idRegistro, datosTransformados);
+  
       Swal.fire('Éxito', 'Registro actualizado', 'success');
       setEditMode(false);
       cargar();
