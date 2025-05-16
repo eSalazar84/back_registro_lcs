@@ -14,6 +14,51 @@ const VistaRegistro = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(null);
+  const [morosidadData, setMorosidadData] = useState({});
+  const [viviendaData, setViviendaData] = useState(null);
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchViviendaById(id); // Obtener datos de la vivienda
+      console.log('Datos cargados:', data);
+      setViviendaData(data.data);
+      // Obtener la morosidad de cada habitante
+      const morosidadPromises = data.data.habitantes.map(async (habitante) => {
+        try {
+          const deudorBcra = await getRegistroDeudorBcra(habitante.persona.CUIL_CUIT);
+          console.log('Datos deudor bcra:', deudorBcra);
+          // Extraer solo los campos necesarios
+          const morosidadInfo = deudorBcra.results.periodos.map((periodo) => ({
+            deuda: periodo.entidades[0].monto,
+            entidad: periodo.entidades[0].entidad,
+            periodo: periodo.periodo,
+            situacion: periodo.entidades[0].situacion,
+            procesoJud: periodo.entidades[0].procesoJud,
+          }));
+          return { idPersona: habitante.persona.idPersona, morosidad: morosidadInfo };
+        } catch (error) {
+          console.error(`Error al obtener morosidad para ${habitante.persona.CUIL_CUIT}:`, error);
+          return { idPersona: habitante.persona.idPersona, morosidad: null };
+        }
+      });
+      const morosidadResults = await Promise.all(morosidadPromises);
+      const morosidadMap = morosidadResults.reduce((acc, curr) => {
+        acc[curr.idPersona] = curr.morosidad;
+        return acc;
+      }, {});
+      setMorosidadData(morosidadMap); // Almacenar la morosidad en el estado
+    } catch (error) {
+      console.error('Error al cargar los datos:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar los datos del registro',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const cargar = async () => {
     try {
@@ -162,11 +207,25 @@ const VistaRegistro = () => {
                           )) : <p>No registra ingresos</p>}
                         </div>
 
-                        {p.morosidad && (
-                          <div className={styles.morosidadSection}>
-                            <ClasificacionDeudor morosidad={p.morosidad} />
-                          </div>
-                        )}
+                        <div className={styles.morosidadSection}>
+                  <h5>Morosidad</h5>
+                  {morosidadData[p.idPersona] ? (
+                    <div>
+                      {morosidadData[p.idPersona].map((info, index) => (
+                        <div key={index}>
+                          <p><strong>Ultimo Período Informado:</strong> {formatPeriodo(info.periodo)}</p>
+                          <p><strong>Entidad:</strong> {info.entidad}</p>
+                          {/* <p><strong>Deuda:</strong> ${formatMoney(info.deuda) + '.000'}</p> */}
+                          <ClasificacionDeudor situacion={info.situacion} />
+                          <p><strong>En Proceso Judicial:</strong> {info.procesoJud ? 'Sí' : 'No'}</p>
+                          <hr /> {/* Separador entre períodos */}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>No se pudo obtener la información de morosidad.</p>
+                  )}
+                </div>
                       </div>
                     ))}
                   </div>
