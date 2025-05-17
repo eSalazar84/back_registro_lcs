@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 import { fetchRegistroById, updateRegistro, transformarParaBackend, fetchViviendaById, getRegistroDeudorBcra } from '../../services/registroService';
 import ClasificacionDeudor from '../../componentes/clasificacionDeudor/ClasificacionDeudor';
 import FormularioEdicion from '../../componentes/formularioEdicion/FormularioEdicion';
-import { formatPeriodo } from '../../services/transformDataDto';
+import { formatPeriodo, formatearPrecio } from '../../services/transformDataDto';
 
 const VistaRegistro = () => {
   const { registroId } = useParams();
@@ -127,7 +127,7 @@ const VistaRegistro = () => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Registro #{registro.idRegistro}</h2>
+        <h2 className={styles.title}>Registro N°{registro.idRegistro}</h2>
         {!editMode && (
           <button onClick={() => setEditMode(true)} className={styles.editButton}>
             Editar Registro
@@ -145,14 +145,21 @@ const VistaRegistro = () => {
       ) : (
         <>
           {/* Lote */}
-          {registro.lote && (
+          {registro.personas && registro.personas.some(p => p.lote) && (
             <div className={styles.section}>
               <h3>Lote</h3>
-              <p><strong>ID Lote:</strong> {registro.lote.idLote}</p>
-              <p><strong>Localidad:</strong> {registro.lote.localidad}</p>
+              {(() => {
+                const personaConLote = registro.personas.find(p => p.lote);
+                if (!personaConLote) return null;
+                return (
+                  <>
+                    <p><strong>Ubicación del lote a sortear</strong></p>
+                    <p><strong>Localidad:</strong> {personaConLote.lote.localidad}</p>
+                  </>
+                );
+              })()}
             </div>
           )}
-
           {/* Viviendas y Personas agrupadas */}
           <div className={styles.section}>
             <h3>Viviendas y Habitantes</h3>
@@ -177,8 +184,15 @@ const VistaRegistro = () => {
               });
 
               const agrupadas = Array.from(viviendasMap.values());
+              
+              return agrupadas.map(({ vivienda, personas }, index) => {
+                const totalIngresosVivienda = personas.reduce((total, persona) => {
+                  const ingresosPersona = persona.ingresos || [];
+                  return total + ingresosPersona.reduce((sum, ing) => sum + (parseFloat(ing.salario) || 0), 0);
+                }, 0);
 
-              return agrupadas.map(({ vivienda, personas }, index) => (
+              return  (
+                
                 <div key={index} className={styles.viviendaAgrupada}>
                   <div className={styles.viviendaInfo}>
                     <h4>🏠 {vivienda.direccion} {vivienda.numero_direccion} - {vivienda.localidad}</h4>
@@ -188,6 +202,7 @@ const VistaRegistro = () => {
                     {vivienda.alquiler && vivienda.valor_alquiler && (
                       <p><strong>Valor alquiler:</strong> ${vivienda.valor_alquiler}</p>
                     )}
+                    <p className={styles.totalIngresos}><strong>Total ingresos del hogar:</strong> {formatearPrecio(totalIngresosVivienda)}</p>
                   </div>
 
                   <div className={styles.habitantesList}>
@@ -195,22 +210,30 @@ const VistaRegistro = () => {
                       <div key={p.idPersona} className={styles.habitanteCard}>
                         <h4>{p.titular_cotitular}: {p.nombre} {p.apellido}</h4>
                         <div className={styles.habitanteInfo}>
-                          <p><strong>DNI:</strong> {p.dni}</p>
-                          <p><strong>Email:</strong> {p.email}</p>
-                          <p><strong>Teléfono:</strong> {p.telefono}</p>
-                          <p><strong>Vínculo:</strong> {p.vinculo || '-'}</p>
-                        </div>
-
-                        <div className={styles.ingresosSection}>
-                          <h5>Ingresos</h5>
-                          {p.ingresos.length > 0 ? p.ingresos.map(ing => (
-                            <div key={ing.idIngreso} className={styles.ingresoItem}>
-                              <p><strong>Situación:</strong> {ing.situacion_laboral}</p>
-                              <p><strong>Salario:</strong> ${ing.salario}</p>
+                              <p><strong>DNI:</strong> {p.dni}</p>
+                              <p><strong>CUIT:</strong> {p.CUIL_CUIT}</p>
+                              <p><strong>Email:</strong> {p.email}</p>
+                              <p><strong>Teléfono:</strong> {p.telefono}</p>
+                              {p.titular_cotitular !== 'Titular' && (
+                                <p><strong>Vínculo con el titular:</strong> {p.vinculo || '-'}</p>
+                              )}
                             </div>
-                          )) : <p>No registra ingresos</p>}
-                        </div>
-
+                        <div className={styles.ingresosSection}>
+                              <h5>Ingresos</h5>
+                              <p><strong>Total ingresos:</strong> {formatearPrecio(p.ingresos.reduce((sum, ing) => sum + (parseFloat(ing.salario) || 0), 0))}</p>
+                              {p.ingresos.length > 0 ? (
+                                p.ingresos.map(ing => (
+                                  <div key={ing.idIngreso} className={styles.ingresoItem}>
+                                    <p><strong>Situación laboral:</strong> {ing.situacion_laboral}</p>
+                                    <p><strong>Ocupación:</strong> {ing.ocupacion}</p>
+                                    <p><strong>Cuit Empleador:</strong> {ing.CUIT_empleador}</p>
+                                    <p><strong>Salario:</strong>{formatearPrecio (ing.salario)}</p>
+                                  </div>
+                                ))
+                              ) : (
+                                <p>No registra ingresos</p>
+                              )}
+                            </div>
                         <div className={styles.morosidadSection}>
                           <h5>Morosidad</h5>
                           {morosidadData[p.idPersona] && morosidadData[p.idPersona].length > 0 ? (
@@ -234,8 +257,10 @@ const VistaRegistro = () => {
                     ))}
                   </div>
                 </div>
-              ));
-            })()}
+              );
+            });
+          })()
+        }
           </div>
         </>
       )

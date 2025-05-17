@@ -519,3 +519,52 @@
 .hidden {
   display: none;
 }
+
+/* Estilos para la nota importante */
+.importantNote {
+  margin: 20px auto;
+  padding: 15px 20px;
+  background-color: #fff3cd;
+  border: 2px solid #ffeeba;
+  border-radius: 8px;
+  max-width: 800px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.noteText {
+  color: #856404;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+}
+
+.noteText strong {
+  color: #664d03;
+  font-size: 1.2em;
+}
+
+.noteList {
+  color: #856404;
+  margin: 0;
+  padding-left: 25px;
+}
+
+.noteList li {
+  margin: 5px 0;
+  line-height: 1.4;
+}
+
+/* Media queries para la nota importante */
+@media (max-width: 768px) {
+  .importantNote {
+    margin: 15px;
+    padding: 12px 15px;
+  }
+  
+  .noteText {
+    font-size: 1em;
+  }
+  
+  .noteText strong {
+    font-size: 1.1em;
+  }
+}
