@@ -592,7 +592,6 @@ export class RegistroService {
       }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
 
 
   async findByViviendaId(idVivienda: number) {

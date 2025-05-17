@@ -111,3 +111,10 @@ export const formatPeriodo = (periodo) => {
     const month = periodo.substring(4, 6);
     return `${month}/${year}`;
 }
+export const formatearPrecio = (precio) =>{
+    return precio.toLocaleString("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 0
+    });
+  }
