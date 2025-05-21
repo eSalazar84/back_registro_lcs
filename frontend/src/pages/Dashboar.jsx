@@ -98,7 +98,8 @@ const Dashboard = () => {
     registro.personas.map(persona => ({
       persona,
       vivienda: registro.vivienda,
-      lote: registro.lote,
+      lote: persona.lote,
+      personaLote: persona.lote ?? registro.lote,
       registroId: registro.idRegistro,
       viviendaId: registro.vivienda?.idVivienda
     }))
@@ -107,13 +108,13 @@ const Dashboard = () => {
   console.log("personaExtendidas", personasExtendidas);
   
 
-  const personasFiltradas = personasExtendidas.filter(({ persona, vivienda, lote }) => {
+ const personasFiltradas = personasExtendidas.filter(({ persona, vivienda, lote }) => {
     return (
-      (!filtros.dni || persona.dni.toLowerCase().includes(filtros.dni.toLowerCase())) &&
-      (!filtros.apellido || persona.apellido.toLowerCase().includes(filtros.apellido.toLowerCase())) &&
-      (!filtros.numeroRegistro || persona.numero_registro.includes(filtros.numeroRegistro)) &&
+      (!filtros.dni || persona.dni?.toString().toLowerCase().includes(filtros.dni.toLowerCase())) &&
+      (!filtros.apellido || persona.apellido?.toLowerCase().includes(filtros.apellido.toLowerCase())) &&
+      (!filtros.numeroRegistro || persona.numero_registro?.toString().includes(filtros.numeroRegistro)) &&
       (!filtros.localidadVivienda || vivienda?.localidad?.toLowerCase().includes(filtros.localidadVivienda.toLowerCase())) &&
-      (!filtros.localidadLote || lote?.localidad?.toLowerCase().includes(filtros.localidadLote.toLowerCase())) &&
+      (!filtros.localidadLote || persona.lote?.localidad?.toLowerCase().includes(filtros.localidadLote.toLowerCase())) &&
       (filtros.tipoPersona === 'Todos' || persona.titular_cotitular === filtros.tipoPersona)
     );
   });
@@ -141,7 +142,7 @@ const Dashboard = () => {
       persona.nombre,
       persona.dni,
       persona.telefono,
-      lote?.localidad ?? '-',
+      persona.lote?.localidad ?? '-----------',
       persona.titular_cotitular
     ]);
 

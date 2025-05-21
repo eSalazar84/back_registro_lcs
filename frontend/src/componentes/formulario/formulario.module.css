@@ -532,18 +532,18 @@
 }
 
 .noteText {
-  color: #856404;
+  color: #ca1313;
   font-size: 1.1em;
   margin-bottom: 10px;
 }
 
 .noteText strong {
-  color: #664d03;
+  color: #ca1313;
   font-size: 1.2em;
 }
 
 .noteList {
-  color: #856404;
+  color: #ca1313;
   margin: 0;
   padding-left: 25px;
 }
