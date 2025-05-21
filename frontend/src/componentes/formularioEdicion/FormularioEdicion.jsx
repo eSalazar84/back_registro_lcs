@@ -254,6 +254,8 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                 {Object.keys(callesPorLocalidad).map(localidad => (
                                     <option key={localidad} value={localidad}>{localidad}</option>
                                 ))}
+                               <option value="El Luchador">El Luchador</option>
+                                <option value="Coronel Rodolfo Bunge">Coronel Rodolfo Bunge</option>
                             </select>
                         </label>
 
@@ -605,7 +607,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                     <option value="Masculino">Masculino</option>
                                     <option value="Femenino">Femenino</option>
                                     <option value="Otro">Otro</option>
-                                    <option value="No especifica">No especifica</option>
+                                    
                                 </select>
                             </label>
 
