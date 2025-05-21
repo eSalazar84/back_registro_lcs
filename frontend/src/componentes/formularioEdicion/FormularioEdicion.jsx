@@ -663,7 +663,7 @@ const FormularioRegistro = ({ formData, onChange, onSave, onCancel }) => {
                                 {habitante.ingresos.map((ingreso, ingresoIndex) => (
                                     <div key={ingresoIndex} className={styles.ingresoCard}>
                                         <div className={styles.ingresoHeader}>
-                                            <h6>Ingreso #{ingresoIndex + 1}</h6>
+                                            <h6>Ingreso N° {ingresoIndex + 1}</h6>
                                         </div>
 
                                         <div className={styles.ingreso}>

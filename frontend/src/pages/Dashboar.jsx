@@ -65,9 +65,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-
     decodeToken();
-
   }, [token]);
 
   const handleFiltroChange = (e) => {
@@ -90,10 +88,6 @@ const Dashboard = () => {
     setPaginaActual(1);
   };
 
-  const getSafe = (obj, path, def = '-') => {
-    return path.split('.').reduce((acc, key) => acc?.[key], obj) ?? def;
-  };
-
   const personasExtendidas = registros?.flatMap(registro =>
     registro.personas.map(persona => ({
       persona,
@@ -104,9 +98,6 @@ const Dashboard = () => {
       viviendaId: registro.vivienda?.idVivienda
     }))
   ) || [];
-
-  console.log("personaExtendidas", personasExtendidas);
-  
 
  const personasFiltradas = personasExtendidas.filter(({ persona, vivienda, lote }) => {
     return (
@@ -142,7 +133,7 @@ const Dashboard = () => {
       persona.nombre,
       persona.dni,
       persona.telefono,
-      persona.lote?.localidad ?? '-----------',
+      lote?.localidad ?? '-----------',
       persona.titular_cotitular
     ]);
 
@@ -152,11 +143,7 @@ const Dashboard = () => {
     XLSX.writeFile(libro, `${nombre}.xlsx`);
   };
 
-  const handleEdit = (id) => {
-    navigate(`/editar-registro/${id}`);
-  };
-
-  const handleVerRegistro = (registroId) => {
+   const handleVerRegistro = (registroId) => {
     navigate(`/ver-registro/${registroId}`);
   };
   
@@ -191,10 +178,8 @@ const Dashboard = () => {
           <input name="numeroRegistro" placeholder="N° Registro" value={filtros.numeroRegistro} onChange={handleFiltroChange} className={styles.filtroInput} />
           <input name="dni" placeholder="DNI" value={filtros.dni} onChange={handleFiltroChange} className={styles.filtroInput} />
           <input name="apellido" placeholder="Apellido" value={filtros.apellido} onChange={handleFiltroChange} className={styles.filtroInput} />
-
           <select name="localidadVivienda" value={filtros.localidadVivienda} onChange={handleFiltroChange} className={styles.filtroSelect}>
             <option value="">Localidad Vivienda</option>
-
             <option value="Benito Juarez">Benito Juárez</option>
             <option value="Barker">Barker</option>
             <option value="Villa Cacique">Villa Cacique</option>
@@ -204,17 +189,13 @@ const Dashboard = () => {
             <option value="Coronel Rodolfo Bunge">Coronel Rodolfo Bunge</option>
           </select>
           <select name="localidadLote" value={filtros.localidadLote} onChange={handleFiltroChange} className={styles.filtroSelect}>
-
             <option value="">Localidad Lote</option>
             <option value="Benito Juárez">Benito Juárez</option>
             <option value="Barker">Barker</option>
             <option value="Tedín Uriburu">Tedín Uriburu</option>
             <option value="El Luchador">El Luchador</option>
           </select>
-
-
           <select name="tipoPersona" value={filtros.tipoPersona} onChange={handleFiltroChange} className={styles.filtroSelect}>
-
             <option value="Todos">Todos</option>
             <option value="Titular">Titular</option>
             <option value="Cotitular">Cotitular</option>
@@ -235,9 +216,7 @@ const Dashboard = () => {
               <th>Apellido</th>
               <th>Nombre</th>
               <th>DNI</th>
-
               <th>Teléfono</th>
-
               <th>Localidad Lote</th>
               <th>Tipo</th>
               <th>Acciones</th>
@@ -246,13 +225,13 @@ const Dashboard = () => {
           <tbody>
 
             {personasActuales.length > 0 ? personasActuales.map(({ persona, lote, registroId }) => (
-              <tr key={persona.idPersona}>
+              <tr key={persona.idPersona}>                
                 <td>{persona.numero_registro}</td>
                 <td>{persona.apellido}</td>
                 <td>{persona.nombre}</td>
                 <td>{persona.dni}</td>
                 <td>{persona.telefono}</td>
-                <td>{lote?.localidad ?? '-'}</td>
+                <td>{lote?.localidad ?? '-----------'}</td>
                 <td>{persona.titular_cotitular}</td>
                 <td>
                   <div className={styles.containerButtonAccion}>
@@ -260,7 +239,7 @@ const Dashboard = () => {
                       className={styles.viewButton}
                       onClick={() => handleVerRegistro(registroId)}
                     >
-                      Ver
+                      Ver Registro
                     </button>
                   </div>
                 </td>

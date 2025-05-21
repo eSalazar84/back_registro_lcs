@@ -124,6 +124,11 @@ const VistaRegistro = () => {
     setEditMode(false);
   };
 
+  const volverDashboard = () => {
+
+    navigate("/dashboard");
+  }
+
   if (loading) return <div className={styles.loading}>Cargando...</div>;
   if (!registro) return null;
 
@@ -132,14 +137,25 @@ const VistaRegistro = () => {
       <div className={styles.header}>
         <h2 className={styles.title}>Registro N°{registro.idRegistro}</h2>
         {!editMode && (
+            <>
           <button
             onClick={() => setEditMode(true)}
             className={styles.editButton}
           >
             Editar Registro
           </button>
+          <button
+            onClick={() => volverDashboard()}
+            className={styles.editButton}
+          >
+            Volver inicio
+          </button>
+        </>
+
         )}
+     
       </div>
+
 
       {editMode ? (
         <FormularioEdicion
@@ -257,8 +273,8 @@ const VistaRegistro = () => {
                               {p.certificado_discapacidad === true
                                 ? "Sí"
                                 : p.certificado_discapacidad === false
-                                ? "No"
-                                : "No informado"}
+                                  ? "No"
+                                  : "No informado"}
                             </p>
                             {p.titular_cotitular !== "Titular" && (
                               <p>
@@ -277,7 +293,7 @@ const VistaRegistro = () => {
                                 <p>
                                   <strong>Teléfono:</strong> {p.telefono}
                                 </p>
-                                
+
                               </>
                             )}
                           </div>
@@ -328,7 +344,7 @@ const VistaRegistro = () => {
                               <div className={styles.morosidadSection}>
                                 <h5>Morosidad</h5>
                                 {morosidadData[p.idPersona] &&
-                                morosidadData[p.idPersona].length > 0 ? (
+                                  morosidadData[p.idPersona].length > 0 ? (
                                   morosidadData[p.idPersona].map(
                                     (info, index) => (
                                       <div key={index}>

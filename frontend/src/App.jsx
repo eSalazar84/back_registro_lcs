@@ -14,27 +14,40 @@ import BasesYcondiciones from './pages/Bases y condiciones/BasesYcondiciones';
 import { AuthProvider } from "./auth/AuthContext"; // Asegúrate de importar el AuthProvider
 
 import EditarRegistro from "./pages/edit/EditarRegistro";
+import { useLocation } from "react-router-dom";
+// ...otros imports...
+import NavSecundario from "./componentes/nav/NavSecundario"; // crea este componente
 
 function App() {
+  const location = useLocation();
+  const navSecundarioRoutes = [
+    "/dashboard",
+    "/editar-registro",
+    "/ver-registro",
+    "/login",
+  ];
+
+  const showNavSecundario = navSecundarioRoutes.some(route => location.pathname.startsWith(route));
+  const showNavPrincipal = !showNavSecundario;
+
   return (
-
-    <AuthProvider>  {/* Envuelve toda la app con AuthProvider */}
-
-      <Nav />
+    <AuthProvider>
+      {showNavPrincipal && <Nav />}
+      {showNavSecundario && <NavSecundario />}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/bases-y-condiciones" element={<BasesYcondiciones />} />
         <Route path="/registro" element={<Formulario />} />
         <Route path="/registro-exitoso" element={<RegistroExitoso />} />
+
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/editar-registro/:id" element={<PrivateRoute><EditarRegistro /></PrivateRoute>} />      
-        <Route path="/ver-registro/:registroId" element={<VistaRegistro />} />
+        <Route path="/editar-registro/:id" element={<PrivateRoute><EditarRegistro /></PrivateRoute>} />
+        <Route path="/ver-registro/:registroId" element={<PrivateRoute><VistaRegistro /></PrivateRoute>} />
       </Routes>
       <Footer />
     </AuthProvider>
-
   );
 }
 
